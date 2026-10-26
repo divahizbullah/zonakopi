@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#0b3a75"><title>ZONA - Tentukan Zona Mu</title>
+<meta name="theme-color" content="#0b3a75"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet"><title>ZONA - Tentukan Zona Mu</title>
 <style>
 :root{--d:#0b3a75;--m:#1d5fb4;--c:#eef5ff;--s:#d3e3fa;--a:#2f80ed}
 *{box-sizing:border-box;margin:0}
-body{font:15px system-ui,sans-serif;background:var(--c);color:var(--d)}
+body{font:15px "Plus Jakarta Sans",system-ui,sans-serif;background:var(--c);color:var(--d)}
 #app{min-height:100vh}
 aside#nav{position:fixed;top:0;left:0;bottom:0;width:240px;max-width:85vw;z-index:20;overflow:auto;background:var(--d);color:var(--c);padding:14px;transform:translateX(-100%);transition:transform .2s}body.navopen aside#nav{transform:none;box-shadow:4px 0 18px rgba(0,0,0,.25)}#ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:19}body.navopen #ov{display:block}.x{float:right;cursor:pointer;padding:2px 8px;font-size:1.2rem}.hb{font-size:1.2rem;min-height:42px}.top select{flex:1;min-width:130px;max-width:260px}main{transition:margin .2s}@media(min-width:801px){body.navopen main{margin-left:240px}body.navopen #ov{display:none}body.navopen .top .brand{display:none}body.navopen aside#nav{box-shadow:none}}
 #nav b{letter-spacing:.12em;display:block;margin-bottom:12px}
@@ -40,7 +40,53 @@ th,td{padding:9px 10px;text-align:left;border-bottom:1px solid var(--s)}
 #nav button.grp{font-weight:600}#nav button.gon{background:rgba(255,255,255,.12)}#nav button.sub{padding-left:26px;font-size:.93rem}
 .tabs{display:flex;gap:4px;border-bottom:2px solid var(--s);margin-bottom:14px;overflow-x:auto;white-space:nowrap}.tabs button{background:none;border:0;padding:9px 14px;cursor:pointer;font:inherit;font-weight:600;color:var(--m);border-bottom:3px solid transparent;margin-bottom:-2px}.tabs button.on{color:var(--d);border-color:var(--a)}
 .pw{position:relative;display:inline-flex;max-width:100%}.pw input{padding-right:40px;width:100%}.pw .eye{position:absolute;right:2px;top:50%;transform:translateY(-50%);border:0;background:none;cursor:pointer;padding:6px 8px;color:var(--m);display:flex}.pw .eye:hover{color:var(--a)}
-.item{position:relative}.item.sel{outline:2px solid var(--a)}.bdg{position:absolute;top:8px;right:8px;min-width:26px;height:26px;padding:0 7px;border-radius:99px;background:var(--a);color:#fff;font-weight:700;display:grid;place-items:center;box-shadow:0 1px 4px rgba(0,0,0,.25)}
+.pos{grid-template-columns:1fr 390px;gap:18px;align-items:start}.pos>section{min-width:0}
+.srch{position:relative;margin-bottom:10px}.srch svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--m);opacity:.7}.srch input{width:100%;padding:12px 14px 12px 44px;border-radius:14px}
+.chipsr{display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;margin-bottom:6px;scrollbar-width:none}.chipsr::-webkit-scrollbar{display:none}
+.cc{flex:none;border:1px solid var(--s);background:#fff;color:var(--d);border-radius:99px;padding:8px 15px;font:inherit;font-weight:600;cursor:pointer}.cc.on{background:var(--d);color:#fff;border-color:var(--d)}
+.pg{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(176px,1fr))}
+.pt{position:relative;background:#fff;border:1.5px solid transparent;border-radius:18px;padding:14px;cursor:pointer;display:flex;flex-direction:column;gap:3px;min-height:168px;box-shadow:0 1px 3px rgba(11,58,117,.1);transition:border-color .15s,background .15s;user-select:none}
+.pt:active{transform:scale(.98)}.pt:focus-visible{outline:2px solid var(--a);outline-offset:2px}.pt.sel{border-color:var(--k);background:color-mix(in srgb,var(--k) 7%,#fff)}
+.pt .ico{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;color:var(--k);background:color-mix(in srgb,var(--k) 14%,#fff);margin-bottom:8px}
+.pn{font-weight:700;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.pk{font-size:.78rem;font-weight:600;color:var(--k)}
+.pp{margin-top:auto;padding-top:8px;display:flex;flex-direction:column}.pp b{font-size:1.08rem;font-variant-numeric:tabular-nums}.pp small{opacity:.65;font-size:.78rem}
+.stp{display:inline-flex;align-items:center;gap:2px;background:var(--c);border-radius:99px;padding:3px}.stp button{width:34px;height:34px;border:0;border-radius:99px;background:#fff;color:var(--d);font:inherit;font-size:1.1rem;font-weight:700;cursor:pointer}.stp button:hover{background:var(--m);color:#fff}.stp span{min-width:30px;text-align:center;font-weight:700}
+.cartp{background:#fff;border-radius:22px;box-shadow:0 8px 30px rgba(11,58,117,.15);display:flex;flex-direction:column;overflow:hidden}
+.cph{display:flex;justify-content:space-between;align-items:center;padding:16px 18px 10px}.cpt{font-size:1.15rem;margin-right:8px}.sm{font-size:.82rem}
+.lnk{background:none;border:0;color:var(--m);font:inherit;font-weight:600;cursor:pointer;padding:6px}.lnk:hover{color:var(--a)}
+.cbody{flex:1;min-height:0;overflow:auto;padding:0 18px 14px}
+.cl{padding:12px 0;border-bottom:1px solid var(--s)}.clt{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.clb{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px}
+.ch{position:relative;display:inline-flex;align-items:center;border:1.5px solid var(--s);border-radius:99px;padding:6px 12px;font-size:.82rem;font-weight:600;cursor:pointer;color:var(--d);background:#fff}.ch.on{background:var(--d);border-color:var(--d);color:#fff}.ch input{position:absolute;opacity:0;pointer-events:none}.ch:focus-within{outline:2px solid var(--a);outline-offset:2px}
+.rm{margin-left:auto;background:none;border:0;color:var(--m);opacity:.6;cursor:pointer;font-size:1rem;padding:8px}.rm:hover{opacity:1;color:#b42318}
+.emp{text-align:center;padding:36px 10px;color:var(--m)}
+.vch{display:flex;gap:8px;margin:14px 0 6px}.vch input{flex:1;min-width:0;border-radius:12px}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);background:var(--c);border-radius:14px;padding:4px;gap:4px;margin:12px 0}.seg button{border:0;background:none;padding:10px 6px;border-radius:11px;font:inherit;font-weight:700;color:var(--m);cursor:pointer}.seg button.on{background:#fff;color:var(--d);box-shadow:0 1px 4px rgba(11,58,117,.2)}
+.cash input{width:100%;font-size:1.1rem;font-weight:700;padding:12px 14px;border-radius:12px}
+.qrow{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.qk{border:1.5px solid var(--s);background:#fff;color:var(--d);border-radius:99px;padding:8px 15px;font:inherit;font-weight:700;cursor:pointer}.qk:hover{border-color:var(--a);color:var(--m)}
+.kbr{display:flex;justify-content:space-between;padding:4px 2px}
+.cft{padding:12px 18px 18px;border-top:1px solid var(--s);background:#fff}.ttr{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}.ttr .big{font-size:1.7rem;font-variant-numeric:tabular-nums}
+.pay{width:100%;border:0;border-radius:16px;padding:16px;background:var(--m);color:#fff;font:inherit;font-weight:800;font-size:1.05rem;cursor:pointer;box-shadow:0 6px 16px rgba(29,95,180,.35);transition:background .15s}.pay:hover{background:var(--d)}.pay:active{transform:scale(.99)}
+.cbd{display:none}
+.pt{padding:12px}.pt .ico{margin-bottom:6px}
+.vrs{margin-top:auto;padding-top:8px;display:flex;flex-direction:column;gap:6px}.vr{display:flex;align-items:center;gap:4px}
+.va{flex:1;min-width:0;display:flex;align-items:center;gap:6px;height:38px;padding:0 6px 0 5px;border:1.5px solid var(--k);border-radius:12px;background:#fff;color:var(--d);font:inherit;font-weight:700;font-size:.85rem;font-variant-numeric:tabular-nums;cursor:pointer;white-space:nowrap}
+.va:hover,.vr.has .va{background:color-mix(in srgb,var(--k) 12%,#fff)}.va:active{transform:scale(.97)}
+.vl{flex:none;width:24px;height:24px;border-radius:8px;display:grid;place-items:center;font-size:.78rem;font-weight:800;border:1.5px solid var(--k);color:var(--k);background:#fff}.vr.L .vl{background:var(--k);color:#fff}
+.vr .mn{flex:none;width:26px;height:26px;padding:0;border-radius:99px;border:1.5px solid var(--k);background:#fff;color:var(--k);font:inherit;font-weight:800;font-size:1.05rem;line-height:1;cursor:pointer}
+.vr .bdg{flex:none;min-width:22px;height:22px;padding:0 5px;border-radius:99px;background:var(--k);color:#fff;font-weight:800;font-size:.8rem;display:grid;place-items:center}
+.szt{display:inline-grid;place-items:center;width:22px;height:22px;margin-right:7px;border-radius:7px;border:1.5px solid var(--m);color:var(--m);font-size:.72rem;font-weight:800;vertical-align:1px}.szt.L{background:var(--d);border-color:var(--d);color:#fff}
+@media(min-width:801px){.cartp{position:sticky;top:12px;max-height:calc(100vh - 24px)}}
+@media(max-width:800px){
+main{padding:10px 10px 104px}.pos{grid-template-columns:1fr}.pg{grid-template-columns:repeat(2,1fr)}
+.cartp{border-radius:24px 24px 0 0;max-height:90vh;overflow:hidden;box-shadow:0 -12px 40px rgba(0,0,0,.28)}
+.cartp.open~.cbd{display:block;position:fixed;inset:0;background:rgba(8,32,66,.5);z-index:4}
+.mbar{left:12px;right:12px;bottom:max(12px,env(safe-area-inset-bottom));border-radius:22px;padding:9px 9px 9px 12px;gap:12px;box-shadow:0 10px 30px rgba(11,58,117,.45);transition:transform .25s;cursor:pointer;font-weight:600}
+.mbar.empty{transform:translateY(170%)}
+.mbi{position:relative;display:grid;place-items:center;width:44px;height:44px;border-radius:14px;background:rgba(255,255,255,.14)}.mbi i{position:absolute;top:-6px;right:-6px;min-width:20px;height:20px;padding:0 5px;border-radius:99px;background:#fff;color:var(--d);font-style:normal;font-weight:800;font-size:.75rem;line-height:20px;text-align:center}
+.mbt{flex:1;display:flex;flex-direction:column;line-height:1.15}.mbt small{opacity:.75;font-weight:500}.mbt b{font-size:1.1rem;font-variant-numeric:tabular-nums}
+.mbb{background:#fff;color:var(--d);border-radius:15px;padding:13px 16px;font-weight:800}
+}
+@media(prefers-reduced-motion:reduce){.mbar,.cartp{transition:none!important}}
 </style></head><body>
 <div id="app"><aside id="nav"></aside><main id="main"></main></div>
 <div id="modal"><div id="mb"></div></div>
@@ -144,18 +190,43 @@ const lrec=l=>[...prod(l.pid).recipe,...adl(l).flatMap(a=>a.recipe||[])];
 const lhpp=l=>lrec(l).reduce((t,r)=>t+r.q*(ing(r.i)?.cost||0),0);
 const sub=()=>cart.reduce((s,l)=>s+unit(l)*l.qty,0);
 const tot=()=>sub()-best(sub()).d;
-function grid(){return opt(S.products.filter(p=>p.active&&p.name.toLowerCase().includes(q.toLowerCase())),p=>{const n=cart.filter(l=>l.pid==p.id).reduce((a,l)=>a+l.qty,0);return`<div class="card item ${n?"sel":""}" onclick="addC('${p.id}')">${n?`<span class="bdg">${n}</span>`:""}<div class="mut">${esc(p.cat)}</div><b>${esc(p.name)}</b><div>${rp(p.price)}</div>${Number.isFinite(p.priceL)?`<div class="mut">Large ${rp(p.priceL)}</div>`:""}</div>`})||'<p class="mut">Tidak ada produk.</p>'}
-function lines(){return cart.length?opt(cart,(l,i)=>`<div style="border-bottom:1px solid var(--s);padding:6px 0"><div style="display:flex;justify-content:space-between"><span>${esc(prod(l.pid).name)}</span><b>${rp(unit(l)*l.qty)}</b></div><button class="btn s" onclick="qty(${i},-1)">−</button> ${l.qty} <button class="btn s" onclick="qty(${i},1)">+</button> ${Number.isFinite(prod(l.pid).priceL)?`<label class="mut"><input type="checkbox" ${l.sz=="L"?"checked":""} onchange="cart[${i}].sz=this.checked?'L':'R';refC()"> Large +${rp(prod(l.pid).priceL-prod(l.pid).price)}</label> `:""}${opt(prod(l.pid).addons||[],a=>`<label class="mut"><input type="checkbox" ${l.ad.includes(a.id)?"checked":""} onchange="tg(${i},'${a.id}')"> ${esc(a.name)} +${rp(a.price)}</label> `)}</div>`):'<p class="mut">Keranjang kosong.</p>'}
-function vKasir(){return`<div class="pos"><section><input placeholder="Cari produk..." style="width:100%;margin-bottom:10px" value="${esc(q)}" oninput="q=this.value;$('#grid').innerHTML=grid()"><div class="g" id="grid">${grid()}</div></section>
-<aside class="card cartp" style="align-self:start"><button class="btn s mclose" onclick="$('.cartp').classList.remove('open')">Tutup ✕</button><b>Keranjang</b><div id="cl">${lines()}</div><div id="dsc">${dscH()}</div><div class="fm" style="margin:6px 0"><input id="vc" placeholder="Kode voucher" value="${esc(vcode)}" style="flex:1;min-width:0"><button class="btn s" onclick="vcode=V('vc').trim();refC();if(vcode&&!best(sub()).p)alert('Voucher tidak berlaku (kode salah, belum memenuhi syarat, atau promo otomatis lebih besar)')">Pakai</button></div><div class="big" id="tt">${rp(tot())}</div>
-<select id="pm" style="width:100%;margin:8px 0" onchange="payM=this.value;render();$('.cartp').classList.add('open')">${opt([["CASH","Tunai"],["QRIS","QRIS (konfirmasi manual kasir)"],["TRANSFER","Transfer (konfirmasi manual)"]],x=>`<option value="${x[0]}" ${payM==x[0]?"selected":""}>${x[1]}</option>`)}</select>
-${payM=="CASH"?`<input id="cash" inputmode="numeric" placeholder="Uang diterima" style="width:100%" oninput="this.dataset.exact='';$('#kb').textContent=rp(Math.max(0,(+this.value||0)-tot()))"><div class="fm" style="margin:6px 0"><button class="btn" onclick="setCash()">Uang Pas</button>${[20000,50000,100000].map(n=>`<button class="btn s" onclick="setCash(${n})">${n/1000}rb</button>`).join("")}</div><div>Kembalian: <b id="kb">Rp0</b></div>`:""}
-<button class="btn" style="width:100%;margin-top:8px" onclick="doPay()">Bayar</button></aside></div><div class="mbar"><span id="mc">${cart.reduce((a,l)=>a+l.qty,0)} item · ${rp(tot())}</span><button class="btn" onclick="$('.cartp').classList.add('open')">Lihat & Bayar</button></div>`}
-function addC(id){const l=cart.find(x=>x.pid==id&&x.sz=="R"&&!x.ad.length);l?l.qty++:cart.push({pid:id,qty:1,sz:"R",ad:[]});refC()}
+const CUP='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8h12v6a5 5 0 0 1-5 5h-2a5 5 0 0 1-5-5V8z"/><path d="M17 10h1.5a2.5 2.5 0 0 1 0 5H17"/><path d="M9 3v2M13 3v2"/></svg>',
+BAG='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 7h12l1 13H5L6 7z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg>',
+SRCH='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>';
+let cat="";
+const cats=()=>[...new Set(S.products.filter(p=>p.active).map(p=>p.cat))];
+const kcol=c=>["#1d5fb4","#c47a2c","#2a9d8f","#7b5ea7","#d1495b","#4c8c2b"][Math.max(0,[...new Set(S.products.map(p=>p.cat))].indexOf(c))%6];
+const chips=()=>`<button class="cc ${cat?"":"on"}" onclick="setCat('')">Semua</button>`+cats().map(c=>`<button class="cc ${cat==c?"on":""}" data-c="${esc(c)}" onclick="setCat(this.dataset.c)">${esc(c)}</button>`).join("");
+function setCat(c){cat=c;$("#chips").innerHTML=chips();$("#grid").innerHTML=grid()}
+const pn=n=>Math.round(n).toLocaleString("id-ID");
+const qv=(id,sz)=>cart.filter(l=>l.pid==id&&l.sz==sz).reduce((a,l)=>a+l.qty,0);
+function vrow(p,sz){const n=qv(p.id,sz),nm=sz=="L"?"Large":"Reguler";
+return`<div class="vr ${sz} ${n?"has":""}"><button class="va" onclick="event.stopPropagation();addC('${p.id}','${sz}')" aria-label="Tambah ${nm} ${esc(p.name)}"><span class="vl">${sz}</span><span>${pn(sz=="L"?p.priceL:p.price)}</span></button>${n?`<button class="mn" onclick="event.stopPropagation();dec('${p.id}','${sz}')" aria-label="Kurangi ${nm}">−</button><span class="bdg">${n}</span>`:""}</div>`}
+function grid(){return opt(S.products.filter(p=>p.active&&(!cat||p.cat==cat)&&p.name.toLowerCase().includes(q.toLowerCase())),p=>{const n=cart.filter(l=>l.pid==p.id).reduce((a,l)=>a+l.qty,0);
+return`<div class="pt ${n?"sel":""}" style="--k:${kcol(p.cat)}" onclick="addC('${p.id}')"><span class="ico">${CUP}</span><div class="pn">${esc(p.name)}</div><div class="pk">${esc(p.cat)}</div><div class="vrs">${vrow(p,"R")}${Number.isFinite(p.priceL)?vrow(p,"L"):""}</div></div>`})||'<p class="mut">Tidak ada produk.</p>'}
+function lines(){return cart.length?opt(cart,(l,i)=>{const p=prod(l.pid),sz=l.sz=="L"&&Number.isFinite(p.priceL)?"L":"R";
+return`<div class="cl"><div class="clt"><div><b><span class="szt ${sz}">${sz}</span>${esc(p.name)}</b><div class="mut sm">${esc([sz=="L"?"Large":"Reguler",...adl(l).map(a=>a.name)].join(", "))}</div></div><b>${rp(unit(l)*l.qty)}</b></div>
+<div class="clb"><div class="stp"><button onclick="qty(${i},-1)" aria-label="Kurangi">−</button><span>${l.qty}</span><button onclick="qty(${i},1)" aria-label="Tambah">+</button></div>${opt(p.addons||[],a=>`<label class="ch ${l.ad.includes(a.id)?"on":""}"><input type="checkbox" ${l.ad.includes(a.id)?"checked":""} onchange="tg(${i},'${a.id}')">${l.ad.includes(a.id)?"✓ ":""}${esc(a.name)} +${rp(a.price)}</label>`)}<button class="rm" onclick="qty(${i},-999)" aria-label="Hapus">✕</button></div></div>`}):'<div class="emp"><b>Belum ada pesanan</b><div class="sm">Ketuk R atau L pada produk untuk menambahkannya.</div></div>'}
+function vKasir(){if(cat&&!cats().includes(cat))cat="";const n=cart.reduce((a,l)=>a+l.qty,0);
+return`<div class="pos"><section><div class="srch">${SRCH}<input placeholder="Cari produk" aria-label="Cari produk" value="${esc(q)}" oninput="q=this.value;$('#grid').innerHTML=grid()"></div><div class="chipsr" id="chips">${chips()}</div><div class="pg" id="grid">${grid()}</div></section>
+<aside class="cartp"><div class="cph"><div><b class="cpt">Pesanan</b><span class="mut" id="cn">${n} item</span></div><div><button class="lnk" onclick="clr()">Kosongkan</button><button class="btn s mclose" onclick="cartClose()">Tutup ✕</button></div></div>
+<div class="cbody"><div id="cl">${lines()}</div>
+<div class="vch"><input id="vc" placeholder="Kode voucher" value="${esc(vcode)}"><button class="btn s" onclick="vcode=V('vc').trim();refC();if(vcode&&!best(sub()).p)alert('Voucher tidak berlaku (kode salah, belum memenuhi syarat, atau promo otomatis lebih besar)')">Pakai</button></div><div id="dsc">${dscH()}</div>
+<div class="seg">${[["CASH","Tunai"],["QRIS","QRIS"],["TRANSFER","Transfer"]].map(x=>`<button class="${payM==x[0]?"on":""}" onclick="setPM('${x[0]}')">${x[1]}</button>`).join("")}</div>
+${payM=="CASH"?`<div class="cash"><input id="cash" inputmode="numeric" placeholder="Uang diterima" oninput="this.dataset.exact='';$('#kb').textContent=rp(Math.max(0,(+this.value||0)-tot()))"><div class="qrow"><button class="qk" onclick="setCash()">Uang pas</button>${[20000,50000,100000].map(v=>`<button class="qk" onclick="setCash(${v})">${v/1000}rb</button>`).join("")}</div><div class="kbr"><span>Kembalian</span><b id="kb">Rp0</b></div></div>`:`<p class="mut sm">Konfirmasi pembayaran ${payM=="QRIS"?"QRIS":"transfer"} secara manual sebelum menekan Bayar.</p>`}</div>
+<div class="cft"><div class="ttr"><span>Total</span><b class="big" id="tt">${rp(tot())}</b></div><button class="pay" id="pb" onclick="doPay()">Bayar ${rp(tot())}</button></div></aside>
+<div class="cbd" onclick="cartClose()"></div>
+<div class="mbar ${n?"":"empty"}" role="button" tabindex="0" onclick="cartOpen()" onkeydown="if(event.key=='Enter')cartOpen()"><span class="mbi">${BAG}<i id="mn">${n}</i></span><span class="mbt"><small>Total</small><b id="mt">${rp(tot())}</b></span><span class="mbb">Lihat & Bayar</span></div>`}
+const cartOpen=()=>$(".cartp").classList.add("open"),cartClose=()=>$(".cartp").classList.remove("open");
+function setPM(m){const o=$(".cartp")&&$(".cartp").classList.contains("open");payM=m;render();if(o)cartOpen()}
+function dec(id,sz){for(let i=cart.length-1;i>=0;i--)if(cart[i].pid==id&&(!sz||cart[i].sz==sz)){qty(i,-1);return}}
+function clr(){if(cart.length&&confirm("Kosongkan semua pesanan?")){cart=[];vcode="";refC()}}
+function addC(id,sz="R"){const l=cart.find(x=>x.pid==id&&x.sz==sz&&!x.ad.length);l?l.qty++:cart.push({pid:id,qty:1,sz,ad:[]});refC()}
 function qty(i,d){cart[i].qty+=d;if(cart[i].qty<1)cart.splice(i,1);refC()}
 function tg(i,o){const a=cart[i].ad;a.includes(o)?a.splice(a.indexOf(o),1):a.push(o);refC()}
 function setCash(n){const c=$("#cash"),t=tot();c.dataset.exact=n==null?"1":"";c.value=n==null?t:n;$("#kb").textContent=rp(Math.max(0,+c.value-t))}
-function refC(){const gd=$("#grid");if(gd)gd.innerHTML=grid();$("#cl").innerHTML=lines();$("#tt").textContent=rp(tot());$("#dsc").innerHTML=dscH();const c=$("#cash");if(c){if(c.dataset.exact)c.value=tot();$("#kb").textContent=rp(Math.max(0,(+c.value||0)-tot()))}$("#mc").textContent=cart.reduce((a,l)=>a+l.qty,0)+" item · "+rp(tot())}
+function refC(){const gd=$("#grid");if(gd)gd.innerHTML=grid();$("#cl").innerHTML=lines();$("#tt").textContent=rp(tot());$("#dsc").innerHTML=dscH();const c=$("#cash");if(c){if(c.dataset.exact)c.value=tot();$("#kb").textContent=rp(Math.max(0,(+c.value||0)-tot()))}
+const n=cart.reduce((a,l)=>a+l.qty,0);$("#mn").textContent=n;$("#mt").textContent=rp(tot());$("#cn").textContent=n+" item";$("#pb").textContent="Bayar "+rp(tot());$(".mbar").classList.toggle("empty",!n)}
 function doPay(){
 if(!cart.length)return alert("Keranjang kosong");
 const sb=sub(),bp=best(sb),total=sb-bp.d,ce=$("#cash"),cash=payM=="CASH"?(ce&&ce.dataset.exact?total:+V("cash")||0):total;
