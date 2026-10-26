@@ -239,7 +239,7 @@ return`
 <div class="tw"><table><tr><th>Produk</th><th>Terjual</th><th>Omzet</th><th>HPP</th><th>Laba kotor</th></tr>${opt(Object.entries(r.tp).sort((a,b)=>b[1].q-a[1].q),([k,t])=>`<tr><td>${esc(k)}</td><td>${t.q}</td><td>${rp(t.o)}</td><td>${rp(t.h)}</td><td>${rp(t.o-t.h)}</td></tr>`)||'<tr><td colspan="5" class="mut">Belum ada data.</td></tr>'}</table></div>`}
 function expCsv(){const r=rep();csv("laporan-penjualan.csv",[["No","Waktu","Cabang","Total","HPP","Bayar"],...r.L.map(s=>[s.no,dt(s.at),bn(s.br),s.total,s.hpp,s.pay])])}
 /* ===== LAPORAN: FILTER & SUB-LAPORAN ===== */
-function rng(){const t=jk();if(rf.m=="hari")return{from:t,to:t};if(rf.m=="bulan")return{from:t.slice(0,8)+"01",to:t};if(rf.m=="tahun")return{from:t.slice(0,5)+"01-01",to:t};return{from:rf.from,to:rf.to}}
+function rng(){const t=jk();if(rf.m=="hari")return{from:t,to:t};if(rf.m=="bulan"){const[y,m]=t.split("-").map(Number);return{from:t.slice(0,8)+"01",to:new Date(Date.UTC(y,m,0)).toISOString().slice(0,10)}}if(rf.m=="tahun")return{from:t.slice(0,4)+"-01-01",to:t.slice(0,4)+"-12-31"};return{from:rf.from,to:rf.to}}
 const fd=d=>d?new Date(d+"T00:00:00Z").toLocaleDateString("id-ID",{weekday:"short",day:"2-digit",month:"short",year:"numeric",timeZone:"UTC"}):"-";
 const fmo=k=>new Date(k+"-01T00:00:00Z").toLocaleDateString("id-ID",{month:"long",year:"numeric",timeZone:"UTC"});
 const rn=n=>n<0?`<span style="color:#b42318">-${rp(-n)}</span>`:rp(n);
@@ -258,16 +258,19 @@ S.exp.forEach(e=>{if(e.st!="OK"||!sc(e.br)||e.date<R.from||e.date>R.to)return;g(
 const all=[];for(let t=Date.parse(R.from+"T00:00:00Z"),e=Date.parse(R.to+"T00:00:00Z");t<=e;t+=864e5)all.push(new Date(t).toISOString().slice(0,10));
 if(all.length<=62)all.forEach(d=>g(d));
 return Object.values(m).sort((a,b)=>b.d.localeCompare(a.d))}
-function vArus(){const L=dayList(),c=(t,v)=>`<div class="card"><div class="mut">${t}</div><div class="big">${v}</div></div>`,
-T=L.reduce((a,x)=>({om:a.om+x.om,h:a.h+x.h,ex:a.ex+x.ex}),{om:0,h:0,ex:0}),mo={};
-L.forEach(x=>{const k=x.d.slice(0,7),m=mo[k]||(mo[k]={om:0,h:0,ex:0});m.om+=x.om;m.h+=x.h;m.ex+=x.ex});
-const hd=l=>`<tr><th>${l}</th><th>Penjualan</th><th>HPP</th><th>Laba bersih</th><th>Pengeluaran</th><th>Arus bersih</th></tr>`,
-row=(l,x,st)=>`<tr${st?` style="${st}"`:""}><td>${l}</td><td>${rp(x.om)}</td><td>${rp(x.h)}</td><td>${rn(x.om-x.h)}</td><td>${rp(x.ex)}</td><td><b>${rn(x.om-x.h-x.ex)}</b></td></tr>`;
-return`<div class="g">${c("Penjualan bersih",rp(T.om))}${c("HPP",rp(T.h))}${c("Laba bersih",rn(T.om-T.h))}${c("Pengeluaran",rp(T.ex))}${c("Arus bersih",rn(T.om-T.h-T.ex))}</div>
-<p class="mut" style="margin-bottom:12px">Laba bersih = penjualan bersih (setelah diskon, tanpa transaksi batal) − HPP. Arus bersih = laba bersih − pengeluaran harian. Pembelian stok tidak dihitung lagi karena sudah masuk HPP.</p>
-${Object.keys(mo).length>1?`<b>Rekap per bulan</b><div class="tw"><table>${hd("Bulan")}${opt(Object.keys(mo).sort().reverse(),k=>row(fmo(k),mo[k]))}</table></div>`:""}
-<b>Daftar harian</b><div class="tw" style="max-height:65vh;overflow:auto;margin-top:6px"><table>${hd("Tanggal")}${opt(L,x=>row(fd(x.d),x))||'<tr><td colspan="6" class="mut">Belum ada data pada periode ini.</td></tr>'}${L.length?row("<b>Total</b>",T,"background:var(--c);font-weight:700"):""}</table></div>`}
-function expArus(){csv("arus-keuangan.csv",[["Tanggal","Penjualan","HPP","Laba bersih","Pengeluaran","Arus bersih"],...dayList().map(x=>[x.d,x.om,x.h,x.om-x.h,x.ex,x.om-x.h-x.ex])])}
+function vArus(){const L=dayList().sort((a,b)=>a.d.localeCompare(b.d)),c=(t,v)=>`<div class="card"><div class="mut">${t}</div><div class="big">${v}</div></div>`,
+T=L.reduce((a,x)=>({om:a.om+x.om,ex:a.ex+x.ex}),{om:0,ex:0}),mo={};
+L.forEach(x=>{const k=x.d.slice(0,7),m=mo[k]||(mo[k]={om:0,ex:0});m.om+=x.om;m.ex+=x.ex});
+if(rf.m=="tahun"){const y=rng().from.slice(0,4);for(let i=1;i<=12;i++){const k=y+"-"+String(i).padStart(2,"0");mo[k]=mo[k]||{om:0,ex:0}}}
+const M=Object.keys(mo).sort(),showMo=rf.m=="tahun"||(rf.m=="khusus"&&M.length>1),showDay=rf.m!="tahun";
+const hd=l=>`<tr><th>${l}</th><th>Penjualan bersih</th><th>Pengeluaran</th><th>Total</th></tr>`,
+row=(l,x,st)=>`<tr${st?` style="${st}"`:""}><td>${l}</td><td>${rp(x.om)}</td><td>${rp(x.ex)}</td><td><b>${rn(x.om-x.ex)}</b></td></tr>`,
+tot=row("<b>Total</b>",T,"background:var(--c);font-weight:700");
+return`<div class="g">${c("Penjualan bersih",rp(T.om))}${c("Pengeluaran",rp(T.ex))}${c("Total",rn(T.om-T.ex))}</div>
+<p class="mut" style="margin-bottom:12px">Penjualan bersih = penjualan setelah diskon promo, tanpa transaksi batal. Total = penjualan bersih − pengeluaran.</p>
+${showMo?`<b>Total per bulan</b><div class="tw" style="margin:6px 0 14px"><table>${hd("Bulan")}${opt(M,k=>row(fmo(k),mo[k]))}${tot}</table></div>`:""}
+${showDay?`<b>${rf.m=="hari"?"Hari ini":"Daftar harian"}</b><div class="tw" style="max-height:65vh;overflow:auto;margin-top:6px"><table>${hd("Tanggal")}${opt(L,x=>row(fd(x.d),x))||'<tr><td colspan="4" class="mut">Belum ada data pada periode ini.</td></tr>'}${L.length>1?tot:""}</table></div>`:""}`}
+function expArus(){csv("arus-keuangan.csv",[["Tanggal","Penjualan bersih","Pengeluaran","Total"],...dayList().sort((a,b)=>a.d.localeCompare(b.d)).map(x=>[x.d,x.om,x.ex,x.om-x.ex])])}
 function vJual(){const L=dayList().filter(x=>x.n>0),c=(t,v)=>`<div class="card"><div class="mut">${t}</div><div class="big">${v}</div></div>`,
 T=L.reduce((a,x)=>({n:a.n+x.n,q:a.q+Object.values(x.items).reduce((s,i)=>s+i.q,0),g:a.g+Object.values(x.items).reduce((s,i)=>s+i.o,0),d:a.d+x.disc,om:a.om+x.om}),{n:0,q:0,g:0,d:0,om:0});
 return`<div class="g">${c("Transaksi",T.n)}${c("Item terjual",T.q)}${c("Penjualan item (sebelum diskon)",rp(T.g))}${c("Diskon promo",rp(T.d))}${c("Penjualan bersih",rp(T.om))}</div>
