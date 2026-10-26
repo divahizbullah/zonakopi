@@ -59,7 +59,7 @@ products:[{id:"p1",name:"Zona Aren Original",cat:"Zona Aren",price:18000,active:
 {id:"p3",name:"Americano Ice",cat:"Zona Coffee",price:15000,active:1,recipe:[{i:"kopi",q:18},{i:"cup",q:1}]}],
 stock:st,sales:[],exp:[],buys:[],mv:[],seq:{}}}
 let S=JSON.parse(localStorage.getItem(KEY)||"null")||seed();
-const save=()=>localStorage.setItem(KEY,JSON.stringify(S));
+const save=()=>{localStorage.setItem(KEY,JSON.stringify(S));window.cloudPush&&window.cloudPush()};
 S.promos=S.promos||[];S.users=S.users||[];
 let cur=null,authed=false,br=S.branches[0].id,view="kasir",cart=[],payM="CASH",q="",rf={from:jk().slice(0,8)+"01",to:jk(),all:1};
 const prod=id=>S.products.find(p=>p.id==id),ing=id=>S.ings.find(i=>i.id==id),bn=id=>S.branches.find(b=>b.id==id)?.name||id;
@@ -199,7 +199,7 @@ return`<div class="fm"><input type="date" value="${rf.from}" onchange="rf.from=t
 function expCsv(){const r=rep();csv("laporan-penjualan.csv",[["No","Waktu","Cabang","Total","HPP","Bayar"],...r.L.map(s=>[s.no,dt(s.at),bn(s.br),s.total,s.hpp,s.pay])])}
 /* ===== PENGATURAN ===== */
 function vSet(){return`<div class="card" style="margin-bottom:12px"><b>Ubah password saya</b><div class="fm" style="margin-top:8px"><input id="pw0" type="password" placeholder="Kata sandi lama"><input id="pw1" type="password" placeholder="Kata sandi baru"><button class="btn" onclick="chpw()">Ubah</button></div></div><div class="card" style="margin-bottom:12px"><b>Cabang</b>${opt(S.branches,b=>`<div style="margin:6px 0">${esc(b.name)} — ${esc(b.addr||"")} <button class="btn s" onclick="bedit('${b.id}')">Edit</button></div>`)}<div class="fm"><input id="b1" placeholder="Nama cabang baru"><input id="b2" placeholder="Alamat"><button class="btn" onclick="badd()">Tambah cabang</button></div></div>
-<div class="card"><b>Data & backup</b><p class="mut">Semua data tersimpan di browser ini saja (localStorage). Login hanya pembatas tampilan, bukan keamanan sungguhan (data tetap bisa dibaca lewat alat browser). Tidak sinkron antar perangkat. Jika lupa kata sandi, satu-satunya jalan adalah menghapus data situs di browser (data ikut hilang), jadi ekspor backup secara berkala.</p><div class="fm" style="margin-top:8px"><button class="btn" onclick="bak()">Ekspor backup JSON</button><input type="file" id="imp" accept=".json" onchange="impF(this)"><button class="btn r" onclick="rst()">Reset semua data</button></div></div>`}
+<div class="card"><b>Data & backup</b><p class="mut">Data disinkronkan ke Firebase Firestore (proyek zona-c04ee) dan tersimpan juga di browser ini sebagai cadangan. Perangkat lain yang membuka halaman ini otomatis menerima perubahan. Jika dua perangkat mengubah data bersamaan, perubahan terakhir yang menang. Tetap ekspor backup secara berkala.</p><div class="fm" style="margin-top:8px"><button class="btn" onclick="bak()">Ekspor backup JSON</button><input type="file" id="imp" accept=".json" onchange="impF(this)"><button class="btn r" onclick="rst()">Reset semua data</button></div></div>`}
 function badd(){const n=V("b1").trim();if(!n)return alert("Nama wajib");S.branches.push({id:"c"+uid(),name:n,addr:V("b2")});save();render()}
 function bedit(id){const b=S.branches.find(x=>x.id==id),n=prompt("Nama cabang",b.name);if(n){b.name=n;b.addr=prompt("Alamat",b.addr||"")??b.addr;save();render()}}
 function bak(){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(S)],{type:"application/json"}));a.download="zona-backup-"+jk()+".json";a.click()}
@@ -210,4 +210,51 @@ S.branches.forEach(b=>{b.name=b.name.replace(/ZONA Coffee/i,"ZONA")});save();if(
 const id=sessionStorage.getItem("zona_uid");cur=S.users.find(u=>u.id==id)||null;authed=!!cur;if(cur&&innerWidth>800)document.body.classList.add("navopen");if(cur&&cur.role=="kepala")br=cur.br;
 render();if(location.hash=="#admin"&&!authed)loginM("riwayat")}
 init();
-</script></body></html>
+</script>
+<script type="module">
+import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import{getAnalytics,isSupported}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js";
+import{getFirestore,collection,doc,onSnapshot,writeBatch}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+const firebaseConfig={apiKey:"AIzaSyBOjKUzM39tYdHfBVnZ8aNN6n5I4nAQ8P8",authDomain:"zona-c04ee.firebaseapp.com",projectId:"zona-c04ee",storageBucket:"zona-c04ee.firebasestorage.app",messagingSenderId:"862629272585",appId:"1:862629272585:web:1c82c88eadf732a3de2cd8",measurementId:"G-REQRPPQ03Q"};
+const app=initializeApp(firebaseConfig);
+isSupported().then(ok=>{if(ok)getAnalytics(app)}).catch(()=>{});
+const db=getFirestore(app),col=collection(db,"zona_mgmt"),CID=uid(),CH=300000;
+let ready=false,timer=null,lastJson="",nOld=0,retry=null;
+const bd=document.createElement("div");bd.className="np";
+bd.style.cssText="position:fixed;top:6px;right:8px;z-index:30;font:11px system-ui;padding:3px 9px;border-radius:99px;background:#fff;color:#0b3a75;box-shadow:0 1px 6px rgba(11,58,117,.25);pointer-events:none";
+document.body.appendChild(bd);
+const st=(t,bad)=>{bd.textContent=t;bd.style.color=bad?"#b42318":"#0b3a75"};
+st("☁ Menyambung…");
+const busy=()=>$("#modal").classList.contains("on")||/INPUT|SELECT|TEXTAREA/.test(document.activeElement?.tagName||"");
+function safeRender(){clearTimeout(retry);if(busy())retry=setTimeout(safeRender,1500);else render()}
+async function push(){
+  const json=JSON.stringify(S);if(json===lastJson){st("☁ Tersinkron");return}
+  const parts=[];for(let i=0;i<json.length;i+=CH)parts.push(json.slice(i,i+CH));
+  const v=Date.now(),b=writeBatch(db);
+  parts.forEach((d,i)=>b.set(doc(col,"c"+String(i).padStart(4,"0")),{i,n:parts.length,v,by:CID,d}));
+  for(let i=parts.length;i<nOld;i++)b.delete(doc(col,"c"+String(i).padStart(4,"0")));
+  lastJson=json;nOld=parts.length;st("☁ Menyimpan…");
+  try{await b.commit();st("☁ Tersinkron")}catch(e){console.error(e);lastJson="";st("☁ Gagal simpan",1)}
+}
+window.cloudPush=()=>{if(!ready)return;clearTimeout(timer);timer=setTimeout(push,700)};
+onSnapshot(col,snap=>{
+  if(snap.metadata.hasPendingWrites)return;
+  const ds=snap.docs.map(x=>x.data()).sort((a,b)=>a.i-b.i);
+  if(!ds.length){if(!ready){ready=true;push()}return}
+  if(ds.length!==ds[0].n||ds.some(x=>x.v!==ds[0].v))return;
+  nOld=ds.length;
+  if(ready&&ds[0].by===CID){st("☁ Tersinkron");return}
+  const json=ds.map(x=>x.d).join("");
+  if(json===lastJson){ready=true;st("☁ Tersinkron");return}
+  try{
+    const d=JSON.parse(json),loc=localStorage.getItem(KEY);
+    if(!ready&&loc&&loc!==json&&!localStorage.getItem(KEY+"_localbackup"))localStorage.setItem(KEY+"_localbackup",loc);
+    lastJson=json;S=d;S.promos=S.promos||[];S.users=S.users||[];localStorage.setItem(KEY,json);
+    if(!S.branches.some(x=>x.id==br))br=S.branches[0].id;
+    if(authed){cur=S.users.find(u=>u.id==cur.id)||null;if(!cur){lock();ready=true;st("☁ Tersinkron");return}if(cur.role=="kepala")br=cur.br}
+    ready=true;st("☁ Tersinkron");safeRender();
+  }catch(e){console.error(e);st("☁ Data cloud rusak",1)}
+},e=>{console.error(e);st(e.code=="permission-denied"?"☁ Izin ditolak (cek Rules)":"☁ Offline",1)});
+addEventListener("online",()=>st("☁ Menyambung…"));
+</script>
+</body></html>
