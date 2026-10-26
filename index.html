@@ -63,7 +63,7 @@ products:[{id:"p1",name:"Zona Aren Original",cat:"Zona Aren",price:18000,active:
 stock:st,sales:[],exp:[],buys:[],mv:[],seq:{}}}
 let S=JSON.parse(localStorage.getItem(KEY)||"null")||seed();
 const save=()=>{localStorage.setItem(KEY,JSON.stringify(S));window.cloudPush&&window.cloudPush()};
-S.promos=S.promos||[];S.users=S.users||[];
+S.promos=S.promos||[];S.users=S.users||[];fixS();
 let cur=null,authed=false,br=S.branches[0].id,view="kasir",cart=[],payM="CASH",q="",rf={from:jk().slice(0,8)+"01",to:jk(),all:1,m:"bulan",sub:"ring"};
 const prod=id=>S.products.find(p=>p.id==id),ing=id=>S.ings.find(i=>i.id==id),bn=id=>S.branches.find(b=>b.id==id)?.name||id;
 const hpp=p=>p.recipe.reduce((s,r)=>s+r.q*(ing(r.i)?.cost||0),0);
@@ -136,29 +136,33 @@ if(code&&S.promos.some(p=>p.code&&p.code.toLowerCase()==code.toLowerCase()))retu
 S.promos.push({id:uid(),name,type,val:type=="P"?val:Math.round(val),min:Math.round(+V("m4")||0),code,from,to,br:cur.role=="kepala"?cur.br:V("m8"),on:1,by:cur.username});save();render()}
 function ptog(id){const p=S.promos.find(x=>x.id==id);p.on=p.on?0:1;save();render()}
 /* ===== KASIR ===== */
-const unit=l=>prod(l.pid).price+l.o.reduce((s,o)=>s+S.opts.find(x=>x.id==o).d,0);
+const adl=l=>(prod(l.pid).addons||[]).filter(a=>l.ad.includes(a.id));
+const szp=l=>l.sz=="L"&&Number.isFinite(prod(l.pid).priceL)?prod(l.pid).priceL:prod(l.pid).price;
+const unit=l=>szp(l)+adl(l).reduce((t,a)=>t+a.price,0);
+const lrec=l=>[...prod(l.pid).recipe,...adl(l).flatMap(a=>a.recipe||[])];
+const lhpp=l=>lrec(l).reduce((t,r)=>t+r.q*(ing(r.i)?.cost||0),0);
 const sub=()=>cart.reduce((s,l)=>s+unit(l)*l.qty,0);
 const tot=()=>sub()-best(sub()).d;
-function grid(){return opt(S.products.filter(p=>p.active&&p.name.toLowerCase().includes(q.toLowerCase())),p=>`<div class="card item" onclick="addC('${p.id}')"><div class="mut">${esc(p.cat)}</div><b>${esc(p.name)}</b><div>${rp(p.price)}</div></div>`)||'<p class="mut">Tidak ada produk.</p>'}
-function lines(){return cart.length?opt(cart,(l,i)=>`<div style="border-bottom:1px solid var(--s);padding:6px 0"><div style="display:flex;justify-content:space-between"><span>${esc(prod(l.pid).name)}</span><b>${rp(unit(l)*l.qty)}</b></div><button class="btn s" onclick="qty(${i},-1)">−</button> ${l.qty} <button class="btn s" onclick="qty(${i},1)">+</button> ${opt(S.opts,o=>`<label class="mut"><input type="checkbox" ${l.o.includes(o.id)?"checked":""} onchange="tg(${i},'${o.id}')"> ${o.name}</label> `)}</div>`):'<p class="mut">Keranjang kosong.</p>'}
+function grid(){return opt(S.products.filter(p=>p.active&&p.name.toLowerCase().includes(q.toLowerCase())),p=>`<div class="card item" onclick="addC('${p.id}')"><div class="mut">${esc(p.cat)}</div><b>${esc(p.name)}</b><div>${rp(p.price)}</div>${Number.isFinite(p.priceL)?`<div class="mut">Large ${rp(p.priceL)}</div>`:""}</div>`)||'<p class="mut">Tidak ada produk.</p>'}
+function lines(){return cart.length?opt(cart,(l,i)=>`<div style="border-bottom:1px solid var(--s);padding:6px 0"><div style="display:flex;justify-content:space-between"><span>${esc(prod(l.pid).name)}</span><b>${rp(unit(l)*l.qty)}</b></div><button class="btn s" onclick="qty(${i},-1)">−</button> ${l.qty} <button class="btn s" onclick="qty(${i},1)">+</button> ${Number.isFinite(prod(l.pid).priceL)?`<select onchange="cart[${i}].sz=this.value;refC()"><option value="R" ${l.sz!="L"?"selected":""}>Reguler</option><option value="L" ${l.sz=="L"?"selected":""}>Large</option></select> `:""}${opt(prod(l.pid).addons||[],a=>`<label class="mut"><input type="checkbox" ${l.ad.includes(a.id)?"checked":""} onchange="tg(${i},'${a.id}')"> ${esc(a.name)} +${rp(a.price)}</label> `)}</div>`):'<p class="mut">Keranjang kosong.</p>'}
 function vKasir(){return`<div class="pos"><section><input placeholder="Cari produk..." style="width:100%;margin-bottom:10px" value="${esc(q)}" oninput="q=this.value;$('#grid').innerHTML=grid()"><div class="g" id="grid">${grid()}</div></section>
 <aside class="card cartp" style="align-self:start"><button class="btn s mclose" onclick="$('.cartp').classList.remove('open')">Tutup ✕</button><b>Keranjang</b><div id="cl">${lines()}</div><div id="dsc">${dscH()}</div><div class="fm" style="margin:6px 0"><input id="vc" placeholder="Kode voucher" value="${esc(vcode)}" style="flex:1;min-width:0"><button class="btn s" onclick="vcode=V('vc').trim();refC();if(vcode&&!best(sub()).p)alert('Voucher tidak berlaku (kode salah, belum memenuhi syarat, atau promo otomatis lebih besar)')">Pakai</button></div><div class="big" id="tt">${rp(tot())}</div>
 <select id="pm" style="width:100%;margin:8px 0" onchange="payM=this.value;render();$('.cartp').classList.add('open')">${opt([["CASH","Tunai"],["QRIS","QRIS (konfirmasi manual kasir)"],["TRANSFER","Transfer (konfirmasi manual)"]],x=>`<option value="${x[0]}" ${payM==x[0]?"selected":""}>${x[1]}</option>`)}</select>
 ${payM=="CASH"?`<input id="cash" inputmode="numeric" placeholder="Uang diterima" style="width:100%" oninput="this.dataset.exact='';$('#kb').textContent=rp(Math.max(0,(+this.value||0)-tot()))"><div class="fm" style="margin:6px 0"><button class="btn" onclick="setCash()">Uang Pas</button>${[20000,50000,100000].map(n=>`<button class="btn s" onclick="setCash(${n})">${n/1000}rb</button>`).join("")}</div><div>Kembalian: <b id="kb">Rp0</b></div>`:""}
 <button class="btn" style="width:100%;margin-top:8px" onclick="doPay()">Bayar</button></aside></div><div class="mbar"><span id="mc">${cart.reduce((a,l)=>a+l.qty,0)} item · ${rp(tot())}</span><button class="btn" onclick="$('.cartp').classList.add('open')">Lihat & Bayar</button></div>`}
-function addC(id){const l=cart.find(x=>x.pid==id&&!x.o.length);l?l.qty++:cart.push({pid:id,qty:1,o:[]});refC()}
+function addC(id){const l=cart.find(x=>x.pid==id&&x.sz=="R"&&!x.ad.length);l?l.qty++:cart.push({pid:id,qty:1,sz:"R",ad:[]});refC()}
 function qty(i,d){cart[i].qty+=d;if(cart[i].qty<1)cart.splice(i,1);refC()}
-function tg(i,o){const a=cart[i].o;a.includes(o)?a.splice(a.indexOf(o),1):a.push(o);refC()}
+function tg(i,o){const a=cart[i].ad;a.includes(o)?a.splice(a.indexOf(o),1):a.push(o);refC()}
 function setCash(n){const c=$("#cash"),t=tot();c.dataset.exact=n==null?"1":"";c.value=n==null?t:n;$("#kb").textContent=rp(Math.max(0,+c.value-t))}
 function refC(){$("#cl").innerHTML=lines();$("#tt").textContent=rp(tot());$("#dsc").innerHTML=dscH();const c=$("#cash");if(c){if(c.dataset.exact)c.value=tot();$("#kb").textContent=rp(Math.max(0,(+c.value||0)-tot()))}$("#mc").textContent=cart.reduce((a,l)=>a+l.qty,0)+" item · "+rp(tot())}
 function doPay(){
 if(!cart.length)return alert("Keranjang kosong");
 const sb=sub(),bp=best(sb),total=sb-bp.d,ce=$("#cash"),cash=payM=="CASH"?(ce&&ce.dataset.exact?total:+V("cash")||0):total;
 if(cash<total)return alert("Uang diterima kurang");
-const use={};cart.forEach(l=>prod(l.pid).recipe.forEach(r=>use[r.i]=(use[r.i]||0)+r.q*l.qty));
+const use={};cart.forEach(l=>lrec(l).forEach(r=>use[r.i]=(use[r.i]||0)+r.q*l.qty));
 for(const i in use)if(stk(br,i)<use[i])return alert("Stok "+ing(i).name+" tidak cukup di cabang ini");
 const d=jk().replaceAll("-",""),k=br+d;S.seq[k]=(S.seq[k]||0)+1;
-const items=cart.map(l=>{const p=prod(l.pid);return{pid:p.id,name:p.name,qty:l.qty,price:unit(l),hpp:Math.round(hpp(p)),o:l.o.map(o=>S.opts.find(x=>x.id==o).name)}});
+const items=cart.map(l=>{const p=prod(l.pid);return{pid:p.id,name:p.name,qty:l.qty,price:unit(l),hpp:Math.round(lhpp(l)),o:[...(l.sz=="L"&&Number.isFinite(p.priceL)?["Large"]:[]),...adl(l).map(a=>a.name)],u:lrec(l).map(r=>({i:r.i,q:r.q}))}});
 const s={id:uid(),no:`ZC-${br.toUpperCase()}-${d}-${String(S.seq[k]).padStart(4,"0")}`,br,at:new Date().toISOString(),items,sub:sb,disc:bp.d,promo:bp.p?bp.p.name:"",total,hpp:items.reduce((a,i)=>a+i.hpp*i.qty,0),pay:payM,cash,change:cash-total,st:"OK"};
 for(const i in use){S.stock[br+"|"+i]=stk(br,i)-use[i];S.mv.push({at:s.at,br,i,d:-use[i],why:"Penjualan "+s.no})}
 S.sales.push(s);cart=[];vcode="";save();render();receipt(s.id)}
@@ -173,16 +177,31 @@ function vRiwayat(){const L=S.sales.filter(s=>s.br==br&&s.no.toLowerCase().inclu
 return`<input placeholder="Cari nomor transaksi" value="${esc(q)}" onchange="q=this.value;render()" style="margin-bottom:10px"><div class="tw"><table><tr><th>No</th><th>Waktu</th><th>Item</th><th>Total</th><th>Bayar</th><th>Status</th><th></th></tr>
 ${opt(L,s=>`<tr><td>${s.no}</td><td>${dt(s.at)}</td><td>${s.items.reduce((a,i)=>a+i.qty,0)}</td><td>${rp(s.total)}</td><td>${s.pay}</td><td>${s.st=="OK"?"Selesai":'<span class="warn">Batal</span>'}</td><td><button class="btn s" onclick="receipt('${s.id}')">Struk</button> ${s.st=="OK"?`<button class="btn r" onclick="voidS('${s.id}')">Batalkan</button>`:""}</td></tr>`)||'<tr><td colspan="7" class="mut">Belum ada transaksi.</td></tr>'}</table></div>`}
 function voidS(id){const s=S.sales.find(x=>x.id==id);if(s.st!="OK"||!confirm("Batalkan transaksi "+s.no+"? Stok akan dikembalikan."))return;
-s.st="VOID";s.voidAt=new Date().toISOString();s.items.forEach(i=>prod(i.pid)?.recipe.forEach(r=>{S.stock[s.br+"|"+r.i]=stk(s.br,r.i)+r.q*i.qty;S.mv.push({at:s.voidAt,br:s.br,i:r.i,d:r.q*i.qty,why:"Pembatalan "+s.no})}));save();render()}
+s.st="VOID";s.voidAt=new Date().toISOString();s.items.forEach(i=>(i.u||prod(i.pid)?.recipe||[]).forEach(r=>{S.stock[s.br+"|"+r.i]=stk(s.br,r.i)+r.q*i.qty;S.mv.push({at:s.voidAt,br:s.br,i:r.i,d:r.q*i.qty,why:"Pembatalan "+s.no})}));save();render()}
 /* ===== PRODUK ===== */
-function vProduk(){return`<button class="btn" onclick="pform()">+ Produk</button><p class="mut" style="margin:8px 0">HPP dihitung dari resep × harga bahan saat ini (estimasi). Transaksi menyimpan snapshot HPP.</p><div class="tw"><table><tr><th>Nama</th><th>Kategori</th><th>Harga</th><th>HPP est.</th><th>Margin</th><th>Status</th><th></th></tr>
-${opt(S.products,p=>{const h=hpp(p);return`<tr><td>${esc(p.name)}</td><td>${esc(p.cat)}</td><td>${rp(p.price)}</td><td>${rp(h)}</td><td>${p.price?Math.round((p.price-h)/p.price*100):0}%</td><td>${p.active?"Aktif":"Diarsipkan"}</td><td>${cur.role=="kepala"?"":`<button class="btn s" onclick="pform('${p.id}')">Edit</button> <button class="btn s" onclick="parch('${p.id}')">${p.active?"Arsipkan":"Aktifkan"}</button>`}</td></tr>`})}</table></div>`}
+const adTxt=a=>`${esc(a.name)} +${rp(a.price)}`+((a.recipe||[]).length?` <span class="mut">(${a.recipe.map(r=>esc(ing(r.i)?.name||r.i)+" "+r.q+" "+(ing(r.i)?.unit||"")).join(", ")})</span>`:"");
+function vProduk(){return`<button class="btn" onclick="pform()">+ Produk</button><p class="mut" style="margin:8px 0">Isi harga Reguler dan Large di tiap produk. Add-on (mis. Extra Espresso) diatur lewat tombol Add-on: tentukan nama, harga, dan item bahannya. HPP = resep produk × harga bahan saat ini, ditambah bahan add-on yang dipilih saat transaksi (snapshot disimpan di transaksi).</p><div class="tw"><table><tr><th>Nama</th><th>Reguler</th><th>Large</th><th>Add-on</th><th>Status</th><th></th></tr>
+${opt(S.products,p=>{const h=hpp(p);return`<tr><td><b>${esc(p.name)}</b><div class="mut">${esc(p.cat)}</div></td><td>${rp(p.price)}<div class="mut">HPP ${rp(h)} · ${p.price?Math.round((p.price-h)/p.price*100):0}%</div></td><td>${Number.isFinite(p.priceL)?rp(p.priceL):'<span class="mut">-</span>'}</td><td>${(p.addons||[]).map(a=>`<div>${adTxt(a)}</div>`).join("")||'<span class="mut">-</span>'}</td><td>${p.active?"Aktif":"Diarsipkan"}</td><td>${cur.role=="kepala"?"":`<button class="btn s" onclick="pform('${p.id}')">Edit</button> <button class="btn s" onclick="aform('${p.id}')">Add-on</button> <button class="btn s" onclick="parch('${p.id}')">${p.active?"Arsipkan":"Aktifkan"}</button>`}</td></tr>`})}</table></div>`}
+/* ----- menu khusus Add-on per produk ----- */
+let AD=null;
+function aform(pid){if(cur.role=="kepala")return;AD={pid,list:JSON.parse(JSON.stringify(prod(pid).addons||[]))};adraw()}
+function adraw(){const p=prod(AD.pid),io=r=>S.ings.map(i=>`<option value="${i.id}" ${i.id==r.i?"selected":""}>${esc(i.name)} (${i.unit})</option>`).join("");
+modal(`<h3>Add-on — ${esc(p.name)}</h3><p class="mut">Tentukan nama, harga jual, dan item bahan yang terpakai setiap kali add-on dipilih di kasir. Bahan ini mengurangi stok dan masuk HPP.</p>
+${AD.list.map((a,k)=>`<div class="card" style="margin:8px 0;border:1px solid var(--s)"><div class="fm"><input value="${esc(a.name)}" placeholder="Nama add-on" style="flex:1;min-width:120px" onchange="AD.list[${k}].name=this.value"><input type="number" value="${a.price}" placeholder="Harga Rp" style="width:110px" onchange="AD.list[${k}].price=+this.value"></div>
+<b class="mut">Item di dalam add-on</b>${a.recipe.map((r,j)=>`<div class="fm" style="margin:4px 0"><select onchange="AD.list[${k}].recipe[${j}].i=this.value">${io(r)}</select><input type="number" step="any" value="${r.q}" style="width:90px" onchange="AD.list[${k}].recipe[${j}].q=+this.value"><button class="btn s" onclick="AD.list[${k}].recipe.splice(${j},1);adraw()">✕</button></div>`).join("")||'<div class="mut">Belum ada item.</div>'}
+<div class="fm" style="margin-top:6px"><button class="btn s" onclick="AD.list[${k}].recipe.push({i:S.ings[0].id,q:1});adraw()">+ Item</button><button class="btn r" onclick="AD.list.splice(${k},1);adraw()">Hapus add-on</button></div></div>`).join("")||'<p class="mut">Belum ada add-on untuk produk ini.</p>'}
+<div class="fm"><button class="btn s" onclick="AD.list.push({id:uid(),name:'',price:0,recipe:[]});adraw()">+ Add-on baru</button></div><div class="fm"><button class="btn" onclick="asave()">Simpan</button><button class="btn s" onclick="closeM()">Batal</button></div>`)}
+function asave(){for(const a of AD.list){if(!a.name.trim())return alert("Nama add-on wajib diisi");if(!(a.price>=0))return alert("Harga add-on tidak valid");if(a.recipe.some(r=>!(r.q>0)))return alert("Jumlah item di add-on \""+a.name+"\" harus lebih dari 0")}
+prod(AD.pid).addons=AD.list.map(a=>({id:a.id,name:a.name.trim(),price:Math.round(a.price)||0,recipe:a.recipe.map(r=>({i:r.i,q:r.q}))}));AD=null;save();closeM();render()}
+function fixS(){const L=(S.opts||[]).find(o=>o.id=="l"),E=(S.opts||[]).find(o=>o.id=="e");
+S.products.forEach(p=>{if(p.addons)return;p.priceL=L?p.price+L.d:null;p.addons=E?[{id:"e",name:E.name,price:E.d,recipe:[]}]:[]})}
 function pform(id){const p=id?prod(id):{name:"",cat:"",price:"",recipe:[]};
-modal(`<h3>${id?"Edit":"Tambah"} produk</h3><div class="fm" style="flex-direction:column;align-items:stretch"><input id="f1" placeholder="Nama" value="${esc(p.name)}"><input id="f2" placeholder="Kategori" value="${esc(p.cat)}"><input id="f3" inputmode="numeric" placeholder="Harga jual (Rp)" value="${p.price}">
+modal(`<h3>${id?"Edit":"Tambah"} produk</h3><div class="fm" style="flex-direction:column;align-items:stretch"><input id="f1" placeholder="Nama" value="${esc(p.name)}"><input id="f2" placeholder="Kategori" value="${esc(p.cat)}"><label class="mut">Harga Reguler (Rp)<input id="f3" inputmode="numeric" placeholder="Harga Reguler (Rp)" value="${p.price}" style="width:100%"></label><label class="mut">Harga Large (Rp) — kosongkan jika tidak ada varian Large<input id="f5" inputmode="numeric" placeholder="Harga Large (Rp)" value="${p.priceL??""}" style="width:100%"></label>
 <input id="f4" placeholder="Resep, mis. kopi:18,susu:120" value="${esc(p.recipe.map(r=>r.i+":"+r.q).join(","))}"><span class="mut">ID bahan: ${S.ings.map(i=>i.id+" ("+i.unit+")").join(", ")}</span><button class="btn" onclick="psave('${id||""}')">Simpan</button> <button class="btn s" onclick="closeM()">Batal</button></div>`)}
 function psave(id){if(id&&cur.role=="kepala")return alert("Kepala outlet hanya boleh menambah produk baru");const name=V("f1").trim(),price=Math.round(+V("f3"));if(!name||!(price>=0)||V("f3")==="")return alert("Nama dan harga wajib valid");
+const pl=V("f5").trim()===""?null:Math.round(+V("f5"));if(pl!==null&&!(pl>=0))return alert("Harga Large tidak valid");
 const recipe=[];for(const x of V("f4").split(",").filter(Boolean)){const[i,n]=x.split(":");if(!ing(i?.trim())||!(+n>0))return alert("Resep tidak valid: "+x);recipe.push({i:i.trim(),q:+n})}
-if(id){Object.assign(prod(id),{name,cat:V("f2"),price,recipe})}else S.products.push({id:uid(),name,cat:V("f2")||"Lainnya",price,active:1,recipe});save();closeM();render()}
+if(id){Object.assign(prod(id),{name,cat:V("f2"),price,priceL:pl,recipe})}else S.products.push({id:uid(),name,cat:V("f2")||"Lainnya",price,priceL:pl,addons:[],active:1,recipe});save();closeM();render()}
 function parch(id){const p=prod(id);p.active=p.active?0:1;save();render()}
 /* ===== STOK ===== */
 function vStok(){const o=opt(S.ings,i=>`<option value="${i.id}">${esc(i.name)} (${i.unit})</option>`),bo=opt(S.branches.filter(b=>b.id!=br),b=>`<option value="${b.id}">${esc(b.name)}</option>`);
@@ -264,8 +283,8 @@ function vSet(){return`<div class="card" style="margin-bottom:12px"><b>Ubah pass
 function badd(){const n=V("b1").trim();if(!n)return alert("Nama wajib");S.branches.push({id:"c"+uid(),name:n,addr:V("b2")});save();render()}
 function bedit(id){const b=S.branches.find(x=>x.id==id),n=prompt("Nama cabang",b.name);if(n){b.name=n;b.addr=prompt("Alamat",b.addr||"")??b.addr;save();render()}}
 function bak(){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(S)],{type:"application/json"}));a.download="zona-backup-"+jk()+".json";a.click()}
-function impF(el){const f=el.files[0];if(!f)return;f.text().then(t=>{try{const d=JSON.parse(t);if(!d.products||!d.branches)throw 0;if(confirm("Timpa semua data saat ini dengan backup?")){d.users=S.users;S=d;S.promos=S.promos||[];save();br=S.branches[0].id;render()}}catch{alert("File backup tidak valid")}})}
-function rst(){if(confirm("Hapus SEMUA data?")&&confirm("Yakin? Tindakan ini tidak bisa dibatalkan.")){{const u=S.users,pr=0;S=seed();S.users=u;S.promos=[]}save();br=S.branches[0].id;cart=[];render()}}
+function impF(el){const f=el.files[0];if(!f)return;f.text().then(t=>{try{const d=JSON.parse(t);if(!d.products||!d.branches)throw 0;if(confirm("Timpa semua data saat ini dengan backup?")){d.users=S.users;S=d;S.promos=S.promos||[];fixS();save();br=S.branches[0].id;render()}}catch{alert("File backup tidak valid")}})}
+function rst(){if(confirm("Hapus SEMUA data?")&&confirm("Yakin? Tindakan ini tidak bisa dibatalkan.")){{const u=S.users,pr=0;S=seed();S.users=u;S.promos=[];fixS()}save();br=S.branches[0].id;cart=[];render()}}
 async function init(){if(!S.users.length){const salt=uid()+uid();S.users.push({id:"u-admin",username:"admin",name:"Administrator",role:"owner",br:"",salt,h:await hash("admin123",salt)});save()}
 S.branches.forEach(b=>{b.name=b.name.replace(/ZONA Coffee/i,"ZONA")});save();if(document.head){const l=document.createElement("link");l.rel="icon";l.href=LOGO;document.head.appendChild(l)}
 const id=localStorage.getItem("zona_uid")||sessionStorage.getItem("zona_uid");cur=S.users.find(u=>u.id==id)||null;authed=!!cur;if(cur&&innerWidth>800)document.body.classList.add("navopen");if(cur&&cur.role=="kepala")br=cur.br;
@@ -310,7 +329,7 @@ onSnapshot(col,snap=>{
   try{
     const d=JSON.parse(json),loc=localStorage.getItem(KEY);
     if(!ready&&loc&&loc!==json&&!localStorage.getItem(KEY+"_localbackup"))localStorage.setItem(KEY+"_localbackup",loc);
-    lastJson=json;S=d;S.promos=S.promos||[];S.users=S.users||[];localStorage.setItem(KEY,json);
+    lastJson=json;S=d;S.promos=S.promos||[];S.users=S.users||[];fixS();localStorage.setItem(KEY,json);
     if(!S.branches.some(x=>x.id==br))br=S.branches[0].id;
     if(authed){cur=S.users.find(u=>u.id==cur.id)||null;if(!cur){lock();ready=true;st("☁ Tersinkron");return}if(cur.role=="kepala")br=cur.br}
     ready=true;st("☁ Tersinkron");safeRender();
