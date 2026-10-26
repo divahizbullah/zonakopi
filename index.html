@@ -116,6 +116,7 @@ main{padding:10px 10px 104px}.pos{grid-template-columns:1fr}.pg{grid-template-co
 .gcs{display:flex;align-items:center;justify-content:flex-end;gap:6px;margin:0 0 8px}
 .gcb{width:32px;height:32px;border-radius:10px;border:1.5px solid var(--m);background:#fff;color:var(--m);font:inherit;font-weight:800;cursor:pointer}
 .gcb.on{background:var(--m);color:#fff}
+.ftr{margin-top:28px;padding:14px 0 4px;text-align:center;font-weight:800;font-size:.8rem;letter-spacing:.35em;color:var(--m);opacity:.75;border-top:1px solid var(--s)}
 </style></head><body>
 <div id="app"><aside id="nav"></aside><main id="main"></main></div>
 <div id="modal"><div id="mb"></div></div>
@@ -169,7 +170,7 @@ if(view!="kasir"&&(!cur||!ACC[cur.role].includes(view)))view="kasir";
 document.body.classList.toggle("pub",!authed);
 $("#nav").innerHTML='<span class="x" onclick="tnav()">✕</span><div style="margin-bottom:12px">'+brandH()+'</div>'+(authed?'<div style="margin-bottom:10px;font-size:.85rem">'+esc(cur.name)+'<br>'+ROLEN[cur.role]+'</div>'+navH():`<button class="${view=="kasir"?"on":""}" onclick="go('kasir')">Kasir</button><button onclick="document.body.classList.remove('navopen');loginM('riwayat')">Login Admin</button>`);
 const top=`<div class="top"><button class="btn s hb" onclick="tnav()" aria-label="Menu">☰</button>${brandH()}<select onchange="br=this.value;cart=[];render()">${opt(S.branches.filter(b=>!cur||cur.role!="kepala"||b.id==cur.br),b=>`<option value="${b.id}" ${b.id==br?"selected":""}>${esc(b.name)}</option>`)}</select></div>`;
-$("#main").innerHTML=top+({kasir:vKasir,riwayat:vRiwayat,produk:vProduk,stok:vStok,keluar:vKeluar,laporan:vLaporan,promo:vPromo,pengguna:vUser,set:vSet})[view]()}
+$("#main").innerHTML=top+({kasir:vKasir,riwayat:vRiwayat,produk:vProduk,stok:vStok,keluar:vKeluar,laporan:vLaporan,promo:vPromo,pengguna:vUser,set:vSet})[view]()+'<footer class="ftr np">ZONA</footer>'}
 /* ===== LOGIN & PERAN ===== */
 const ALL=["kasir","riwayat","produk","promo","stok","keluar","laporan","pengguna","set"];
 const ACC={owner:ALL,manager:ALL,kepala:["kasir","produk","promo","keluar"]};
