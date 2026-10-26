@@ -87,6 +87,7 @@ main{padding:10px 10px 104px}.pos{grid-template-columns:1fr}.pg{grid-template-co
 .mbb{background:#fff;color:var(--d);border-radius:15px;padding:13px 16px;font-weight:800}
 }
 @media(prefers-reduced-motion:reduce){.mbar,.cartp{transition:none!important}}
+.pth{width:40px;height:40px;object-fit:cover;border-radius:10px;vertical-align:middle;margin-right:8px;background:#eef3fa}
 </style></head><body>
 <div id="app"><aside id="nav"></aside><main id="main"></main></div>
 <div id="modal"><div id="mb"></div></div>
@@ -203,7 +204,7 @@ const qv=(id,sz)=>cart.filter(l=>l.pid==id&&l.sz==sz).reduce((a,l)=>a+l.qty,0);
 function vrow(p,sz){const n=qv(p.id,sz),nm=sz=="L"?"Large":"Reguler";
 return`<div class="vr ${sz} ${n?"has":""}"><button class="va" onclick="event.stopPropagation();addC('${p.id}','${sz}')" aria-label="Tambah ${nm} ${esc(p.name)}"><span class="vl">${sz}</span><span>${pn(sz=="L"?p.priceL:p.price)}</span></button>${n?`<button class="mn" onclick="event.stopPropagation();dec('${p.id}','${sz}')" aria-label="Kurangi ${nm}">−</button><span class="bdg">${n}</span>`:""}</div>`}
 function grid(){return opt(S.products.filter(p=>p.active&&(!cat||p.cat==cat)&&p.name.toLowerCase().includes(q.toLowerCase())),p=>{const n=cart.filter(l=>l.pid==p.id).reduce((a,l)=>a+l.qty,0);
-return`<div class="pt ${n?"sel":""}" style="--k:${kcol(p.cat)}" onclick="addC('${p.id}')"><span class="ico">${CUP}</span><div class="pn">${esc(p.name)}</div><div class="pk">${esc(p.cat)}</div><div class="vrs">${vrow(p,"R")}${Number.isFinite(p.priceL)?vrow(p,"L"):""}</div></div>`})||'<p class="mut">Tidak ada produk.</p>'}
+return`<div class="pt ${n?"sel":""}" style="--k:${kcol(p.cat)}" onclick="addC('${p.id}')">${p.photo?`<img class="ico" loading="lazy" style="object-fit:cover;padding:0" src="${phUrl(p.photo,160)}" alt="">`:`<span class="ico">${CUP}</span>`}<div class="pn">${esc(p.name)}</div><div class="pk">${esc(p.cat)}</div><div class="vrs">${vrow(p,"R")}${Number.isFinite(p.priceL)?vrow(p,"L"):""}</div></div>`})||'<p class="mut">Tidak ada produk.</p>'}
 function lines(){return cart.length?opt(cart,(l,i)=>{const p=prod(l.pid),sz=l.sz=="L"&&Number.isFinite(p.priceL)?"L":"R";
 return`<div class="cl"><div class="clt"><div><b><span class="szt ${sz}">${sz}</span>${esc(p.name)}</b><div class="mut sm">${esc([sz=="L"?"Large":"Reguler",...adl(l).map(a=>a.name)].join(", "))}</div></div><b>${rp(unit(l)*l.qty)}</b></div>
 <div class="clb"><div class="stp"><button onclick="qty(${i},-1)" aria-label="Kurangi">−</button><span>${l.qty}</span><button onclick="qty(${i},1)" aria-label="Tambah">+</button></div>${opt(p.addons||[],a=>`<label class="ch ${l.ad.includes(a.id)?"on":""}"><input type="checkbox" ${l.ad.includes(a.id)?"checked":""} onchange="tg(${i},'${a.id}')">${l.ad.includes(a.id)?"✓ ":""}${esc(a.name)} +${rp(a.price)}</label>`)}<button class="rm" onclick="qty(${i},-999)" aria-label="Hapus">✕</button></div></div>`}):'<div class="emp"><b>Belum ada pesanan</b><div class="sm">Ketuk R atau L pada produk untuk menambahkannya.</div></div>'}
@@ -253,7 +254,7 @@ s.st="VOID";s.voidAt=new Date().toISOString();s.items.forEach(i=>(i.u||prod(i.pi
 /* ===== PRODUK ===== */
 const adTxt=a=>`${esc(a.name)} +${rp(a.price)}`+((a.recipe||[]).length?` <span class="mut">(${a.recipe.map(r=>esc(ing(r.i)?.name||r.i)+" "+r.q+" "+(ing(r.i)?.unit||"")).join(", ")})</span>`:"");
 function vProduk(){return`<button class="btn" onclick="pform()">+ Produk</button><p class="mut" style="margin:8px 0">Isi harga Reguler dan Large di tiap produk. Add-on (mis. Extra Espresso) diatur lewat tombol Add-on: tentukan nama, harga, dan item bahannya. HPP = resep produk × harga bahan saat ini, ditambah bahan add-on yang dipilih saat transaksi (snapshot disimpan di transaksi).</p><div class="tw"><table><tr><th>Nama</th><th>Reguler</th><th>Large</th><th>Add-on</th><th>Status</th><th></th></tr>
-${opt(S.products,p=>{const h=hpp(p);return`<tr><td><b>${esc(p.name)}</b><div class="mut">${esc(p.cat)}</div></td><td>${rp(p.price)}<div class="mut">HPP ${rp(h)} · ${p.price?Math.round((p.price-h)/p.price*100):0}%</div></td><td>${Number.isFinite(p.priceL)?rp(p.priceL):'<span class="mut">-</span>'}</td><td>${(p.addons||[]).map(a=>`<div>${adTxt(a)}</div>`).join("")||'<span class="mut">-</span>'}</td><td>${p.active?"Aktif":"Diarsipkan"}</td><td>${cur.role=="kepala"?"":`<button class="btn s" onclick="pform('${p.id}')">Edit</button> <button class="btn s" onclick="aform('${p.id}')">Add-on</button> <button class="btn s" onclick="parch('${p.id}')">${p.active?"Arsipkan":"Aktifkan"}</button>`}</td></tr>`})}</table></div>`}
+${opt(S.products,p=>{const h=hpp(p);return`<tr><td>${p.photo?`<img class="pth" loading="lazy" src="${phUrl(p.photo,120)}" alt="">`:""}<span style="display:inline-block;vertical-align:middle"><b>${esc(p.name)}</b><div class="mut">${esc(p.cat)}</div></span></td><td>${rp(p.price)}<div class="mut">HPP ${rp(h)} · ${p.price?Math.round((p.price-h)/p.price*100):0}%</div></td><td>${Number.isFinite(p.priceL)?rp(p.priceL):'<span class="mut">-</span>'}</td><td>${(p.addons||[]).map(a=>`<div>${adTxt(a)}</div>`).join("")||'<span class="mut">-</span>'}</td><td>${p.active?"Aktif":"Diarsipkan"}</td><td>${cur.role=="kepala"?"":`<button class="btn s" onclick="pform('${p.id}')">Edit</button> <button class="btn s" onclick="aform('${p.id}')">Add-on</button> <button class="btn s" onclick="parch('${p.id}')">${p.active?"Arsipkan":"Aktifkan"}</button>`}</td></tr>`})}</table></div>`}
 /* ----- menu khusus Add-on per produk ----- */
 let AD=null;
 function aform(pid){if(cur.role=="kepala")return;AD={pid,list:JSON.parse(JSON.stringify(prod(pid).addons||[]))};adraw()}
@@ -267,13 +268,36 @@ function asave(){for(const a of AD.list){if(!a.name.trim())return alert("Nama ad
 prod(AD.pid).addons=AD.list.map(a=>({id:a.id,name:a.name.trim(),price:Math.round(a.price)||0,recipe:a.recipe.map(r=>({i:r.i,q:r.q}))}));AD=null;save();closeM();render()}
 function fixS(){const L=(S.opts||[]).find(o=>o.id=="l"),E=(S.opts||[]).find(o=>o.id=="e");
 S.products.forEach(p=>{if(p.addons)return;p.priceL=L?p.price+L.d:null;p.addons=E?[{id:"e",name:E.name,price:E.d,recipe:[]}]:[]})}
-function pform(id){const p=id?prod(id):{name:"",cat:"",price:"",recipe:[]};
+/* ===== FOTO PRODUK -> Google Drive (database hanya simpan ID file, bukan gambar) ===== */
+const DRIVE_URL="https://drive.google.com/drive/folders/1xwTKiXW2NZRI30arsjHDhtSbrpSozsMm?usp=sharing";/* TEMPEL URL Web App Apps Script di sini (lihat panduan) */
+const DRIVE_TOKEN="zonakopi26";/* harus sama dengan TOKEN di Apps Script */
+const phUrl=(id,w)=>id?`https://drive.google.com/thumbnail?id=${encodeURIComponent(id)}&sz=w${w||400}`:"";
+let PF={id:"",busy:0};
+function phDel(){PF.id="";const i=$("#phi");if(i){i.style.display="none";i.removeAttribute("src")}const f=$("#phf");if(f)f.value="";$("#phs").textContent="Foto akan dihapus saat disimpan"}
+function phPick(el){const f=el.files[0];if(!f)return;
+if(!DRIVE_URL){el.value="";return alert("Upload foto belum aktif: isi DRIVE_URL di index.html dengan URL Web App Google Apps Script.")}
+if(!/^image\//.test(f.type)){el.value="";return alert("File harus berupa gambar")}
+const st=$("#phs"),bt=$("#psv");PF.busy=1;bt.disabled=true;st.textContent="Mengompres & mengunggah ke Google Drive…";
+const img=new Image,u=URL.createObjectURL(f);
+img.onerror=()=>{PF.busy=0;bt.disabled=false;st.textContent="Gambar tidak bisa dibaca";URL.revokeObjectURL(u)};
+img.onload=async()=>{try{
+const m=900,k=Math.min(1,m/Math.max(img.width,img.height)),c=document.createElement("canvas");
+c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);c.getContext("2d").drawImage(img,0,0,c.width,c.height);
+const url=c.toDataURL("image/jpeg",.82),data=url.split(",")[1];
+const pv=$("#phi");pv.src=url;pv.style.display="block";
+const r=await fetch(DRIVE_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({token:DRIVE_TOKEN,name:"produk-"+Date.now()+".jpg",mime:"image/jpeg",data})});
+const j=await r.json();if(!j.ok)throw new Error(j.error||"Gagal");
+PF.id=j.id;st.textContent="Foto tersimpan di Google Drive ✓"}
+catch(e){console.error(e);st.textContent="Gagal unggah: "+e.message}
+finally{PF.busy=0;bt.disabled=false;URL.revokeObjectURL(u)}};img.src=u}
+function pform(id){const p=id?prod(id):{name:"",cat:"",price:"",recipe:[]};PF={id:p.photo||"",busy:0};
 modal(`<h3>${id?"Edit":"Tambah"} produk</h3><div class="fm" style="flex-direction:column;align-items:stretch"><input id="f1" placeholder="Nama" value="${esc(p.name)}"><input id="f2" placeholder="Kategori" value="${esc(p.cat)}"><label class="mut">Harga Reguler (Rp)<input id="f3" inputmode="numeric" placeholder="Harga Reguler (Rp)" value="${p.price}" style="width:100%"></label><label class="mut">Harga Large (Rp) — kosongkan jika tidak ada varian Large<input id="f5" inputmode="numeric" placeholder="Harga Large (Rp)" value="${p.priceL??""}" style="width:100%"></label>
-<input id="f4" placeholder="Resep, mis. kopi:18,susu:120" value="${esc(p.recipe.map(r=>r.i+":"+r.q).join(","))}"><span class="mut">ID bahan: ${S.ings.map(i=>i.id+" ("+i.unit+")").join(", ")}</span><button class="btn" onclick="psave('${id||""}')">Simpan</button> <button class="btn s" onclick="closeM()">Batal</button></div>`)}
-function psave(id){if(id&&cur.role=="kepala")return alert("Kepala outlet hanya boleh menambah produk baru");const name=V("f1").trim(),price=Math.round(+V("f3"));if(!name||!(price>=0)||V("f3")==="")return alert("Nama dan harga wajib valid");
+<div class="mut">Foto produk <small>(disimpan di Google Drive, bukan di database)</small><img id="phi" ${p.photo?`src="${phUrl(p.photo,400)}"`:""} style="display:${p.photo?"block":"none"};width:120px;height:120px;object-fit:cover;border-radius:14px;margin:6px 0"><input type="file" id="phf" accept="image/*" onchange="phPick(this)" style="width:100%"><div id="phs" class="mut"></div><button class="btn s" type="button" onclick="phDel()">Hapus foto</button></div>
+<input id="f4" placeholder="Resep, mis. kopi:18,susu:120" value="${esc(p.recipe.map(r=>r.i+":"+r.q).join(","))}"><span class="mut">ID bahan: ${S.ings.map(i=>i.id+" ("+i.unit+")").join(", ")}</span><button class="btn" id="psv" onclick="psave('${id||""}')">Simpan</button> <button class="btn s" onclick="closeM()">Batal</button></div>`)}
+function psave(id){if(PF.busy)return alert("Tunggu, foto masih diunggah");if(id&&cur.role=="kepala")return alert("Kepala outlet hanya boleh menambah produk baru");const name=V("f1").trim(),price=Math.round(+V("f3"));if(!name||!(price>=0)||V("f3")==="")return alert("Nama dan harga wajib valid");
 const pl=V("f5").trim()===""?null:Math.round(+V("f5"));if(pl!==null&&!(pl>=0))return alert("Harga Large tidak valid");
 const recipe=[];for(const x of V("f4").split(",").filter(Boolean)){const[i,n]=x.split(":");if(!ing(i?.trim())||!(+n>0))return alert("Resep tidak valid: "+x);recipe.push({i:i.trim(),q:+n})}
-if(id){Object.assign(prod(id),{name,cat:V("f2"),price,priceL:pl,recipe})}else S.products.push({id:uid(),name,cat:V("f2")||"Lainnya",price,priceL:pl,addons:[],active:1,recipe});save();closeM();render()}
+if(id){Object.assign(prod(id),{name,cat:V("f2"),price,priceL:pl,recipe,photo:PF.id||undefined})}else S.products.push({id:uid(),name,cat:V("f2")||"Lainnya",price,priceL:pl,addons:[],active:1,recipe,photo:PF.id||undefined});save();closeM();render()}
 function parch(id){const p=prod(id);p.active=p.active?0:1;save();render()}
 /* ===== STOK ===== */
 function vStok(){const o=opt(S.ings,i=>`<option value="${i.id}">${esc(i.name)} (${i.unit})</option>`),bo=opt(S.branches.filter(b=>b.id!=br),b=>`<option value="${b.id}">${esc(b.name)}</option>`);
