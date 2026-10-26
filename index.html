@@ -269,7 +269,7 @@ prod(AD.pid).addons=AD.list.map(a=>({id:a.id,name:a.name.trim(),price:Math.round
 function fixS(){const L=(S.opts||[]).find(o=>o.id=="l"),E=(S.opts||[]).find(o=>o.id=="e");
 S.products.forEach(p=>{if(p.addons)return;p.priceL=L?p.price+L.d:null;p.addons=E?[{id:"e",name:E.name,price:E.d,recipe:[]}]:[]})}
 /* ===== FOTO PRODUK -> Google Drive (database hanya simpan ID file, bukan gambar) ===== */
-const DRIVE_URL="https://drive.google.com/drive/folders/1xwTKiXW2NZRI30arsjHDhtSbrpSozsMm?usp=sharing";/* TEMPEL URL Web App Apps Script di sini (lihat panduan) */
+const DRIVE_URL="https://script.google.com/macros/s/AKfycbyhR1o4oS1kBQxt4gtZz3i3zY6rWbRt06wYLwQWDsVgUTPCdpCoTgT1inpZ1s1pP-Aukg/exec";/* TEMPEL URL Web App Apps Script di sini (lihat panduan) */
 const DRIVE_TOKEN="zonakopi26";/* harus sama dengan TOKEN di Apps Script */
 const phUrl=(id,w)=>id?`https://drive.google.com/thumbnail?id=${encodeURIComponent(id)}&sz=w${w||400}`:"";
 let PF={id:"",busy:0};
