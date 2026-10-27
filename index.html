@@ -300,12 +300,37 @@ ${s.disc?`<div><span>Subtotal</span><span>${rp(s.sub)}</span></div><div><span>Di
 function riwList(){const R=rng(),sc=b=>rf.all||b==br,k=rq.trim().toLowerCase();
 return S.sales.filter(s=>{const d=jk(s.at);return sc(s.br)&&d>=R.from&&d<=R.to&&(!k||s.no.toLowerCase().includes(k))}).slice().reverse()}
 function vRiwayat(){const L=riwList(),ok=L.filter(s=>s.st=="OK"),MX=300,sh=L.slice(0,MX),cb=!!rf.all&&S.branches.length>1;
-return`${fbar("expRiw()")}<input placeholder="Cari nomor transaksi" value="${esc(rq)}" onchange="rq=this.value;render()" style="margin-bottom:10px;max-width:100%">
+return`${fbar("expRiw()")}<div class="fm np" style="margin-bottom:10px"><input placeholder="Cari nomor transaksi" value="${esc(rq)}" onchange="rq=this.value;render()" style="max-width:100%">${cur.role=="owner"?'<button class="btn r" onclick="delM()">🗑 Hapus riwayat…</button>':""}</div>
 <div id="rep"><p class="mut" style="margin-bottom:8px">${L.length} transaksi · ${ok.length} selesai · Penjualan ${rp(ok.reduce((a,s)=>a+s.total,0))}${L.length>MX?` · menampilkan ${MX} terbaru, persempit filter atau ekspor CSV untuk semua`:""}</p><div class="tw"><table><tr><th>No</th><th>Waktu</th>${cb?"<th>Cabang</th>":""}<th>Item</th><th>Total</th><th>Bayar</th><th>Status</th><th class="np"></th></tr>
-${opt(sh,s=>`<tr><td>${s.no}</td><td>${dt(s.at)}</td>${cb?`<td>${esc(bn(s.br))}</td>`:""}<td>${s.items.reduce((a,i)=>a+i.qty,0)}</td><td>${rp(s.total)}</td><td>${s.pay}</td><td>${s.st=="OK"?"Selesai":'<span class="warn">Batal</span>'}</td><td class="np"><button class="btn s" onclick="receipt('${s.id}')">Struk</button> ${s.st=="OK"?`<button class="btn r" onclick="voidS('${s.id}')">Batalkan</button>`:""}</td></tr>`)||`<tr><td colspan="${cb?8:7}" class="mut">Tidak ada transaksi pada periode ini.</td></tr>`}</table></div></div>`}
+${opt(sh,s=>`<tr><td>${s.no}</td><td>${dt(s.at)}</td>${cb?`<td>${esc(bn(s.br))}</td>`:""}<td>${s.items.reduce((a,i)=>a+i.qty,0)}</td><td>${rp(s.total)}</td><td>${s.pay}</td><td>${s.st=="OK"?"Selesai":'<span class="warn">Batal</span>'}</td><td class="np"><button class="btn s" onclick="receipt('${s.id}')">Struk</button> ${s.st=="OK"?`<button class="btn r" onclick="voidS('${s.id}')">Batalkan</button>`:""}${cur.role=="owner"?` <button class="btn s" onclick="delOne('${s.id}')" aria-label="Hapus transaksi">Hapus</button>`:""}</td></tr>`)||`<tr><td colspan="${cb?8:7}" class="mut">Tidak ada transaksi pada periode ini.</td></tr>`}</table></div></div>`}
 function expRiw(){csv("riwayat-transaksi.csv",[["No","Waktu","Cabang","Item","Total","Bayar","Status"],...riwList().map(s=>[s.no,dt(s.at),bn(s.br),s.items.reduce((a,i)=>a+i.qty,0),s.total,s.pay,s.st=="OK"?"Selesai":"Batal"])])}
 function voidS(id){const s=S.sales.find(x=>x.id==id);if(s.st!="OK"||!confirm("Batalkan transaksi "+s.no+"? Stok akan dikembalikan."))return;
 s.st="VOID";s.voidAt=new Date().toISOString();s.items.forEach(i=>(i.u||prod(i.pid)?.recipe||[]).forEach(r=>{S.stock[s.br+"|"+r.i]=stk(s.br,r.i)+r.q*i.qty;S.mv.push({at:s.voidAt,br:s.br,i:r.i,d:r.q*i.qty,why:"Pembatalan "+s.no})}));save();render()}
+/* ===== HAPUS RIWAYAT (owner) ===== */
+function delCore(L,restore){const ids=new Set(L.map(x=>x.id)),whys=new Set();
+L.forEach(x=>{whys.add("Penjualan "+x.no);whys.add("Pembatalan "+x.no);
+if(restore&&x.st=="OK")x.items.forEach(i=>(i.u||((prod(i.pid)||{}).recipe||[]).map(r=>({i:r.i,q:r.q}))).forEach(r=>{const k=x.br+"|"+r.i;S.stock[k]=(S.stock[k]||0)+r.q*i.qty}))});
+S.sales=S.sales.filter(x=>!ids.has(x.id));S.mv=S.mv.filter(m=>!whys.has(m.why));
+S.tomb=[...new Set([...(S.tomb||[]),...ids])]}
+function delOne(id){if(!cur||cur.role!="owner")return;const x=S.sales.find(y=>y.id==id);if(!x)return;
+if(!confirm("Hapus transaksi "+x.no+" secara permanen?"+(x.st=="OK"?"\nStok bahan dikembalikan.":""))) return;
+delCore([x],true);save();render();toast("Transaksi dihapus")}
+function delM(){if(!cur||cur.role!="owner")return;const nv=riwList().length,na=S.sales.length;
+modal(`<h3>Hapus riwayat transaksi</h3><p class="mut" style="margin:6px 0">Untuk membersihkan data uji coba. Penghapusan <b>permanen</b>: hilang dari laporan dan dari perangkat lain setelah sinkron. Disarankan ekspor backup dulu di Pengaturan.</p>
+<div class="fm" style="flex-direction:column;align-items:stretch;gap:10px">
+<label class="mut">Cakupan<select id="dsc" style="width:100%"><option value="v">Yang sedang ditampilkan (${nv} transaksi, sesuai periode, cabang &amp; pencarian)</option><option value="a">SEMUA transaksi, semua tanggal &amp; cabang (${na}); nomor transaksi mulai lagi dari 0001</option></select></label>
+<label><input type="checkbox" id="drs" checked> Kembalikan stok bahan dari transaksi selesai yang dihapus</label>
+<label><input type="checkbox" id="dex"> Hapus juga catatan pengeluaran pada cakupan yang sama</label>
+<label class="mut">Ketik <b>HAPUS</b> untuk konfirmasi<input id="dcf" placeholder="HAPUS" autocomplete="off" style="width:100%"></label>
+<button class="btn r" onclick="delGo()">Hapus permanen</button><button class="btn s" onclick="closeM()">Batal</button></div>`)}
+function delGo(){if(!cur||cur.role!="owner")return;if(V("dcf").trim().toUpperCase()!=="HAPUS")return alert("Ketik HAPUS untuk konfirmasi");
+const all=V("dsc")=="a",L=all?S.sales.slice():riwList(),de=$("#dex").checked,R=rng();
+const E=de?S.exp.filter(e=>all||((rf.all||e.br==br)&&e.date>=R.from&&e.date<=R.to)):[];
+if(!L.length&&!E.length)return alert("Tidak ada data pada cakupan ini");
+delCore(L,$("#drs").checked);
+if(E.length){const ids=new Set(E.map(e=>e.id));S.exp=S.exp.filter(e=>!ids.has(e.id));S.tomb=[...new Set([...(S.tomb||[]),...ids])]}
+if(all)S.seq={};
+save();closeM();render();toast(L.length+" transaksi"+(E.length?" dan "+E.length+" pengeluaran":"")+" dihapus")}
 /* ===== URUTAN ITEM KASIR (owner) ===== */
 let OC="";
 const ordL=()=>S.products.filter(p=>p.active&&(!OC||p.cat==OC));
@@ -333,7 +358,7 @@ ${AD.list.map((a,k)=>`<div class="card" style="margin:8px 0;border:1px solid var
 <div class="fm"><button class="btn s" onclick="AD.list.push({id:uid(),name:'',price:0,recipe:[]});adraw()">+ Add-on baru</button></div><div class="fm"><button class="btn" onclick="asave()">Simpan</button><button class="btn s" onclick="closeM()">Batal</button></div>`)}
 function asave(){for(const a of AD.list){if(!a.name.trim())return alert("Nama add-on wajib diisi");if(!(a.price>=0))return alert("Harga add-on tidak valid");if(a.recipe.some(r=>!(r.q>0)))return alert("Jumlah item di add-on \""+a.name+"\" harus lebih dari 0")}
 prod(AD.pid).addons=AD.list.map(a=>({id:a.id,name:a.name.trim(),price:Math.round(a.price)||0,recipe:a.recipe.map(r=>({i:r.i,q:r.q}))}));AD=null;save();closeM();render()}
-function fixS(){S.pay=S.pay||{qris:"",banks:[]};S.pay.banks=S.pay.banks||[];const L=(S.opts||[]).find(o=>o.id=="l"),E=(S.opts||[]).find(o=>o.id=="e");
+function fixS(){S.pay=S.pay||{qris:"",banks:[]};S.tomb=S.tomb||[];S.pay.banks=S.pay.banks||[];const L=(S.opts||[]).find(o=>o.id=="l"),E=(S.opts||[]).find(o=>o.id=="e");
 S.products.forEach(p=>{if(p.addons)return;p.priceL=L?p.price+L.d:null;p.addons=E?[{id:"e",name:E.name,price:E.d,recipe:[]}]:[]})}
 /* ===== FOTO PRODUK -> Google Drive (database hanya simpan ID file, bukan gambar) ===== */
 const DRIVE_URL="https://script.google.com/macros/s/AKfycbyhR1o4oS1kBQxt4gtZz3i3zY6rWbRt06wYLwQWDsVgUTPCdpCoTgT1inpZ1s1pP-Aukg/exec";/* TEMPEL URL Web App Apps Script di sini (lihat panduan) */
@@ -450,13 +475,14 @@ function toast(m){let t=$("#toast");if(!t){t=document.createElement("div");t.id=
 function mergeInto(sv,lc){let ns=0,ne=0,nb=0,nv=0;sv.seq=sv.seq||{};sv.stock=sv.stock||{};sv.sales=sv.sales||[];sv.exp=sv.exp||[];sv.buys=sv.buys||[];sv.mv=sv.mv||[];
 if(!confirm("Data di server sudah berubah, dan perangkat ini punya data baru yang belum terkirim.\n\nGabungkan? Transaksi, pengeluaran, dan pembelian perangkat ini akan ditambahkan ke data server. Perubahan lain di perangkat ini (mis. edit produk atau pengaturan) akan diganti data server."))throw new Error("Dibatalkan");
 const use=(x,g)=>x.items.forEach(i=>(i.u||((lc.products.find(p=>p.id==i.pid)||{}).recipe||[]).map(r=>({i:r.i,q:r.q}))).forEach(r=>{const k=x.br+"|"+r.i;sv.stock[k]=(sv.stock[k]||0)+g*r.q*i.qty}));
+const tb=new Set([...(sv.tomb||[]),...(lc.tomb||[])]);sv.tomb=[...tb];sv.sales=sv.sales.filter(x=>!tb.has(x.id));sv.exp=sv.exp.filter(x=>!tb.has(x.id));
 Object.keys(lc.seq||{}).forEach(k=>sv.seq[k]=Math.max(sv.seq[k]||0,lc.seq[k]));
 const sid=new Map(sv.sales.map(x=>[x.id,x])),nos=new Set(sv.sales.map(x=>x.no));
 (lc.sales||[]).forEach(x=>{const o=sid.get(x.id);
-if(!o){if(nos.has(x.no)){const d=jk(x.at).replaceAll("-",""),k=x.br+d;sv.seq[k]=(sv.seq[k]||0)+1;x.no=`ZC-${x.br.toUpperCase()}-${d}-${String(sv.seq[k]).padStart(4,"0")}`}
+if(!o){if(tb.has(x.id))return;if(nos.has(x.no)){const d=jk(x.at).replaceAll("-",""),k=x.br+d;sv.seq[k]=(sv.seq[k]||0)+1;x.no=`ZC-${x.br.toUpperCase()}-${d}-${String(sv.seq[k]).padStart(4,"0")}`}
 nos.add(x.no);if(x.st=="OK")use(x,-1);sv.sales.push(x);ns++}
 else if(x.st=="VOID"&&o.st=="OK"){o.st="VOID";o.voidAt=x.voidAt;use(o,1);nv++}});
-const eid=new Map(sv.exp.map(e=>[e.id,e]));(lc.exp||[]).forEach(e=>{const o=eid.get(e.id);if(!o){sv.exp.push(e);ne++}else if(e.st=="VOID"&&o.st=="OK"){o.st="VOID";nv++}});
+const eid=new Map(sv.exp.map(e=>[e.id,e]));(lc.exp||[]).forEach(e=>{const o=eid.get(e.id);if(!o){if(tb.has(e.id))return;sv.exp.push(e);ne++}else if(e.st=="VOID"&&o.st=="OK"){o.st="VOID";nv++}});
 const bk=b=>[b.at,b.br,b.i,b.n,b.t].join("|"),bs=new Set(sv.buys.map(bk));(lc.buys||[]).forEach(b=>{if(!bs.has(bk(b))){sv.buys.push(b);const k=b.br+"|"+b.i;sv.stock[k]=(sv.stock[k]||0)+b.n;nb++}});
 const mk=m=>[m.at,m.br,m.i,m.d,m.why].join("|"),ms=new Set(sv.mv.map(mk));(lc.mv||[]).forEach(m=>{if(!ms.has(mk(m))&&/^(Penjualan|Pembatalan|Penerimaan)/.test(m.why))sv.mv.push(m)});
 sv.mv.sort((a,b)=>a.at<b.at?-1:a.at>b.at?1:0);
