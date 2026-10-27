@@ -150,7 +150,8 @@ stock:st,sales:[],exp:[],buys:[],mv:[],seq:{}}}
 let S=JSON.parse(localStorage.getItem(KEY)||"null")||seed();
 const save=()=>{localStorage.setItem(KEY,JSON.stringify(S));window.cloudPush&&window.cloudPush()};
 S.promos=S.promos||[];S.users=S.users||[];fixS();
-let cur=null,authed=false,br=S.branches[0].id,view="kasir",cart=[],payM="CASH",q="",rf={from:jk().slice(0,8)+"01",to:jk(),all:1,m:"bulan",sub:"ring"};
+let cur=null,authed=false,br=S.branches[0].id,view="kasir",cart=[],payM="CASH",q="",rf={from:jk().slice(0,8)+"01",to:jk(),all:1,m:"hari",sub:"ring"};
+let rq="";
 const prod=id=>S.products.find(p=>p.id==id),ing=id=>S.ings.find(i=>i.id==id),bn=id=>S.branches.find(b=>b.id==id)?.name||id;
 const hpp=p=>p.recipe.reduce((s,r)=>s+r.q*(ing(r.i)?.cost||0),0);
 const stk=(b,i)=>S.stock[b+"|"+i]||0;
@@ -186,7 +187,7 @@ const ACC={owner:ALL,manager:ALL,kepala:["kasir","produk","promo","keluar"]};
 const ROLEN={owner:"Owner",manager:"Manager",kepala:"Kepala outlet"};
 async function hash(p,salt){if(crypto.subtle){const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(salt+p));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("")}let h=5381;for(const c of salt+p)h=(h*33^c.charCodeAt(0))>>>0;return"f"+h}
 function tnav(){document.body.classList.toggle("navopen")}
-function go(v){view=v;gopen=(grpOf(v)||{}).g||"";if(innerWidth<=800)document.body.classList.remove("navopen");render()}
+function go(v){if(v=="riwayat"||v=="laporan"){rf.m="hari";rq=""}view=v;gopen=(grpOf(v)||{}).g||"";if(innerWidth<=800)document.body.classList.remove("navopen");render()}
 const EYE='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>',
 EYEOFF='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 19c-6.5 0-10-7-10-7a18.5 18.5 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c6.5 0 10 7 10 7a18.5 18.5 0 0 1-2.16 3.19M14.12 14.12a3 3 0 1 1-4.24-4.24M1 1l22 22"/></svg>';
 const pwf=(id,ph,ac)=>`<span class="pw"><input id="${id}" ${ac=="current-password"?'name="password" ':""}type="password" placeholder="${ph}" autocomplete="${ac}"><button type="button" class="eye" onclick="eye(this)" aria-label="Lihat atau sembunyikan password">${EYE}</button></span>`;
@@ -287,14 +288,30 @@ modal(`<div class="np" style="margin-bottom:10px"><select onchange="receipt('${i
 ${opt(s.items,i=>`<div><span>${i.qty}x ${esc(i.name)}${i.o.length?" ("+esc(i.o.join(", "))+")":""}</span><span>${rp(i.price*i.qty)}</span></div>`)}<hr>
 ${s.disc?`<div><span>Subtotal</span><span>${rp(s.sub)}</span></div><div><span>Diskon ${esc(s.promo)}</span><span>-${rp(s.disc)}</span></div>`:""}<div><b>Total</b><b>${rp(s.total)}</b></div><div><span>${s.pay}</span><span>${rp(s.cash)}</span></div><div><span>Kembali</span><span>${rp(s.change)}</span></div><hr><div style="justify-content:center">Terima kasih!</div><div style="justify-content:center">Tentukan Zona Mu</div></div>`)}
 /* ===== RIWAYAT ===== */
-function vRiwayat(){const L=S.sales.filter(s=>s.br==br&&s.no.toLowerCase().includes(q.toLowerCase())).slice().reverse().slice(0,200);
-return`<input placeholder="Cari nomor transaksi" value="${esc(q)}" onchange="q=this.value;render()" style="margin-bottom:10px"><div class="tw"><table><tr><th>No</th><th>Waktu</th><th>Item</th><th>Total</th><th>Bayar</th><th>Status</th><th></th></tr>
-${opt(L,s=>`<tr><td>${s.no}</td><td>${dt(s.at)}</td><td>${s.items.reduce((a,i)=>a+i.qty,0)}</td><td>${rp(s.total)}</td><td>${s.pay}</td><td>${s.st=="OK"?"Selesai":'<span class="warn">Batal</span>'}</td><td><button class="btn s" onclick="receipt('${s.id}')">Struk</button> ${s.st=="OK"?`<button class="btn r" onclick="voidS('${s.id}')">Batalkan</button>`:""}</td></tr>`)||'<tr><td colspan="7" class="mut">Belum ada transaksi.</td></tr>'}</table></div>`}
+function riwList(){const R=rng(),sc=b=>rf.all||b==br,k=rq.trim().toLowerCase();
+return S.sales.filter(s=>{const d=jk(s.at);return sc(s.br)&&d>=R.from&&d<=R.to&&(!k||s.no.toLowerCase().includes(k))}).slice().reverse()}
+function vRiwayat(){const L=riwList(),ok=L.filter(s=>s.st=="OK"),MX=300,sh=L.slice(0,MX),cb=!!rf.all&&S.branches.length>1;
+return`${fbar("expRiw()")}<input placeholder="Cari nomor transaksi" value="${esc(rq)}" onchange="rq=this.value;render()" style="margin-bottom:10px;max-width:100%">
+<div id="rep"><p class="mut" style="margin-bottom:8px">${L.length} transaksi · ${ok.length} selesai · Penjualan ${rp(ok.reduce((a,s)=>a+s.total,0))}${L.length>MX?` · menampilkan ${MX} terbaru, persempit filter atau ekspor CSV untuk semua`:""}</p><div class="tw"><table><tr><th>No</th><th>Waktu</th>${cb?"<th>Cabang</th>":""}<th>Item</th><th>Total</th><th>Bayar</th><th>Status</th><th class="np"></th></tr>
+${opt(sh,s=>`<tr><td>${s.no}</td><td>${dt(s.at)}</td>${cb?`<td>${esc(bn(s.br))}</td>`:""}<td>${s.items.reduce((a,i)=>a+i.qty,0)}</td><td>${rp(s.total)}</td><td>${s.pay}</td><td>${s.st=="OK"?"Selesai":'<span class="warn">Batal</span>'}</td><td class="np"><button class="btn s" onclick="receipt('${s.id}')">Struk</button> ${s.st=="OK"?`<button class="btn r" onclick="voidS('${s.id}')">Batalkan</button>`:""}</td></tr>`)||`<tr><td colspan="${cb?8:7}" class="mut">Tidak ada transaksi pada periode ini.</td></tr>`}</table></div></div>`}
+function expRiw(){csv("riwayat-transaksi.csv",[["No","Waktu","Cabang","Item","Total","Bayar","Status"],...riwList().map(s=>[s.no,dt(s.at),bn(s.br),s.items.reduce((a,i)=>a+i.qty,0),s.total,s.pay,s.st=="OK"?"Selesai":"Batal"])])}
 function voidS(id){const s=S.sales.find(x=>x.id==id);if(s.st!="OK"||!confirm("Batalkan transaksi "+s.no+"? Stok akan dikembalikan."))return;
 s.st="VOID";s.voidAt=new Date().toISOString();s.items.forEach(i=>(i.u||prod(i.pid)?.recipe||[]).forEach(r=>{S.stock[s.br+"|"+r.i]=stk(s.br,r.i)+r.q*i.qty;S.mv.push({at:s.voidAt,br:s.br,i:r.i,d:r.q*i.qty,why:"Pembatalan "+s.no})}));save();render()}
+/* ===== URUTAN ITEM KASIR (owner) ===== */
+let OC="";
+const ordL=()=>S.products.filter(p=>p.active&&(!OC||p.cat==OC));
+function ordM(){if(!cur||cur.role!="owner")return;const sc=$("#ol")?$("#ol").scrollTop:0,cs=[...new Set(S.products.filter(p=>p.active).map(p=>p.cat))],L=ordL();
+modal(`<h3>Urutan item di kasir</h3><p class="mut" style="margin:4px 0 8px">Berlaku sama untuk semua cabang. Pilih kategori untuk mengatur urutan di dalam kategori, atau "Semua kategori" untuk tampilan Semua di kasir.</p>
+<select style="width:100%;margin-bottom:8px" onchange="OC=this.value;ordM()"><option value="">Semua kategori</option>${opt(cs,c=>`<option value="${esc(c)}" ${c==OC?"selected":""}>${esc(c)}</option>`)}</select>
+<div id="ol" style="max-height:55vh;overflow:auto">${opt(L,(p,i)=>`<div style="display:flex;gap:6px;align-items:center;padding:6px 0;border-bottom:1px solid var(--s)"><span class="mut" style="width:26px">${i+1}</span><span style="flex:1;min-width:0"><b>${esc(p.name)}</b><span class="mut"> · ${esc(p.cat)}</span></span><button class="btn s" ${i?"":"disabled"} onclick="mvP('${p.id}',-9999)" aria-label="Paling atas">⤒</button><button class="btn s" ${i?"":"disabled"} onclick="mvP('${p.id}',-1)" aria-label="Naik">▲</button><button class="btn s" ${i<L.length-1?"":"disabled"} onclick="mvP('${p.id}',1)" aria-label="Turun">▼</button></div>`)||'<p class="mut">Tidak ada produk aktif.</p>'}</div>
+<button class="btn" style="margin-top:10px;width:100%" onclick="closeM();render()">Selesai</button>`);$("#ol").scrollTop=sc}
+function mvP(id,d){if(!cur||cur.role!="owner")return;const L=ordL(),i=L.findIndex(p=>p.id==id);if(i<0)return;
+const j=d==-9999?0:Math.max(0,Math.min(L.length-1,i+d));if(j==i)return;
+const A=S.products,slots=L.map(p=>A.indexOf(p)),ns=L.slice(),[x]=ns.splice(i,1);ns.splice(j,0,x);
+slots.forEach((pos,k)=>{A[pos]=ns[k]});save();ordM()}
 /* ===== PRODUK ===== */
 const adTxt=a=>`${esc(a.name)} +${rp(a.price)}`+((a.recipe||[]).length?` <span class="mut">(${a.recipe.map(r=>esc(ing(r.i)?.name||r.i)+" "+r.q+" "+(ing(r.i)?.unit||"")).join(", ")})</span>`:"");
-function vProduk(){return`<button class="btn" onclick="pform()">+ Produk</button><p class="mut" style="margin:8px 0">Isi harga Reguler dan Large di tiap produk. Add-on (mis. Extra Espresso) diatur lewat tombol Add-on: tentukan nama, harga, dan item bahannya. HPP = resep produk × harga bahan saat ini, ditambah bahan add-on yang dipilih saat transaksi (snapshot disimpan di transaksi).</p><div class="tw"><table><tr><th>Nama</th><th>Reguler</th><th>Large</th><th>Add-on</th><th>Status</th><th></th></tr>
+function vProduk(){return`<button class="btn" onclick="pform()">+ Produk</button>${cur.role=="owner"?' <button class="btn s" onclick="ordM()">↕ Atur urutan kasir</button>':""}<p class="mut" style="margin:8px 0">Isi harga Reguler dan Large di tiap produk. Add-on (mis. Extra Espresso) diatur lewat tombol Add-on: tentukan nama, harga, dan item bahannya. HPP = resep produk × harga bahan saat ini, ditambah bahan add-on yang dipilih saat transaksi (snapshot disimpan di transaksi).</p><div class="tw"><table><tr><th>Nama</th><th>Reguler</th><th>Large</th><th>Add-on</th><th>Status</th><th></th></tr>
 ${opt(S.products,p=>{const h=hpp(p);return`<tr><td>${p.photo?`<img class="pth" loading="lazy" src="${phUrl(p.photo,120)}" alt="">`:""}<span style="display:inline-block;vertical-align:middle"><b>${esc(p.name)}</b><div class="mut">${esc(p.cat)}</div></span></td><td>${rp(p.price)}<div class="mut">HPP ${rp(h)} · ${p.price?Math.round((p.price-h)/p.price*100):0}%</div></td><td>${Number.isFinite(p.priceL)?rp(p.priceL):'<span class="mut">-</span>'}</td><td>${(p.addons||[]).map(a=>`<div>${adTxt(a)}</div>`).join("")||'<span class="mut">-</span>'}</td><td>${p.active?"Aktif":"Diarsipkan"}</td><td>${cur.role=="kepala"?"":`<button class="btn s" onclick="pform('${p.id}')">Edit</button> <button class="btn s" onclick="aform('${p.id}')">Add-on</button> <button class="btn s" onclick="parch('${p.id}')">${p.active?"Arsipkan":"Aktifkan"}</button>`}</td></tr>`})}</table></div>`}
 /* ----- menu khusus Add-on per produk ----- */
 let AD=null;
