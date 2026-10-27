@@ -150,7 +150,7 @@ stock:st,sales:[],exp:[],buys:[],mv:[],seq:{}}}
 let S=JSON.parse(localStorage.getItem(KEY)||"null")||seed();
 const save=()=>{localStorage.setItem(KEY,JSON.stringify(S));window.cloudPush&&window.cloudPush()};
 S.promos=S.promos||[];S.users=S.users||[];fixS();
-let cur=null,authed=false,br=S.branches[0].id,view="kasir",cart=[],payM="CASH",q="",rf={from:jk().slice(0,8)+"01",to:jk(),all:1,m:"hari",sub:"ring"};
+let cur=null,authed=false,br=S.branches[0].id,view="kasir",cart=[],payM="CASH",q="",rf={from:jk().slice(0,8)+"01",to:jk(),all:1,m:"hari",sub:"arus"};
 let rq="";
 const prod=id=>S.products.find(p=>p.id==id),ing=id=>S.ings.find(i=>i.id==id),bn=id=>S.branches.find(b=>b.id==id)?.name||id;
 const hpp=p=>p.recipe.reduce((s,r)=>s+r.q*(ing(r.i)?.cost||0),0);
@@ -163,7 +163,7 @@ const closeM=()=>$("#modal").classList.remove("on");
 $("#modal").onclick=e=>{if(e.target.id=="modal")closeM()};
 const NAVG=[["kasir","Kasir"],["riwayat","Riwayat"],["promo","Promo"],
 {g:"Laporan Barang",c:[["produk","Produk & Resep"],["stok","Stok"]]},
-{g:"Laporan Keuangan",c:[["keluar","Pengeluaran"],["laporan","Laporan"]]},
+{g:"Laporan Keuangan",v:"ringkasan",c:[["ringkasan","Ringkasan"],["keluar","Pengeluaran"],["laporan","Laporan"]]},
 {g:"Pengaturan",v:"set",c:[["pengguna","Pengguna"],["__out","Keluar"]]}];
 let gopen="";
 const okv=v=>!!cur&&ACC[cur.role].includes(v);
@@ -180,14 +180,14 @@ if(view!="kasir"&&(!cur||!ACC[cur.role].includes(view)))view="kasir";
 document.body.classList.toggle("pub",!authed);
 $("#nav").innerHTML='<span class="x" onclick="tnav()">✕</span><div style="margin-bottom:12px">'+brandH()+'</div>'+(authed?'<div style="margin-bottom:10px;font-size:.85rem">'+esc(cur.name)+'<br>'+ROLEN[cur.role]+'</div>'+navH():`<button class="${view=="kasir"?"on":""}" onclick="go('kasir')">Kasir</button><button onclick="document.body.classList.remove('navopen');loginM('riwayat')">Login Admin</button>`);
 const top=`<div class="top"><button class="btn s hb" onclick="tnav()" aria-label="Menu">☰</button>${brandH()}<select onchange="br=this.value;cart=[];render()">${opt(S.branches.filter(b=>!cur||cur.role!="kepala"||b.id==cur.br),b=>`<option value="${b.id}" ${b.id==br?"selected":""}>${esc(b.name)}</option>`)}</select></div>`;
-$("#main").innerHTML=top+({kasir:vKasir,riwayat:vRiwayat,produk:vProduk,stok:vStok,keluar:vKeluar,laporan:vLaporan,promo:vPromo,pengguna:vUser,set:vSet})[view]()}
+$("#main").innerHTML=top+({kasir:vKasir,riwayat:vRiwayat,produk:vProduk,stok:vStok,keluar:vKeluar,laporan:vLaporan,ringkasan:vRingkasan,promo:vPromo,pengguna:vUser,set:vSet})[view]()}
 /* ===== LOGIN & PERAN ===== */
-const ALL=["kasir","riwayat","produk","promo","stok","keluar","laporan","pengguna","set"];
+const ALL=["kasir","riwayat","produk","promo","stok","keluar","ringkasan","laporan","pengguna","set"];
 const ACC={owner:ALL,manager:ALL,kepala:["kasir","produk","promo","keluar"]};
 const ROLEN={owner:"Owner",manager:"Manager",kepala:"Kepala outlet"};
 async function hash(p,salt){if(crypto.subtle){const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(salt+p));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("")}let h=5381;for(const c of salt+p)h=(h*33^c.charCodeAt(0))>>>0;return"f"+h}
 function tnav(){document.body.classList.toggle("navopen")}
-function go(v){if(v=="riwayat"||v=="laporan"){rf.m="hari";rq=""}view=v;gopen=(grpOf(v)||{}).g||"";if(innerWidth<=800)document.body.classList.remove("navopen");render()}
+function go(v){if(v=="riwayat"||v=="laporan"||v=="ringkasan"){rf.m="hari";rq=""}view=v;gopen=(grpOf(v)||{}).g||"";if(innerWidth<=800)document.body.classList.remove("navopen");render()}
 const EYE='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>',
 EYEOFF='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 19c-6.5 0-10-7-10-7a18.5 18.5 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c6.5 0 10 7 10 7a18.5 18.5 0 0 1-2.16 3.19M14.12 14.12a3 3 0 1 1-4.24-4.24M1 1l22 22"/></svg>';
 const pwf=(id,ph,ac)=>`<span class="pw"><input id="${id}" ${ac=="current-password"?'name="password" ':""}type="password" placeholder="${ph}" autocomplete="${ac}"><button type="button" class="eye" onclick="eye(this)" aria-label="Lihat atau sembunyikan password">${EYE}</button></span>`;
@@ -392,15 +392,16 @@ return`
 <div class="tw"><table><tr><th>Produk</th><th>Terjual</th><th>Omzet</th><th>HPP</th><th>Laba kotor</th></tr>${opt(Object.entries(r.tp).sort((a,b)=>b[1].q-a[1].q),([k,t])=>`<tr><td>${esc(k)}</td><td>${t.q}</td><td>${rp(t.o)}</td><td>${rp(t.h)}</td><td>${rp(t.o-t.h)}</td></tr>`)||'<tr><td colspan="5" class="mut">Belum ada data.</td></tr>'}</table></div>`}
 function expCsv(){const r=rep();csv("laporan-penjualan.csv",[["No","Waktu","Cabang","Total","HPP","Bayar"],...r.L.map(s=>[s.no,dt(s.at),bn(s.br),s.total,s.hpp,s.pay])])}
 /* ===== LAPORAN: FILTER & SUB-LAPORAN ===== */
-function rng(){const t=jk();if(rf.m=="hari")return{from:t,to:t};if(rf.m=="bulan"){const[y,m]=t.split("-").map(Number);return{from:t.slice(0,8)+"01",to:new Date(Date.UTC(y,m,0)).toISOString().slice(0,10)}}if(rf.m=="tahun")return{from:t.slice(0,4)+"-01-01",to:t.slice(0,4)+"-12-31"};return{from:rf.from,to:rf.to}}
+function rng(){const t=jk();if(rf.m=="hari")return{from:t,to:t};if(rf.m=="kemarin"){const y=jk(new Date(Date.now()-864e5));return{from:y,to:y}}if(rf.m=="bulan"){const[y,m]=t.split("-").map(Number);return{from:t.slice(0,8)+"01",to:new Date(Date.UTC(y,m,0)).toISOString().slice(0,10)}}if(rf.m=="tahun")return{from:t.slice(0,4)+"-01-01",to:t.slice(0,4)+"-12-31"};return{from:rf.from,to:rf.to}}
 const fd=d=>d?new Date(d+"T00:00:00Z").toLocaleDateString("id-ID",{weekday:"short",day:"2-digit",month:"short",year:"numeric",timeZone:"UTC"}):"-";
 const fmo=k=>new Date(k+"-01T00:00:00Z").toLocaleDateString("id-ID",{month:"long",year:"numeric",timeZone:"UTC"});
 const rn=n=>n<0?`<span style="color:#b42318">-${rp(-n)}</span>`:rp(n);
 const rbtn=(k,t)=>`<button class="btn ${rf.m==k?"":"s"}" onclick="rf.m='${k}';render()">${t}</button>`;
-function fbar(csvFn){const R=rng();return`<div class="fm">${rbtn("hari","Hari ini")}${rbtn("bulan","Bulan ini")}${rbtn("tahun","Tahun ini")}${rbtn("khusus","Khusus")}${rf.m=="khusus"?`<input type="date" value="${rf.from}" onchange="rf.from=this.value;render()"><input type="date" value="${rf.to}" onchange="rf.to=this.value;render()">`:`<span class="mut">${fd(R.from)} – ${fd(R.to)}</span>`}</div>
+function fbar(csvFn){const R=rng();return`<div class="fm"><select aria-label="Periode" onchange="rf.m=this.value;render()">${opt([["hari","Hari ini"],["kemarin","Kemarin"],["bulan","Bulan ini"],["tahun","Tahun ini"],["khusus","Khusus"]],x=>`<option value="${x[0]}" ${rf.m==x[0]?"selected":""}>${x[1]}</option>`)}</select>${rf.m=="khusus"?`<input type="date" value="${rf.from}" onchange="rf.from=this.value;render()"><input type="date" value="${rf.to}" onchange="rf.to=this.value;render()">`:`<span class="mut">${fd(R.from)} – ${fd(R.to)}</span>`}</div>
 <div class="fm"><select onchange="rf.all=+this.value;render()"><option value="1" ${rf.all?"selected":""}>Semua cabang</option><option value="0" ${rf.all?"":"selected"}>${esc(bn(br))}</option></select><button class="btn s" onclick="${csvFn}">Ekspor CSV</button><button class="btn s" onclick="prRep()">Cetak</button></div>`}
 function prRep(){const h=$("#rep").innerHTML;modal(h);setTimeout(()=>{print();closeM()},150)}
-function vLaporan(){const T=[["ring","Ringkasan",vRing,"expCsv()"],["arus","Arus Keuangan",vArus,"expArus()"],["jual","Penjualan",vJual,"expJual()"]],t=T.find(x=>x[0]==rf.sub)||T[0];
+function vRingkasan(){return`${fbar("expCsv()")}<div id="rep">${vRing()}</div>`}
+function vLaporan(){const T=[["arus","Arus Keuangan",vArus,"expArus()"],["jual","Penjualan",vJual,"expJual()"]],t=T.find(x=>x[0]==rf.sub)||T[0];
 return`<div class="tabs">${opt(T,x=>`<button class="${x[0]==t[0]?"on":""}" onclick="rf.sub='${x[0]}';render()">${x[1]}</button>`)}</div>${fbar(t[3])}<div id="rep">${t[2]()}</div>`}
 /* data harian: dari riwayat transaksi (selain batal) + pengeluaran aktif */
 function dayList(){const R=rng(),sc=b=>rf.all||b==br,m={};
