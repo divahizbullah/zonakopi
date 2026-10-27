@@ -60,7 +60,7 @@ th,td{padding:9px 10px;text-align:left;border-bottom:1px solid var(--s)}
 .rm{margin-left:auto;background:none;border:0;color:var(--m);opacity:.6;cursor:pointer;font-size:1rem;padding:8px}.rm:hover{opacity:1;color:#b42318}
 .emp{text-align:center;padding:36px 10px;color:var(--m)}
 .vch{display:flex;gap:8px;margin:14px 0 6px}.vch input{flex:1;min-width:0;border-radius:12px}
-.seg{display:grid;grid-template-columns:repeat(3,1fr);background:var(--c);border-radius:14px;padding:4px;gap:4px;margin:12px 0}.seg button{border:0;background:none;padding:10px 6px;border-radius:11px;font:inherit;font-weight:700;color:var(--m);cursor:pointer}.seg button.on{background:#fff;color:var(--d);box-shadow:0 1px 4px rgba(11,58,117,.2)}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);background:var(--c);border-radius:14px;padding:4px;gap:4px;margin:12px 0}.seg button{border:0;background:none;padding:10px 6px;border-radius:11px;font:inherit;font-weight:700;color:var(--m);cursor:pointer}.seg button.on{background:#fff;color:var(--d);box-shadow:0 1px 4px rgba(11,58,117,.2)}.seg.s4{grid-template-columns:repeat(4,1fr)}.seg.s4 button{padding:10px 2px;font-size:.88rem}.seg.s2{grid-template-columns:repeat(2,1fr)}
 .cash input{width:100%;font-size:1.1rem;font-weight:700;padding:12px 14px;border-radius:12px}
 .qrow{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.qk{border:1.5px solid var(--s);background:#fff;color:var(--d);border-radius:99px;padding:8px 15px;font:inherit;font-weight:700;cursor:pointer}.qk:hover{border-color:var(--a);color:var(--m)}
 .kbr{display:flex;justify-content:space-between;padding:4px 2px}
@@ -264,8 +264,8 @@ return`<div class="pos"><section><div class="srch">${SRCH}<input placeholder="Ca
 <aside class="cartp"><div class="cph"><div><b class="cpt">Pesanan</b><span class="mut" id="cn">${n} item</span></div><div><button class="lnk" onclick="clr()">Kosongkan</button><button class="btn s mclose" onclick="cartClose()">Tutup ✕</button></div></div>
 <div class="cbody"><div id="cl">${lines()}</div>
 <div class="vch"><input id="vc" placeholder="Kode voucher" value="${esc(vcode)}"><button class="btn s" onclick="vcode=V('vc').trim();refC();if(vcode&&!best(sub()).p)alert('Voucher tidak berlaku (kode salah, belum memenuhi syarat, atau promo otomatis lebih besar)')">Pakai</button></div><div id="dsc">${dscH()}</div>
-<div class="seg">${[["CASH","Tunai"],["QRIS","QRIS"],["TRANSFER","Transfer"]].map(x=>`<button class="${payM==x[0]?"on":""}" onclick="setPM('${x[0]}')">${x[1]}</button>`).join("")}</div>
-${payM=="CASH"?`<div class="cash"><input id="cash" inputmode="numeric" placeholder="Uang diterima" oninput="this.dataset.exact='';$('#kb').textContent=rp(Math.max(0,(+this.value||0)-tot()))"><div class="qrow"><button class="qk" onclick="setCash()">Uang pas</button>${[20000,50000,100000].map(v=>`<button class="qk" onclick="setCash(${v})">${v/1000}rb</button>`).join("")}</div><div class="kbr"><span>Kembalian</span><b id="kb">Rp0</b></div></div>`:payInfo()}</div>
+<div class="seg s4">${[["CASH","Tunai"],["QRIS","QRIS"],["TRANSFER","Transfer"],["SPLIT","Campur"]].map(x=>`<button class="${payM==x[0]?"on":""}" onclick="setPM('${x[0]}')">${x[1]}</button>`).join("")}</div>
+${payM=="CASH"?`<div class="cash"><input id="cash" inputmode="numeric" placeholder="Uang diterima" oninput="this.dataset.exact='';$('#kb').textContent=rp(Math.max(0,(+this.value||0)-tot()))"><div class="qrow"><button class="qk" onclick="setCash()">Uang pas</button>${[20000,50000,100000].map(v=>`<button class="qk" onclick="setCash(${v})">${v/1000}rb</button>`).join("")}</div><div class="kbr"><span>Kembalian</span><b id="kb">Rp0</b></div></div>`:payM=="SPLIT"?splitUI():payInfo()}</div>
 <div class="cft"><div class="ttr"><span>Total</span><b class="big" id="tt">${rp(tot())}</b></div><button class="pay" id="pb" onclick="doPay()">Bayar ${rp(tot())}</button></div></aside>
 <div class="cbd" onclick="cartClose()"></div>
 <div class="mbar ${n?"":"empty"}" role="button" tabindex="0" onclick="cartOpen()" onkeydown="if(event.key=='Enter')cartOpen()"><span class="mbi">${BAG}<i id="mn">${n}</i></span><span class="mbt"><small>Total</small><b id="mt">${rp(tot())}</b></span><span class="mbb">Lihat & Bayar</span></div>`}
@@ -278,24 +278,26 @@ function qty(i,d){cart[i].qty+=d;if(cart[i].qty<1)cart.splice(i,1);refC()}
 function tg(i,o){const a=cart[i].ad;a.includes(o)?a.splice(a.indexOf(o),1):a.push(o);refC()}
 function setCash(n){const c=$("#cash"),t=tot();c.dataset.exact=n==null?"1":"";c.value=n==null?t:n;$("#kb").textContent=rp(Math.max(0,+c.value-t))}
 function refC(){const gd=$("#grid");if(gd)gd.innerHTML=grid();$("#cl").innerHTML=lines();$("#tt").textContent=rp(tot());$("#dsc").innerHTML=dscH();const c=$("#cash");if(c){if(c.dataset.exact)c.value=tot();$("#kb").textContent=rp(Math.max(0,(+c.value||0)-tot()))}
-const n=cart.reduce((a,l)=>a+l.qty,0);$("#mn").textContent=n;$("#mt").textContent=rp(tot());$("#cn").textContent=n+" item";$("#pb").textContent="Bayar "+rp(tot());if($("#qn"))$("#qn").textContent=rp(tot());$(".mbar").classList.toggle("empty",!n)}
+const n=cart.reduce((a,l)=>a+l.qty,0);$("#mn").textContent=n;$("#mt").textContent=rp(tot());$("#cn").textContent=n+" item";$("#pb").textContent="Bayar "+rp(tot());if($("#sp2"))spUp();if($("#qn"))$("#qn").textContent=rp(payM=="SPLIT"?spAmt():tot());$(".mbar").classList.toggle("empty",!n)}
 function doPay(){
 if(!cart.length)return alert("Keranjang kosong");
-const sb=sub(),bp=best(sb),total=sb-bp.d,ce=$("#cash"),cash=payM=="CASH"?(ce&&ce.dataset.exact?total:+V("cash")||0):total;
-if(cash<total)return alert("Uang diterima kurang");
+if(payM=="SPLIT")spV=+V("sp2")||0;
+const sb=sub(),bp=best(sb),total=sb-bp.d,ce=$("#cash"),sp=payM=="SPLIT",spn=sp?spAmt():0,due=total-spn,cash=sp?(+V("sp1")||0):payM=="CASH"?(ce&&ce.dataset.exact?total:+V("cash")||0):total;
+if(sp&&(spn<=0||spn>=total))return alert("Isi nominal "+(spM=="QRIS"?"QRIS":"transfer")+" lebih dari 0 dan kurang dari total. Untuk bayar penuh non-tunai, pakai tombol "+(spM=="QRIS"?"QRIS":"Transfer")+" biasa.");
+if(cash<(sp?due:total))return alert(sp?"Uang tunai diterima kurang (sisa tunai "+rp(due)+")":"Uang diterima kurang");
 const use={};cart.forEach(l=>lrec(l).forEach(r=>use[r.i]=(use[r.i]||0)+r.q*l.qty));
 for(const i in use)if(stk(br,i)<use[i])return alert("Stok "+ing(i).name+" tidak cukup di cabang ini");
 const d=jk().replaceAll("-",""),k=br+d;S.seq[k]=(S.seq[k]||0)+1;
 const items=cart.map(l=>{const p=prod(l.pid);return{pid:p.id,name:p.name,qty:l.qty,price:unit(l),hpp:Math.round(lhpp(l)),o:[...(l.sz=="L"&&Number.isFinite(p.priceL)?["Large"]:[]),...adl(l).map(a=>a.name)],u:lrec(l).map(r=>({i:r.i,q:r.q}))}});
-const s={id:uid(),no:`ZC-${br.toUpperCase()}-${d}-${String(S.seq[k]).padStart(4,"0")}`,br,at:new Date().toISOString(),items,sub:sb,disc:bp.d,promo:bp.p?bp.p.name:"",total,hpp:items.reduce((a,i)=>a+i.hpp*i.qty,0),pay:payM,bank:payM=="TRANSFER"?bankLbl():"",cash,change:cash-total,st:"OK"};
+const s={id:uid(),no:`ZC-${br.toUpperCase()}-${d}-${String(S.seq[k]).padStart(4,"0")}`,br,at:new Date().toISOString(),items,sub:sb,disc:bp.d,promo:bp.p?bp.p.name:"",total,hpp:items.reduce((a,i)=>a+i.hpp*i.qty,0),pay:sp?"CASH+"+spM:payM,bank:(payM=="TRANSFER"||(sp&&spM=="TRANSFER"))?bankLbl():"",cash,change:cash-(sp?due:total),...(sp?{parts:[{m:"CASH",amt:due},{m:spM,amt:spn}]}:{}),st:"OK"};
 for(const i in use){S.stock[br+"|"+i]=stk(br,i)-use[i];S.mv.push({at:s.at,br,i,d:-use[i],why:"Penjualan "+s.no})}
-S.sales.push(s);cart=[];vcode="";save();render();receipt(s.id)}
+S.sales.push(s);cart=[];vcode="";spV=0;spC=0;save();render();receipt(s.id)}
 function receipt(id,size="w58"){const s=S.sales.find(x=>x.id==id),b=S.branches.find(x=>x.id==s.br);
 modal(`<div class="np" style="margin-bottom:10px"><select onchange="receipt('${id}',this.value)">${opt([["w58","Thermal 58 mm"],["w80","Thermal 80 mm"],["a4","Kertas biasa"]],x=>`<option value="${x[0]}" ${size==x[0]?"selected":""}>${x[1]}</option>`)}</select> <button class="btn" onclick="print()">Cetak</button> <button class="btn s" onclick="closeM()">Tutup</button></div>
 <div class="rc ${size}"><div style="justify-content:center"><img src="${LOGO}" style="height:52px"></div><div style="justify-content:center"><b>ZONA</b></div><div style="justify-content:center">${esc(b.name)}</div><div style="justify-content:center">${esc(b.addr||"")}</div><hr>
 <div><span>${s.no}</span></div><div><span>${dt(s.at)}</span></div>${s.st!="OK"?"<div><b>*** DIBATALKAN ***</b></div>":""}<hr>
 ${opt(s.items,i=>`<div><span>${i.qty}x ${esc(i.name)}${i.o.length?" ("+esc(i.o.join(", "))+")":""}</span><span>${rp(i.price*i.qty)}</span></div>`)}<hr>
-${s.disc?`<div><span>Subtotal</span><span>${rp(s.sub)}</span></div><div><span>Diskon ${esc(s.promo)}</span><span>-${rp(s.disc)}</span></div>`:""}<div><b>Total</b><b>${rp(s.total)}</b></div><div><span>${s.pay}</span><span>${rp(s.cash)}</span></div>${s.bank?`<div><span>Bank</span><span>${esc(s.bank)}</span></div>`:""}<div><span>Kembali</span><span>${rp(s.change)}</span></div><hr><div style="justify-content:center">Terima kasih!</div><div style="justify-content:center">Tentukan Zona Mu</div></div>`)}
+${s.disc?`<div><span>Subtotal</span><span>${rp(s.sub)}</span></div><div><span>Diskon ${esc(s.promo)}</span><span>-${rp(s.disc)}</span></div>`:""}<div><b>Total</b><b>${rp(s.total)}</b></div>${s.parts?s.parts.map(x=>`<div><span>${x.m=="CASH"?"Tunai":x.m=="QRIS"?"QRIS":"Transfer"}</span><span>${rp(x.amt)}</span></div>`).join("")+`<div><span>Tunai diterima</span><span>${rp(s.cash)}</span></div>`:`<div><span>${s.pay}</span><span>${rp(s.cash)}</span></div>`}${s.bank?`<div><span>Bank</span><span>${esc(s.bank)}</span></div>`:""}<div><span>Kembali</span><span>${rp(s.change)}</span></div><hr><div style="justify-content:center">Terima kasih!</div><div style="justify-content:center">Tentukan Zona Mu</div></div>`)}
 /* ===== RIWAYAT ===== */
 function riwList(){const R=rng(),sc=b=>rf.all||b==br,k=rq.trim().toLowerCase();
 return S.sales.filter(s=>{const d=jk(s.at);return sc(s.br)&&d>=R.from&&d<=R.to&&(!k||s.no.toLowerCase().includes(k))}).slice().reverse()}
@@ -416,7 +418,7 @@ function evoid(id){if(confirm("Batalkan pengeluaran ini?")){S.exp.find(e=>e.id==
 function rep(){const R=rng(),inR=d=>d>=R.from&&d<=R.to,sc=b=>rf.all||b==br;
 const L=S.sales.filter(s=>s.st=="OK"&&sc(s.br)&&inR(jk(s.at))),E=S.exp.filter(e=>e.st=="OK"&&sc(e.br)&&inR(e.date)),B=S.buys.filter(b=>sc(b.br)&&inR(jk(b.at)));
 const omzet=L.reduce((a,s)=>a+s.total,0),h=L.reduce((a,s)=>a+s.hpp,0),ex=E.reduce((a,e)=>a+e.amt,0),pay={},tp={},bb={};
-L.forEach(s=>{pay[s.pay]=(pay[s.pay]||0)+s.total;bb[s.br]=(bb[s.br]||0)+s.total;s.items.forEach(i=>{const t=tp[i.name]||(tp[i.name]={q:0,o:0,h:0});t.q+=i.qty;t.o+=i.price*i.qty;t.h+=i.hpp*i.qty})});
+L.forEach(s=>{(s.parts||[{m:s.pay,amt:s.total}]).forEach(x=>pay[x.m]=(pay[x.m]||0)+x.amt);bb[s.br]=(bb[s.br]||0)+s.total;s.items.forEach(i=>{const t=tp[i.name]||(tp[i.name]={q:0,o:0,h:0});t.q+=i.qty;t.o+=i.price*i.qty;t.h+=i.hpp*i.qty})});
 return{L,E,omzet,disc:L.reduce((a,s)=>a+(s.disc||0),0),h,ex,pay,tp,bb,buy:B.reduce((a,b)=>a+b.t,0)}}
 function vRing(){const r=rep(),c=(t,v)=>`<div class="card"><div class="mut">${t}</div><div class="big">${v}</div></div>`;
 return`
@@ -497,13 +499,24 @@ b.classList.add("ok");setTimeout(()=>b.classList.remove("ok"),1800);render()}
 catch(e){console.error(e);toast("Gagal memperbarui: "+(e.message||e))}
 finally{b.classList.remove("spin");$("#ftl").textContent="Update";delete b.dataset.busy}}
 /* ===== PEMBAYARAN NON-TUNAI (QRIS & rekening bank) ===== */
-let payBank="";
+let payBank="",spM="QRIS",spV=0,spC=0;
+const PM2=()=>payM=="SPLIT"?spM:payM,spAmt=()=>Math.min(tot(),Math.max(0,Math.round(spV||0)));
+function setSP(m){const o=$(".cartp")&&$(".cartp").classList.contains("open");spM=m;render();if(o)cartOpen()}
+function spUp(){spV=+V("sp2")||0;const c=$("#sp1");spC=c?(+c.value||0):0;const n=spAmt(),due=tot()-n;$("#spd").textContent=rp(due);$("#kb2").textContent=rp(Math.max(0,spC-due));if($("#qn"))$("#qn").textContent=rp(n)}
+function spCash(n){const c=$("#sp1");c.value=n==null?tot()-spAmt():n;spUp()}
+const splitUI=()=>{const n=spAmt(),due=tot()-n,nm=spM=="QRIS"?"QRIS":"Transfer";
+return`<div class="cash"><div class="seg s2" style="margin:0 0 10px">${[["QRIS","QRIS"],["TRANSFER","Transfer"]].map(x=>`<button class="${spM==x[0]?"on":""}" onclick="setSP('${x[0]}')">${x[1]}</button>`).join("")}</div>
+<div class="mut sm">Nominal ${nm}</div><input id="sp2" inputmode="numeric" placeholder="Contoh: 20000" value="${spV||""}" oninput="spUp()">
+<div class="kbr"><span>Sisa dibayar tunai</span><b id="spd">${rp(due)}</b></div>
+<div class="mut sm" style="margin-top:8px">Uang tunai diterima</div><input id="sp1" inputmode="numeric" placeholder="Uang tunai diterima" value="${spC||""}" oninput="spUp()">
+<div class="qrow"><button class="qk" onclick="spCash()">Uang pas</button>${[20000,50000,100000].map(v=>`<button class="qk" onclick="spCash(${v})">${v/1000}rb</button>`).join("")}</div>
+<div class="kbr"><span>Kembalian</span><b id="kb2">${rp(Math.max(0,spC-due))}</b></div></div>${payInfo()}`};
 const bankSel=()=>S.pay.banks.find(b=>b.id==payBank)||S.pay.banks[0];
 const bankLbl=()=>{const b=bankSel();return b?b.bank+" "+b.no:""};
 function setPB(id){payBank=id}
-function qrBig(){modal(`<div class="qrb"><img src="${phUrl(S.pay.qris,1200)}" alt="QRIS ZONA" style="max-width:100%;width:420px;cursor:default"><div><b>${rp(tot())}</b></div><button class="btn" style="margin-top:10px" onclick="closeM()">Tutup</button></div>`)}
-const payInfo=()=>{const cf='<p class="mut sm">Konfirmasi pembayaran '+(payM=="QRIS"?"QRIS":"transfer")+' secara manual sebelum menekan Bayar.</p>';
-if(payM=="QRIS")return(S.pay.qris?`<div class="qrb"><img src="${phUrl(S.pay.qris,800)}" alt="QRIS ZONA" onclick="qrBig()"><div class="sm">Total: <b id="qn">${rp(tot())}</b> · ketuk gambar untuk memperbesar</div></div>`:'<p class="mut sm">QRIS belum diunggah. Owner/Manager dapat mengunggahnya di Pengaturan, bagian Pembayaran non-tunai.</p>')+cf;
+function qrBig(){modal(`<div class="qrb"><img src="${phUrl(S.pay.qris,1200)}" alt="QRIS ZONA" style="max-width:100%;width:420px;cursor:default"><div><b>${rp(payM=="SPLIT"?spAmt():tot())}</b></div><button class="btn" style="margin-top:10px" onclick="closeM()">Tutup</button></div>`)}
+const payInfo=()=>{const cf='<p class="mut sm">Konfirmasi pembayaran '+(PM2()=="QRIS"?"QRIS":"transfer")+' secara manual sebelum menekan Bayar.</p>';
+if(PM2()=="QRIS")return(S.pay.qris?`<div class="qrb"><img src="${phUrl(S.pay.qris,800)}" alt="QRIS ZONA" onclick="qrBig()"><div class="sm">${payM=="SPLIT"?"Nominal":"Total"}: <b id="qn">${rp(payM=="SPLIT"?spAmt():tot())}</b> · ketuk gambar untuk memperbesar</div></div>`:'<p class="mut sm">QRIS belum diunggah. Owner/Manager dapat mengunggahnya di Pengaturan, bagian Pembayaran non-tunai.</p>')+cf;
 const bs=S.pay.banks,sel=bankSel();
 return(bs.length?`<div class="bkl">${bs.map(b=>`<label class="bk"><input type="radio" name="bk" ${sel&&sel.id==b.id?"checked":""} onchange="setPB('${b.id}')"><span><b>${esc(b.bank)} · ${esc(b.no)}</b><span class="mut sm">a.n. ${esc(b.name)}</span></span></label>`).join("")}</div>`:'<p class="mut sm">Belum ada rekening bank. Owner/Manager dapat menambahkannya di Pengaturan, bagian Pembayaran non-tunai.</p>')+cf};
 const payCard=()=>`<div class="card" style="margin-bottom:12px"><b>Pembayaran non-tunai</b>
