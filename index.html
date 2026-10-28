@@ -148,6 +148,11 @@ const rp=n=>"Rp"+Math.round(n).toLocaleString("id-ID");
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,5);
 const jk=d=>new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Jakarta"}).format(d?new Date(d):new Date());
 const dt=iso=>new Date(iso).toLocaleString("id-ID",{timeZone:"Asia/Jakarta"});
+/* ===== HARI BUKA (jam potong per cabang) ===== */
+const cutH=b=>{const c=S.branches.find(x=>x.id==b);return c&&c.cut!=null&&Number.isFinite(+c.cut)?+c.cut:5};
+const bdOf=(at,b)=>jk(new Date(new Date(at).getTime()-cutH(b)*36e5));
+const bd=s=>s.day||jk(s.at);
+const tdy=b=>bdOf(Date.now(),b||br);
 function seed(){const st={};["kopi:5000","susu:10000","aren:3000","krimer:2000","cup:200"].forEach(x=>{const[a,b]=x.split(":");st["pusat|"+a]=+b});
 return{branches:[{id:"pusat",name:"ZONA Pusat",addr:"Isi alamat di Pengaturan"}],
 ings:[{id:"kopi",name:"Kopi",unit:"g",cost:200,min:500},{id:"susu",name:"Susu",unit:"ml",cost:18,min:2000},{id:"aren",name:"Gula aren",unit:"g",cost:40,min:500},{id:"krimer",name:"Krimer",unit:"g",cost:60,min:300},{id:"cup",name:"Cup+tutup+sedotan",unit:"unit",cost:900,min:30}],
@@ -217,7 +222,7 @@ async function upw(id){const u=S.users.find(x=>x.id==id),p=prompt("Password baru
 function udel(id){const u=S.users.find(x=>x.id==id);if(u.role=="owner"&&S.users.filter(x=>x.role=="owner").length<2)return alert("Tidak bisa menghapus owner terakhir");if(confirm("Hapus pengguna "+u.username+"?")){S.users=S.users.filter(x=>x.id!=id);save();render()}}
 /* ===== PROMO ===== */
 let vcode="";
-const promoOk=(p,t)=>p.on&&jk()>=p.from&&jk()<=p.to&&(p.br=="all"||p.br==br)&&t>=p.min;
+const promoOk=(p,t)=>{const d=tdy();return p.on&&d>=p.from&&d<=p.to&&(p.br=="all"||p.br==br)&&t>=p.min};
 const pdisc=(p,t)=>Math.min(t,p.type=="P"?Math.round(t*p.val/100):p.val);
 function best(t){let b=null,v=0;const c=[...S.promos.filter(p=>!p.code),...(vcode?S.promos.filter(p=>p.code&&p.code.toLowerCase()==vcode.toLowerCase()):[])];
 c.forEach(p=>{if(promoOk(p,t)){const x=pdisc(p,t);if(x>v){v=x;b=p}}});return{p:b,d:v}}
@@ -287,9 +292,9 @@ if(sp&&(spn<=0||spn>=total))return alert("Isi nominal "+(spM=="QRIS"?"QRIS":"tra
 if(cash<(sp?due:total))return alert(sp?"Uang tunai diterima kurang (sisa tunai "+rp(due)+")":"Uang diterima kurang");
 const use={};cart.forEach(l=>lrec(l).forEach(r=>use[r.i]=(use[r.i]||0)+r.q*l.qty));
 for(const i in use)if(stk(br,i)<use[i])return alert("Stok "+ing(i).name+" tidak cukup di cabang ini");
-const d=jk().replaceAll("-",""),k=br+d;S.seq[k]=(S.seq[k]||0)+1;
+const day=tdy(br),d=day.replaceAll("-",""),k=br+d;S.seq[k]=(S.seq[k]||0)+1;
 const items=cart.map(l=>{const p=prod(l.pid);return{pid:p.id,name:p.name,qty:l.qty,price:unit(l),hpp:Math.round(lhpp(l)),o:[...(l.sz=="L"&&Number.isFinite(p.priceL)?["Large"]:[]),...adl(l).map(a=>a.name)],u:lrec(l).map(r=>({i:r.i,q:r.q}))}});
-const s={id:uid(),no:`ZC-${br.toUpperCase()}-${d}-${String(S.seq[k]).padStart(4,"0")}`,br,at:new Date().toISOString(),items,sub:sb,disc:bp.d,promo:bp.p?bp.p.name:"",total,hpp:items.reduce((a,i)=>a+i.hpp*i.qty,0),pay:sp?"CASH+"+spM:payM,bank:(payM=="TRANSFER"||(sp&&spM=="TRANSFER"))?bankLbl():"",cash,change:cash-(sp?due:total),...(sp?{parts:[{m:"CASH",amt:due},{m:spM,amt:spn}]}:{}),st:"OK"};
+const s={id:uid(),no:`ZC-${br.toUpperCase()}-${d}-${String(S.seq[k]).padStart(4,"0")}`,br,day,at:new Date().toISOString(),items,sub:sb,disc:bp.d,promo:bp.p?bp.p.name:"",total,hpp:items.reduce((a,i)=>a+i.hpp*i.qty,0),pay:sp?"CASH+"+spM:payM,bank:(payM=="TRANSFER"||(sp&&spM=="TRANSFER"))?bankLbl():"",cash,change:cash-(sp?due:total),...(sp?{parts:[{m:"CASH",amt:due},{m:spM,amt:spn}]}:{}),st:"OK"};
 for(const i in use){S.stock[br+"|"+i]=stk(br,i)-use[i];S.mv.push({at:s.at,br,i,d:-use[i],why:"Penjualan "+s.no})}
 S.sales.push(s);cart=[];vcode="";spV=0;spC=0;save();render();receipt(s.id)}
 function receipt(id,size="w58"){const s=S.sales.find(x=>x.id==id),b=S.branches.find(x=>x.id==s.br);
@@ -300,11 +305,11 @@ ${opt(s.items,i=>`<div><span>${i.qty}x ${esc(i.name)}${i.o.length?" ("+esc(i.o.j
 ${s.disc?`<div><span>Subtotal</span><span>${rp(s.sub)}</span></div><div><span>Diskon ${esc(s.promo)}</span><span>-${rp(s.disc)}</span></div>`:""}<div><b>Total</b><b>${rp(s.total)}</b></div>${s.parts?s.parts.map(x=>`<div><span>${x.m=="CASH"?"Tunai":x.m=="QRIS"?"QRIS":"Transfer"}</span><span>${rp(x.amt)}</span></div>`).join("")+`<div><span>Tunai diterima</span><span>${rp(s.cash)}</span></div>`:`<div><span>${s.pay}</span><span>${rp(s.cash)}</span></div>`}${s.bank?`<div><span>Bank</span><span>${esc(s.bank)}</span></div>`:""}<div><span>Kembali</span><span>${rp(s.change)}</span></div><hr><div style="justify-content:center">Terima kasih!</div><div style="justify-content:center">Tentukan Zona Mu</div></div>`)}
 /* ===== RIWAYAT ===== */
 function riwList(){const R=rng(),sc=b=>rf.all||b==br,k=rq.trim().toLowerCase();
-return S.sales.filter(s=>{const d=jk(s.at);return sc(s.br)&&d>=R.from&&d<=R.to&&(!k||s.no.toLowerCase().includes(k))}).slice().reverse()}
+return S.sales.filter(s=>{const d=bd(s);return sc(s.br)&&d>=R.from&&d<=R.to&&(!k||s.no.toLowerCase().includes(k))}).slice().reverse()}
 function vRiwayat(){const L=riwList(),ok=L.filter(s=>s.st=="OK"),MX=300,sh=L.slice(0,MX),cb=!!rf.all&&S.branches.length>1;
 return`${fbar("expRiw()")}<div class="fm np" style="margin-bottom:10px"><input placeholder="Cari nomor transaksi" value="${esc(rq)}" onchange="rq=this.value;render()" style="max-width:100%">${cur.role=="owner"?'<button class="btn r" onclick="delM()">🗑 Hapus riwayat…</button>':""}</div>
 <div id="rep"><p class="mut" style="margin-bottom:8px">${L.length} transaksi · ${ok.length} selesai · Penjualan ${rp(ok.reduce((a,s)=>a+s.total,0))}${L.length>MX?` · menampilkan ${MX} terbaru, persempit filter atau ekspor CSV untuk semua`:""}</p><div class="tw"><table><tr><th>No</th><th>Waktu</th>${cb?"<th>Cabang</th>":""}<th>Item</th><th>Total</th><th>Bayar</th><th>Status</th><th class="np"></th></tr>
-${opt(sh,s=>`<tr><td>${s.no}</td><td>${dt(s.at)}</td>${cb?`<td>${esc(bn(s.br))}</td>`:""}<td>${s.items.reduce((a,i)=>a+i.qty,0)}</td><td>${rp(s.total)}</td><td>${s.pay}</td><td>${s.st=="OK"?"Selesai":'<span class="warn">Batal</span>'}</td><td class="np"><button class="btn s" onclick="receipt('${s.id}')">Struk</button> ${s.st=="OK"?`<button class="btn r" onclick="voidS('${s.id}')">Batalkan</button>`:""}${cur.role=="owner"?` <button class="btn s" onclick="delOne('${s.id}')" aria-label="Hapus transaksi">Hapus</button>`:""}</td></tr>`)||`<tr><td colspan="${cb?8:7}" class="mut">Tidak ada transaksi pada periode ini.</td></tr>`}</table></div></div>`}
+${opt(sh,s=>`<tr><td>${s.no}</td><td>${dt(s.at)}${bd(s)!=jk(s.at)?`<br><span class="mut">Hari buka ${bd(s)}</span>`:""}</td>${cb?`<td>${esc(bn(s.br))}</td>`:""}<td>${s.items.reduce((a,i)=>a+i.qty,0)}</td><td>${rp(s.total)}</td><td>${s.pay}</td><td>${s.st=="OK"?"Selesai":'<span class="warn">Batal</span>'}</td><td class="np"><button class="btn s" onclick="receipt('${s.id}')">Struk</button> ${cur.role!="kepala"?`<button class="btn s" onclick="setDay('${s.id}')">Hari buka</button> `:""}${s.st=="OK"?`<button class="btn r" onclick="voidS('${s.id}')">Batalkan</button>`:""}${cur.role=="owner"?` <button class="btn s" onclick="delOne('${s.id}')" aria-label="Hapus transaksi">Hapus</button>`:""}</td></tr>`)||`<tr><td colspan="${cb?8:7}" class="mut">Tidak ada transaksi pada periode ini.</td></tr>`}</table></div></div>`}
 function expRiw(){csv("riwayat-transaksi.csv",[["No","Waktu","Cabang","Item","Total","Bayar","Status"],...riwList().map(s=>[s.no,dt(s.at),bn(s.br),s.items.reduce((a,i)=>a+i.qty,0),s.total,s.pay,s.st=="OK"?"Selesai":"Batal"])])}
 function voidS(id){const s=S.sales.find(x=>x.id==id);if(s.st!="OK"||!confirm("Batalkan transaksi "+s.no+"? Stok akan dikembalikan."))return;
 s.st="VOID";s.voidAt=new Date().toISOString();s.items.forEach(i=>(i.u||prod(i.pid)?.recipe||[]).forEach(r=>{S.stock[s.br+"|"+r.i]=stk(s.br,r.i)+r.q*i.qty;S.mv.push({at:s.voidAt,br:s.br,i:r.i,d:r.q*i.qty,why:"Pembatalan "+s.no})}));save();render()}
@@ -409,14 +414,14 @@ function xfer(){const to=V("t0"),i=V("t1"),n=+V("t2");if(!(n>0)||n>stk(br,i))ret
 function ning(){const n=V("n1").trim();if(!n||!V("n2"))return alert("Nama & satuan wajib");S.ings.push({id:n.toLowerCase().replace(/\W+/g,"-")+"-"+uid().slice(-3),name:n,unit:V("n2"),cost:+V("n3")||0,min:+V("n4")||0});save();render()}
 /* ===== PENGELUARAN ===== */
 function vKeluar(){const L=S.exp.filter(e=>e.br==br).slice().reverse();
-return`<div class="card fm"><input id="e1" type="date" value="${jk()}"><select id="e2">${opt(["Gaji","Listrik","Air","Internet","Sewa","Transportasi","Perawatan","Promosi","Perlengkapan","Lainnya"],c=>`<option>${c}</option>`)}</select><input id="e3" placeholder="Deskripsi"><input id="e4" type="number" placeholder="Nominal Rp" style="width:120px"><select id="e5"><option>Tunai</option><option>Transfer</option><option>QRIS</option></select><button class="btn" onclick="eadd()">Catat</button></div>
+return`<div class="card fm"><input id="e1" type="date" value="${tdy()}"><select id="e2">${opt(["Gaji","Listrik","Air","Internet","Sewa","Transportasi","Perawatan","Promosi","Perlengkapan","Lainnya"],c=>`<option>${c}</option>`)}</select><input id="e3" placeholder="Deskripsi"><input id="e4" type="number" placeholder="Nominal Rp" style="width:120px"><select id="e5"><option>Tunai</option><option>Transfer</option><option>QRIS</option></select><button class="btn" onclick="eadd()">Catat</button></div>
 <p class="mut">Pembelian bahan baku dicatat di menu Stok (bukan di sini) agar tidak terhitung ganda.</p>
 <div class="tw"><table><tr><th>Tanggal</th><th>Kategori</th><th>Deskripsi</th><th>Nominal</th><th>Status</th><th></th></tr>${opt(L,e=>`<tr><td>${e.date}</td><td>${e.cat}</td><td>${esc(e.desc)}</td><td>${rp(e.amt)}</td><td>${e.st=="OK"?"Aktif":'<span class="warn">Batal</span>'}</td><td>${e.st=="OK"&&cur.role!="kepala"?`<button class="btn r" onclick="evoid('${e.id}')">Batalkan</button>`:""}</td></tr>`)||'<tr><td colspan="6" class="mut">Belum ada pengeluaran.</td></tr>'}</table></div>`}
 function eadd(){const a=Math.round(+V("e4"));if(!(a>0)||!V("e1"))return alert("Tanggal dan nominal wajib");S.exp.push({id:uid(),br,date:V("e1"),cat:V("e2"),desc:V("e3"),amt:a,pm:V("e5"),by:cur.username,st:"OK"});save();render()}
 function evoid(id){if(confirm("Batalkan pengeluaran ini?")){S.exp.find(e=>e.id==id).st="VOID";save();render()}}
 /* ===== LAPORAN ===== */
 function rep(){const R=rng(),inR=d=>d>=R.from&&d<=R.to,sc=b=>rf.all||b==br;
-const L=S.sales.filter(s=>s.st=="OK"&&sc(s.br)&&inR(jk(s.at))),E=S.exp.filter(e=>e.st=="OK"&&sc(e.br)&&inR(e.date)),B=S.buys.filter(b=>sc(b.br)&&inR(jk(b.at)));
+const L=S.sales.filter(s=>s.st=="OK"&&sc(s.br)&&inR(bd(s))),E=S.exp.filter(e=>e.st=="OK"&&sc(e.br)&&inR(e.date)),B=S.buys.filter(b=>sc(b.br)&&inR(bdOf(b.at,b.br)));
 const omzet=L.reduce((a,s)=>a+s.total,0),h=L.reduce((a,s)=>a+s.hpp,0),ex=E.reduce((a,e)=>a+e.amt,0),pay={},tp={},bb={};
 L.forEach(s=>{(s.parts||[{m:s.pay,amt:s.total}]).forEach(x=>pay[x.m]=(pay[x.m]||0)+x.amt);bb[s.br]=(bb[s.br]||0)+s.total;s.items.forEach(i=>{const t=tp[i.name]||(tp[i.name]={q:0,o:0,h:0});t.q+=i.qty;t.o+=i.price*i.qty;t.h+=i.hpp*i.qty})});
 return{L,E,omzet,disc:L.reduce((a,s)=>a+(s.disc||0),0),h,ex,pay,tp,bb,buy:B.reduce((a,b)=>a+b.t,0)}}
@@ -428,7 +433,7 @@ return`
 <div class="tw"><table><tr><th>Produk</th><th>Terjual</th><th>Omzet</th><th>HPP</th><th>Laba kotor</th></tr>${opt(Object.entries(r.tp).sort((a,b)=>b[1].q-a[1].q),([k,t])=>`<tr><td>${esc(k)}</td><td>${t.q}</td><td>${rp(t.o)}</td><td>${rp(t.h)}</td><td>${rp(t.o-t.h)}</td></tr>`)||'<tr><td colspan="5" class="mut">Belum ada data.</td></tr>'}</table></div>`}
 function expCsv(){const r=rep();csv("laporan-penjualan.csv",[["No","Waktu","Cabang","Total","HPP","Bayar"],...r.L.map(s=>[s.no,dt(s.at),bn(s.br),s.total,s.hpp,s.pay])])}
 /* ===== LAPORAN: FILTER & SUB-LAPORAN ===== */
-function rng(){const t=jk();if(rf.m=="hari")return{from:t,to:t};if(rf.m=="kemarin"){const y=jk(new Date(Date.now()-864e5));return{from:y,to:y}}if(rf.m=="bulan"){const[y,m]=t.split("-").map(Number);return{from:t.slice(0,8)+"01",to:new Date(Date.UTC(y,m,0)).toISOString().slice(0,10)}}if(rf.m=="tahun")return{from:t.slice(0,4)+"-01-01",to:t.slice(0,4)+"-12-31"};return{from:rf.from,to:rf.to}}
+function rng(){const t=tdy();if(rf.m=="hari")return{from:t,to:t};if(rf.m=="kemarin"){const y=new Date(Date.parse(t+"T00:00:00Z")-864e5).toISOString().slice(0,10);return{from:y,to:y}}if(rf.m=="bulan"){const[y,m]=t.split("-").map(Number);return{from:t.slice(0,8)+"01",to:new Date(Date.UTC(y,m,0)).toISOString().slice(0,10)}}if(rf.m=="tahun")return{from:t.slice(0,4)+"-01-01",to:t.slice(0,4)+"-12-31"};return{from:rf.from,to:rf.to}}
 const fd=d=>d?new Date(d+"T00:00:00Z").toLocaleDateString("id-ID",{weekday:"short",day:"2-digit",month:"short",year:"numeric",timeZone:"UTC"}):"-";
 const fmo=k=>new Date(k+"-01T00:00:00Z").toLocaleDateString("id-ID",{month:"long",year:"numeric",timeZone:"UTC"});
 const rn=n=>n<0?`<span style="color:#b42318">-${rp(-n)}</span>`:rp(n);
@@ -442,7 +447,7 @@ return`<div class="tabs">${opt(T,x=>`<button class="${x[0]==t[0]?"on":""}" oncli
 /* data harian: dari riwayat transaksi (selain batal) + pengeluaran aktif */
 function dayList(){const R=rng(),sc=b=>rf.all||b==br,m={};
 const g=d=>m[d]||(m[d]={d,n:0,om:0,h:0,ex:0,disc:0,items:{}});
-S.sales.forEach(s=>{if(s.st!="OK"||!sc(s.br))return;const d=jk(s.at);if(d<R.from||d>R.to)return;const x=g(d);x.n++;x.om+=s.total;x.h+=s.hpp;x.disc+=s.disc||0;
+S.sales.forEach(s=>{if(s.st!="OK"||!sc(s.br))return;const d=bd(s);if(d<R.from||d>R.to)return;const x=g(d);x.n++;x.om+=s.total;x.h+=s.hpp;x.disc+=s.disc||0;
 s.items.forEach(i=>{const t=x.items[i.name]||(x.items[i.name]={q:0,o:0,h:0});t.q+=i.qty;t.o+=i.price*i.qty;t.h+=i.hpp*i.qty})});
 S.exp.forEach(e=>{if(e.st!="OK"||!sc(e.br)||e.date<R.from||e.date>R.to)return;g(e.date).ex+=e.amt});
 const all=[];for(let t=Date.parse(R.from+"T00:00:00Z"),e=Date.parse(R.to+"T00:00:00Z");t<=e;t+=864e5)all.push(new Date(t).toISOString().slice(0,10));
@@ -481,7 +486,7 @@ const tb=new Set([...(sv.tomb||[]),...(lc.tomb||[])]);sv.tomb=[...tb];sv.sales=s
 Object.keys(lc.seq||{}).forEach(k=>sv.seq[k]=Math.max(sv.seq[k]||0,lc.seq[k]));
 const sid=new Map(sv.sales.map(x=>[x.id,x])),nos=new Set(sv.sales.map(x=>x.no));
 (lc.sales||[]).forEach(x=>{const o=sid.get(x.id);
-if(!o){if(tb.has(x.id))return;if(nos.has(x.no)){const d=jk(x.at).replaceAll("-",""),k=x.br+d;sv.seq[k]=(sv.seq[k]||0)+1;x.no=`ZC-${x.br.toUpperCase()}-${d}-${String(sv.seq[k]).padStart(4,"0")}`}
+if(!o){if(tb.has(x.id))return;if(nos.has(x.no)){const d=bd(x).replaceAll("-",""),k=x.br+d;sv.seq[k]=(sv.seq[k]||0)+1;x.no=`ZC-${x.br.toUpperCase()}-${d}-${String(sv.seq[k]).padStart(4,"0")}`}
 nos.add(x.no);if(x.st=="OK")use(x,-1);sv.sales.push(x);ns++}
 else if(x.st=="VOID"&&o.st=="OK"){o.st="VOID";o.voidAt=x.voidAt;use(o,1);nv++}});
 const eid=new Map(sv.exp.map(e=>[e.id,e]));(lc.exp||[]).forEach(e=>{const o=eid.get(e.id);if(!o){if(tb.has(e.id))return;sv.exp.push(e);ne++}else if(e.st=="VOID"&&o.st=="OK"){o.st="VOID";nv++}});
@@ -545,9 +550,11 @@ S.pay.qris=j.id;save();$("#qrd").style.display="inline-block";st.textContent="QR
 catch(e){console.error(e);st.textContent="Gagal unggah: "+e.message}
 finally{el.disabled=false;URL.revokeObjectURL(u)}};img.src=u}
 /* ===== PENGATURAN ===== */
-function vSet(){return`<div class="card" style="margin-bottom:12px"><b>Ubah password saya</b><div class="fm" style="margin-top:8px">${pwf("pw0","Kata sandi lama","current-password")}${pwf("pw1","Kata sandi baru","new-password")}<button class="btn" onclick="chpw()">Ubah</button></div></div>${payCard()}<div class="card" style="margin-bottom:12px"><b>Cabang</b>${opt(S.branches,b=>`<div style="margin:6px 0">${esc(b.name)} — ${esc(b.addr||"")} <button class="btn s" onclick="bedit('${b.id}')">Edit</button></div>`)}<div class="fm"><input id="b1" placeholder="Nama cabang baru"><input id="b2" placeholder="Alamat"><button class="btn" onclick="badd()">Tambah cabang</button></div></div>
+function vSet(){return`<div class="card" style="margin-bottom:12px"><b>Ubah password saya</b><div class="fm" style="margin-top:8px">${pwf("pw0","Kata sandi lama","current-password")}${pwf("pw1","Kata sandi baru","new-password")}<button class="btn" onclick="chpw()">Ubah</button></div></div>${payCard()}<div class="card" style="margin-bottom:12px"><b>Cabang</b>${opt(S.branches,b=>`<div style="margin:6px 0">${esc(b.name)} — ${esc(b.addr||"")} <button class="btn s" onclick="bedit('${b.id}')">Edit</button> <span class="mut">Jam potong hari buka: ${String(cutH(b.id)).padStart(2,"0")}.00</span> <button class="btn s" onclick="bcut('${b.id}')">Atur jam potong</button></div>`)}<div class="fm"><input id="b1" placeholder="Nama cabang baru"><input id="b2" placeholder="Alamat"><button class="btn" onclick="badd()">Tambah cabang</button></div></div>
 <div class="card"><b>Data & backup</b><p class="mut">Data disinkronkan ke Firebase Firestore (proyek zona-c04ee) dan tersimpan juga di browser ini sebagai cadangan. Perangkat lain yang membuka halaman ini otomatis menerima perubahan. Jika dua perangkat mengubah data bersamaan, perubahan terakhir yang menang. Tetap ekspor backup secara berkala.</p><div class="fm" style="margin-top:8px"><button class="btn" onclick="bak()">Ekspor backup JSON</button><input type="file" id="imp" accept=".json" onchange="impF(this)"><button class="btn r" onclick="rst()">Reset semua data</button></div></div>`}
 function badd(){const n=V("b1").trim();if(!n)return alert("Nama wajib");S.branches.push({id:"c"+uid(),name:n,addr:V("b2")});save();render()}
+function bcut(id){const b=S.branches.find(x=>x.id==id),v=prompt("Jam potong hari buka untuk "+b.name+" (0-12, WIB).\nTransaksi sebelum jam ini dihitung ke hari buka sebelumnya.\nContoh: 5 = transaksi 00.00-04.59 masuk laporan hari kemarin. 0 = ganti hari tepat tengah malam.\nBerlaku untuk transaksi baru; laporan lama tidak berubah.",cutH(id));if(v===null)return;const n=Math.round(+v);if(v.trim()===""||!(n>=0&&n<=12))return alert("Isi angka 0 sampai 12");b.cut=n;save();render()}
+function setDay(id){const s=S.sales.find(x=>x.id==id),v=prompt("Hari buka untuk "+s.no+" (format YYYY-MM-DD).\nWaktu transaksi asli tidak berubah.",bd(s));if(v===null)return;if(!/^\d{4}-\d{2}-\d{2}$/.test(v.trim())||isNaN(Date.parse(v.trim())))return alert("Format tanggal harus YYYY-MM-DD");s.day=v.trim();save();render()}
 function bedit(id){const b=S.branches.find(x=>x.id==id),n=prompt("Nama cabang",b.name);if(n){b.name=n;b.addr=prompt("Alamat",b.addr||"")??b.addr;save();render()}}
 function bak(){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(S)],{type:"application/json"}));a.download="zona-backup-"+jk()+".json";a.click()}
 function impF(el){const f=el.files[0];if(!f)return;f.text().then(t=>{try{const d=JSON.parse(t);if(!d.products||!d.branches)throw 0;if(confirm("Timpa semua data saat ini dengan backup?")){d.users=S.users;S=d;S.promos=S.promos||[];fixS();save();br=S.branches[0].id;render()}}catch{alert("File backup tidak valid")}})}
