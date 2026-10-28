@@ -342,7 +342,7 @@ function vKasir(){if(cat&&!cats().includes(cat))cat="";const n=cart.reduce((a,l)
 return`<div class="pos"><section>${modeBar()}<div class="srch">${SRCH}<input placeholder="Cari produk" aria-label="Cari produk" value="${esc(q)}" oninput="q=this.value;$('#grid').innerHTML=grid()"></div><div class="chipsr" id="chips">${chips()}</div><div class="gcs" id="gcs"><span class="mut">Kolom</span>${gcBtns()}</div><div class="pg" id="grid" style="--gc:${GC}">${grid()}</div></section>
 <aside class="cartp"><div class="cph"><div><b class="cpt">Pesanan</b><span class="mut" id="cn">${n} item</span></div><div><button class="lnk" onclick="clr()">Kosongkan</button><button class="btn s mclose" onclick="cartClose()">Tutup ✕</button></div></div>
 <div class="cbody"><div id="cl">${lines()}</div>
-<div class="vch"><input id="vc" placeholder="Kode voucher" value="${esc(vcode)}"><button class="btn s" onclick="vcode=V('vc').trim();refC();if(vcode&&!best(sub()).p)alert('Voucher tidak berlaku (kode salah, belum memenuhi syarat, atau promo otomatis lebih besar)')">Pakai</button></div><div id="dsc">${dscH()}</div>
+${qnH()}<div class="vch"><input id="vc" placeholder="Kode voucher" value="${esc(vcode)}"><button class="btn s" onclick="vcode=V('vc').trim();refC();if(vcode&&!best(sub()).p)alert('Voucher tidak berlaku (kode salah, belum memenuhi syarat, atau promo otomatis lebih besar)')">Pakai</button></div><div id="dsc">${dscH()}</div>
 </div>
 <div class="cft"><div class="ttr"><span>Total</span><b class="big" id="tt">${rp(tot())}</b></div><button class="pay" id="pb" onclick="payOpen()">Pembayaran · ${rp(tot())}</button></div></aside>
 <div class="cbd" onclick="cartClose()"></div>
@@ -373,18 +373,18 @@ if(sp&&(spn<=0||spn>=total))return alert("Isi nominal "+(spM=="QRIS"?"QRIS":"tra
 if(cash<(sp?due:total))return alert(sp?"Uang tunai diterima kurang (sisa tunai "+rp(due)+")":"Uang diterima kurang");
 const use={};cart.forEach(l=>lrec(l).forEach(r=>use[r.i]=(use[r.i]||0)+r.q*l.qty));
 for(const i in use)if(stk(br,i)<use[i])return alert("Stok "+ing(i).name+" tidak cukup di cabang ini");
-const day=tdy(br),d=day.replaceAll("-",""),k=br+d;S.seq[k]=(S.seq[k]||0)+1;
+const day=tdy(br),d=day.replaceAll("-",""),k=br+d,qn=String($("#qno")?V("qno"):qnVal()).trim().slice(0,12);S.seq[k]=(S.seq[k]||0)+1;
 const items=cart.map(l=>{const p=prod(l.pid);return{pid:p.id,name:p.name,qty:l.qty,price:unit(l),hpp:Math.round(lhpp(l)),o:[...(l.sz=="L"&&Number.isFinite(p.priceL)?["Large"]:[]),...adl(l).map(a=>a.name)],u:lrec(l).map(r=>({i:r.i,q:r.q}))}});
-const s={id:uid(),no:`ZC-${br.toUpperCase()}-${d}-${String(S.seq[k]).padStart(4,"0")}`,br,day,by:cur.username,nm:cur.name||cur.username,dev:DEV,ev:evOn()?(S.event.name||"Event"):"",at:new Date().toISOString(),items,sub:sb,disc:bp.d,promo:bp.p?bp.p.name:"",total,hpp:items.reduce((a,i)=>a+i.hpp*i.qty,0),pay:sp?"CASH+"+spM:payM,bank:(payM=="TRANSFER"||(sp&&spM=="TRANSFER"))?bankLbl():"",cash,change:cash-(sp?due:total),...(sp?{parts:[{m:"CASH",amt:due},{m:spM,amt:spn}]}:{}),st:"OK"};
+const s={id:uid(),no:`ZC-${br.toUpperCase()}-${d}-${String(S.seq[k]).padStart(4,"0")}`,br,day,by:cur.username,nm:cur.name||cur.username,dev:DEV,ev:evOn()?(S.event.name||"Event"):"",at:new Date().toISOString(),items,sub:sb,disc:bp.d,promo:bp.p?bp.p.name:"",total,hpp:items.reduce((a,i)=>a+i.hpp*i.qty,0),pay:sp?"CASH+"+spM:payM,bank:(payM=="TRANSFER"||(sp&&spM=="TRANSFER"))?bankLbl():"",cash,change:cash-(sp?due:total),...(qn?{qn}:{}),...(sp?{parts:[{m:"CASH",amt:due},{m:spM,amt:spn}]}:{}),st:"OK"};
 for(const i in use){S.stock[br+"|"+i]=stk(br,i)-use[i];S.mv.push({at:s.at,br,i,d:-use[i],why:"Penjualan "+s.no})}
-S.sales.push(s);cart=[];vcode="";spV=0;spC=0;save();render();receipt(s.id);rcAuto(s.id)}
+S.sales.push(s);if(/^\d{1,9}$/.test(qn)){S.qn=S.qn||{};S.qn[br+day]=+qn}qno=null;cart=[];vcode="";spV=0;spC=0;save();render();receipt(s.id);rcAuto(s.id);kAuto(s.id)}
 /* ===== RIWAYAT ===== */
 function riwList(){const R=rng(),sc=b=>allB()||b==br,k=rq.trim().toLowerCase();
 return S.sales.filter(s=>{const d=bd(s);return sc(s.br)&&d>=R.from&&d<=R.to&&(!k||s.no.toLowerCase().includes(k))}).slice().reverse()}
 function vRiwayat(){const L=riwList(),ok=L.filter(s=>s.st=="OK"),MX=300,sh=L.slice(0,MX),cb=allB()&&S.branches.length>1;
 return`${fbar("expRiw()")}<div class="fm np" style="margin-bottom:10px"><input placeholder="Cari nomor transaksi" value="${esc(rq)}" onchange="rq=this.value;render()" style="max-width:100%">${cur.role=="owner"?'<button class="btn r" onclick="delM()">🗑 Hapus riwayat…</button>':""}</div>
 <div id="rep"><p class="mut" style="margin-bottom:8px">${L.length} transaksi · ${ok.length} selesai · Penjualan ${rp(ok.reduce((a,s)=>a+s.total,0))}${L.length>MX?` · menampilkan ${MX} terbaru, persempit filter atau ekspor CSV untuk semua`:""}</p><div class="tw"><table><tr><th>No</th><th>Waktu</th>${cb?"<th>Cabang</th>":""}<th>Item</th><th>Total</th><th>Bayar</th><th>Status</th><th class="np"></th></tr>
-${opt(sh,s=>`<tr><td>${s.no}</td><td>${dt(s.at)}${bd(s)!=jk(s.at)?`<br><span class="mut">Hari buka ${bd(s)}</span>`:""}${s.by?`<br><span class="mut">Kasir ${esc(s.nm||s.by)}</span>`:""}${s.ev?`<br><span class="mut">🎪 ${esc(s.ev)}</span>`:""}${s.voidWhy?`<br><span class="warn">Batal: ${esc(s.voidWhy)}</span>`:""}</td>${cb?`<td>${esc(bn(s.br))}</td>`:""}<td>${s.items.reduce((a,i)=>a+i.qty,0)}</td><td>${rp(s.total)}</td><td>${s.pay}</td><td>${s.st=="OK"?"Selesai":'<span class="warn">Batal</span>'}</td><td class="np"><button class="btn s" onclick="receipt('${s.id}')">Struk</button> ${!brLock(cur)?`<button class="btn s" onclick="setDay('${s.id}')">Hari buka</button> `:""}${s.st=="OK"?`<button class="btn r" onclick="voidS('${s.id}')">Batalkan</button>`:""}${cur.role=="owner"?` <button class="btn s" onclick="delOne('${s.id}')" aria-label="Hapus transaksi">Hapus</button>`:""}</td></tr>`)||`<tr><td colspan="${cb?8:7}" class="mut">Tidak ada transaksi pada periode ini.</td></tr>`}</table></div></div>`}
+${opt(sh,s=>`<tr><td>${s.no}${s.qn?`<br><span class="mut">No. urut ${esc(s.qn)}</span>`:""}</td><td>${dt(s.at)}${bd(s)!=jk(s.at)?`<br><span class="mut">Hari buka ${bd(s)}</span>`:""}${s.by?`<br><span class="mut">Kasir ${esc(s.nm||s.by)}</span>`:""}${s.ev?`<br><span class="mut">🎪 ${esc(s.ev)}</span>`:""}${s.voidWhy?`<br><span class="warn">Batal: ${esc(s.voidWhy)}</span>`:""}</td>${cb?`<td>${esc(bn(s.br))}</td>`:""}<td>${s.items.reduce((a,i)=>a+i.qty,0)}</td><td>${rp(s.total)}</td><td>${s.pay}</td><td>${s.st=="OK"?"Selesai":'<span class="warn">Batal</span>'}</td><td class="np">${KT().mode!="off"?`<button class="btn s" onclick="kPrint('${s.id}')">${KT().mode=="list"?"Cetak dapur":"Cetak stiker"}</button> `:""}<button class="btn s" onclick="receipt('${s.id}')">Struk</button> ${!brLock(cur)?`<button class="btn s" onclick="setDay('${s.id}')">Hari buka</button> `:""}${s.st=="OK"?`<button class="btn r" onclick="voidS('${s.id}')">Batalkan</button>`:""}${cur.role=="owner"?` <button class="btn s" onclick="delOne('${s.id}')" aria-label="Hapus transaksi">Hapus</button>`:""}</td></tr>`)||`<tr><td colspan="${cb?8:7}" class="mut">Tidak ada transaksi pada periode ini.</td></tr>`}</table></div></div>`}
 function expRiw(){csv("riwayat-transaksi.csv",[["No","Waktu","Hari buka","Cabang","Item","Total","Bayar","Status","Kasir","Alasan batal","Event"],...riwList().map(s=>[s.no,dt(s.at),bd(s),bn(s.br),s.items.reduce((a,i)=>a+i.qty,0),s.total,s.pay,s.st=="OK"?"Selesai":"Batal",s.by||"",s.voidWhy||"",s.ev||""])])}
 function voidS(id){const s=S.sales.find(x=>x.id==id);if(!cur||brLock(cur))return alert("Hanya Manager atau Owner yang bisa membatalkan transaksi");if(s.st!="OK")return;
 const why=(prompt("Alasan pembatalan "+s.no+" (wajib diisi). Stok akan dikembalikan.")||"").trim();if(why.length<3)return alert("Alasan wajib diisi (min. 3 karakter). Transaksi tidak dibatalkan.");
@@ -628,10 +628,19 @@ finally{el.disabled=false;URL.revokeObjectURL(u)}};img.src=u}
 /* ===== PENGATURAN ===== */
 /* ===== PRINTER & STRUK ===== */
 /* Pengaturan printer: tersimpan per perangkat (localStorage). Isi struk: tersimpan di S.rc (ikut sinkron ke semua perangkat). */
-const PKEY="zona_prn_v1",PDEF={mode:"browser",name:"",paper:"w58",cpl:0,copies:1,auto:false,cut:true,drawer:false,feed:3,chunk:100,delay:25,baud:9600,logoW:240};
-let PCFG=(()=>{try{return{...PDEF,...JSON.parse(localStorage.getItem(PKEY)||"{}")}}catch{return{...PDEF}}})();
-const pSave=()=>{try{localStorage.setItem(PKEY,JSON.stringify(PCFG))}catch{}};
-const PST={t:"",dev:null,ch:null,port:null,w:null,ep:0,n:0,busy:false,msg:"",bad:false,name:""};
+const PKEYS=["zona_prn_v1","zona_prn_dapur_v1","zona_prn_stiker_v1"],PKEY=PKEYS[0],PDEF={mode:"browser",name:"",paper:"w58",cpl:0,copies:1,auto:false,cut:true,drawer:false,feed:3,chunk:100,delay:25,baud:9600,logoW:240};
+const PDEFS=[PDEF,{...PDEF},{...PDEF,paper:"s50",feed:2}];
+const pLoad=n=>{try{return{...PDEFS[n],...JSON.parse(localStorage.getItem(PKEYS[n])||"{}")}}catch{return{...PDEFS[n]}}};
+/* slot printer: 0 = kasir (struk), 1 = dapur (daftar pesanan, opsional terpisah), 2 = stiker gelas */
+const PCS=[pLoad(0),pLoad(1),pLoad(2)],PSTS=[0,1,2].map(()=>({t:"",dev:null,ch:null,port:null,w:null,ep:0,n:0,busy:false,msg:"",bad:false,name:""}));
+let PSL=0;
+const PCFG=new Proxy({},{get:(_,k)=>PCS[PSL][k],set:(_,k,v)=>{PCS[PSL][k]=v;return true}});
+const PST=new Proxy({},{get:(_,k)=>PSTS[PSL][k],set:(_,k,v)=>{PSTS[PSL][k]=v;return true}});
+const pSave=()=>{try{localStorage.setItem(PKEYS[PSL],JSON.stringify(PCS[PSL]))}catch{}};
+const S1=(n,f)=>{const o=PSL;PSL=n;try{return f()}finally{PSL=o}};
+let PQ=Promise.resolve();
+const pJob=(n,f)=>{const r=PQ.then(async()=>{const o=PSL;PSL=n;try{const v=await f();if(PCS[n].mode=="rawbt")await sleep(900);return v}finally{PSL=o}});PQ=r.catch(()=>{});return r};
+const AT=(n,f)=>pJob(n,async()=>f());
 const MODEN={ble:"Bluetooth (BLE)",usb:"USB",serial:"Serial / Bluetooth SPP",rawbt:"RawBT (Android)",browser:"Dialog cetak browser"};
 const MHELP={
 ble:"Untuk printer thermal Bluetooth Low Energy (BLE). Didukung Chrome/Edge di Android, Windows, macOS, Linux, ChromeOS. Tidak didukung Safari/iOS. Banyak printer 58 mm murah memakai Bluetooth Classic (SPP) dan tidak akan muncul di daftar: pakai mode RawBT (Android) atau Serial.",
@@ -639,7 +648,7 @@ usb:"Untuk printer thermal yang dicolok lewat kabel USB (Chrome/Edge desktop dan
 serial:"Untuk port serial/COM atau Bluetooth SPP yang sudah dipasangkan di sistem (Chrome/Edge desktop). Pilih baud rate sesuai printer di bagian Lanjutan (umumnya 9600 atau 115200).",
 rawbt:"Khusus Android. Pasang aplikasi RawBT dari Play Store, pasangkan printer Bluetooth di aplikasi itu, lalu tekan Cetak: RawBT terbuka otomatis dan mencetak. Cocok untuk printer Bluetooth Classic. Status koneksi tidak bisa dipantau dari halaman ini.",
 browser:"Memakai dialog cetak bawaan browser (driver printer sistem, AirPrint, atau simpan PDF). Paling kompatibel, tetapi tidak otomatis dan tidak bisa memotong kertas atau membuka laci kas."};
-const DEFC={w58:32,w80:48,a4:48},PAPER={w58:[58,48],w80:[80,72],a4:[110,100]};
+const DEFC={w58:32,w80:48,a4:48,s40:22,s50:28},PAPER={w58:[58,48],w80:[80,72],a4:[110,100],s40:[40,34],s50:[50,44]};
 const cplOf=size=>(+PCFG.cpl>0&&size==PCFG.paper)?Math.min(64,Math.max(16,Math.round(+PCFG.cpl))):(DEFC[size]||32);
 const pSup={ble:()=>!!navigator.bluetooth,usb:()=>!!navigator.usb,serial:()=>!!navigator.serial,rawbt:()=>/android/i.test(navigator.userAgent),browser:()=>true};
 const pOk=()=>{const m=PCFG.mode;return m=="rawbt"||(PST.t==m&&(m!="ble"||!!(PST.dev&&PST.dev.gatt&&PST.dev.gatt.connected)))};
@@ -675,6 +684,7 @@ if(C.phone)B.c("Telp/WA: "+C.phone);
 if(C.head)C.head.split("\n").forEach(x=>x.trim()&&B.c(x.trim()));
 B.hr();
 if(C.showNo)B.lr("No",s.no);
+if(s.qn)B.lr("No. urut",String(s.qn),{b:1});
 if(C.showDate)B.lr("Tanggal",dt(s.at));
 if(C.showCashier&&(s.nm||s.by))B.lr("Kasir",s.nm||s.by);
 if(C.showEvent&&s.ev)B.lr("Event",s.ev);
@@ -705,7 +715,7 @@ return B.L}
 /* ---- pratinjau HTML ---- */
 function linesHtml(L,size,zoom){const cpl=cplOf(size),P=PAPER[size]||PAPER.w58,fs=(P[1]*3.7795/(cpl*.6)).toFixed(2),pad=((P[0]-P[1])/2).toFixed(1);
 return`<div class="rc rm" style="width:${P[0]}mm;padding:0 ${pad}mm;font-size:${fs}px${zoom?";zoom:"+zoom:""}">${L.map(x=>x.k=="logo"?`<div class="rl" style="text-align:center"><img src="${LOGO}" style="height:52px"></div>`:`<div class="rl" style="text-align:${x.a=="c"?"center":x.a=="r"?"right":"left"};font-size:${x.z||1}em${x.b?";font-weight:700":""}">${esc(x.s)||" "}</div>`).join("")}</div>`}
-function pgSet(size){let st=$("#pgst");if(!st){st=document.createElement("style");st.id="pgst";document.head.appendChild(st)}st.textContent=size=="a4"?"@media print{@page{size:A4;margin:10mm}}":"@media print{@page{size:"+(size=="w80"?80:58)+"mm auto;margin:0}}"}
+function pgSet(size){let st=$("#pgst");if(!st){st=document.createElement("style");st.id="pgst";document.head.appendChild(st)}st.textContent=size=="a4"?"@media print{@page{size:A4;margin:10mm}}":"@media print{@page{size:"+(PAPER[size]?PAPER[size][0]:58)+"mm auto;margin:0}}"}
 function rcPrev(){const e=$("#rcpv");if(e)e.innerHTML=linesHtml(rcLines(rcSample(),RC(),cplOf(PCFG.paper)),PCFG.paper,PCFG.paper=="w80"?1.1:1.3)}
 
 /* ---- ESC/POS ---- */
@@ -739,22 +749,23 @@ const BLE_SV=["000018f0-0000-1000-8000-00805f9b34fb","0000ffe0-0000-1000-8000-00
 const USB_F=[{classCode:7},...[0x0483,0x0416,0x04b8,0x0fe6,0x28e9,0x0519,0x1fc9,0x0dd4,0x20d1,0x1504,0x154f,0x0471,0x1a86,0x067b].map(v=>({vendorId:v}))];
 function pMsg(t,bad){PST.msg=t;PST.bad=!!bad;prnRefresh();toast(t)}
 function pState(){const m=PCFG.mode;if(m=="browser")return[1,"Dialog cetak browser (siap)"];if(m=="rawbt")return[1,"RawBT (aplikasi Android)"];return pOk()?[1,"Terhubung: "+PST.name]:[0,"Belum terhubung"+(PCFG.name?" (terakhir: "+PCFG.name+")":"")]}
-function prnBarH(){const[ok,t]=pState(),m=PCFG.mode,bz=PST.busy?"disabled":"",conn=m=="ble"||m=="usb"||m=="serial";
+function prnBarI(n){const[ok,t]=pState(),m=PCFG.mode,bz=PST.busy?"disabled":"",conn=m=="ble"||m=="usb"||m=="serial";
 return`<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px"><b>Koneksi & tes printer</b><span class="pst ${ok?"on":""}">● ${esc(t)}</span>${PST.busy?'<span class="mut">memproses…</span>':""}</div>
-<div class="fm" style="margin-bottom:8px"><label class="fl" style="flex-direction:row;align-items:center;gap:8px">Jenis printer<select onchange="pMode(this.value)">${Object.keys(MODEN).map(k=>`<option value="${k}" ${m==k?"selected":""}>${MODEN[k]}</option>`).join("")}</select></label>
-${conn?`<button class="btn" ${bz} onclick="pConnect()">${pOk()?"Sambungkan ulang":"Hubungkan printer"}</button>${pOk()?`<button class="btn s" ${bz} onclick="pClose()">Putuskan</button>`:""}`:""}
-<button class="btn" ${bz} onclick="pTest()">Tes printer</button><button class="btn s" ${bz} onclick="pSampleRc()">Cetak struk contoh</button>
-${PCFG.cut&&m!="browser"?`<button class="btn s" ${bz} onclick="pCut()">Tes potong</button>`:""}${PCFG.drawer&&m!="browser"?`<button class="btn s" ${bz} onclick="pDrawer()">Buka laci kas</button>`:""}</div>
+<div class="fm" style="margin-bottom:8px"><label class="fl" style="flex-direction:row;align-items:center;gap:8px">Jenis printer<select onchange="AT(${n},()=>pMode(this.value))">${Object.keys(MODEN).map(k=>`<option value="${k}" ${m==k?"selected":""}>${MODEN[k]}</option>`).join("")}</select></label>
+${conn?`<button class="btn" ${bz} onclick="AT(${n},()=>pConnect())">${pOk()?"Sambungkan ulang":"Hubungkan printer"}</button>${pOk()?`<button class="btn s" ${bz} onclick="AT(${n},()=>pClose())">Putuskan</button>`:""}`:""}
+<button class="btn" ${bz} onclick="AT(${n},()=>pTest())">Tes printer</button><button class="btn s" ${bz} onclick="${n==0?"pSampleRc()":`AT(${n},()=>kSample(${n}))`}">${n==0?"Cetak struk contoh":n==1?"Cetak dapur contoh":"Cetak stiker contoh"}</button>
+${PCFG.cut&&m!="browser"?`<button class="btn s" ${bz} onclick="AT(${n},()=>pCut())">Tes potong</button>`:""}${PCFG.drawer&&m!="browser"?`<button class="btn s" ${bz} onclick="AT(${n},()=>pDrawer())">Buka laci kas</button>`:""}</div>
 <div class="${PST.bad?"warn":"mut"}" style="min-height:1.2em">${esc(PST.msg||"Pilih jenis printer, tekan Hubungkan, lalu Tes printer.")}</div>`}
-const prnMini=()=>{const[ok,t]=pState();return`<span class="pst ${ok?"on":""}">● ${esc(t)}</span>${PCFG.mode=="ble"||PCFG.mode=="usb"||PCFG.mode=="serial"?(pOk()?"":` <button class="btn s" onclick="pConnect()">Hubungkan</button>`):""}`};
-function prnRefresh(){document.querySelectorAll(".prnbar").forEach(e=>e.innerHTML=prnBarH());document.querySelectorAll(".prnmini").forEach(e=>e.innerHTML=prnMini())}
+const prnBarH=(n=0)=>S1(n,()=>prnBarI(n));
+const prnMini=()=>S1(0,()=>{const[ok,t]=pState();return`<span class="pst ${ok?"on":""}">● ${esc(t)}</span>${PCFG.mode=="ble"||PCFG.mode=="usb"||PCFG.mode=="serial"?(pOk()?"":` <button class="btn s" onclick="AT(0,()=>pConnect())">Hubungkan</button>`):""}`})
+function prnRefresh(){document.querySelectorAll(".prnbar").forEach(e=>{e.innerHTML=prnBarH(+e.dataset.s||0)});document.querySelectorAll(".prnmini").forEach(e=>e.innerHTML=prnMini())}
 function pMode(v){PCFG.mode=v;pSave();if(PST.t&&PST.t!=v)pClose(true);PST.msg="";render()}
 function pSet(k,v,re){PCFG[k]=v;if(k=="paper")PCFG.cpl=0;pSave();if(re)render();else rcPrev()}
 async function bleOpen(d){const g=await d.gatt.connect(),sv=await g.getPrimaryServices();let ch=null;
 for(const s of sv){let cs=[];try{cs=await s.getCharacteristics()}catch{}for(const c of cs)if(c.properties.writeWithoutResponse||c.properties.write){ch=c;break}if(ch)break}
 if(!ch){try{d.gatt.disconnect()}catch{}throw new Error("Printer ini tidak punya jalur tulis BLE (kemungkinan Bluetooth Classic). Gunakan mode RawBT atau Serial.")}
 PST.dev=d;PST.ch=ch;PST.t="ble";PST.name=d.name||"Printer BLE";
-if(!d._zl){d._zl=1;d.addEventListener("gattserverdisconnected",()=>{pMsg("Bluetooth terputus. Tekan Hubungkan atau Cetak untuk menyambung lagi.",1)})}}
+if(!d._zl){d._zl=1;const sl=PSL;d.addEventListener("gattserverdisconnected",()=>S1(sl,()=>pMsg("Bluetooth terputus. Tekan Hubungkan atau Cetak untuk menyambung lagi.",1)))}}
 async function usbOpen(d){await d.open();if(!d.configuration)await d.selectConfiguration(1);let pick=null;
 for(const i of d.configuration.interfaces)for(const a of i.alternates){const o=a.endpoints.find(e=>e.direction=="out");if(o&&(!pick||(a.interfaceClass==7&&!pick.c7)))pick={n:i.interfaceNumber,alt:a.alternateSetting,ep:o.endpointNumber,c7:a.interfaceClass==7}}
 if(!pick){try{await d.close()}catch{}throw new Error("Jalur cetak USB tidak ditemukan pada perangkat ini.")}
@@ -800,11 +811,73 @@ const pCut=()=>pRun(async()=>ESC().init().feed(3).cut().out(),"Perintah potong t
 const pDrawer=()=>pRun(async()=>ESC().init().drawer().out(),"Perintah buka laci terkirim");
 function rcDo(id,size){const s=id=="__s"?rcSample():S.sales.find(x=>x.id==id);if(!s)return;
 if(PCFG.mode=="browser"){pgSet(size||PCFG.paper);print();return}
-return pDo(rcLines(s,RC(),cplOf(PCFG.paper)),PCFG.drawer&&isCash(s),"Struk terkirim")}
+return pJob(0,()=>pDo(rcLines(s,RC(),cplOf(PCFG.paper)),PCFG.drawer&&isCash(s),"Struk terkirim"))}
 function rcAuto(id){if(!PCFG.auto)return;if(PCFG.mode=="browser")return void setTimeout(()=>{pgSet(PCFG.paper);print()},500);if(pOk()||PCFG.mode=="rawbt")rcDo(id)}
 /* tampilan struk di modal (dipakai setelah bayar, riwayat, dan struk contoh) */
 function receipt(id,size){size=size||PCFG.paper;const s=id=="__s"?rcSample():S.sales.find(x=>x.id==id);if(!s)return;pgSet(size);
-modal(`<div class="np" style="margin-bottom:8px;display:flex;gap:8px;flex-wrap:wrap;align-items:center"><select onchange="receipt('${id}',this.value)">${opt([["w58","Thermal 58 mm"],["w80","Thermal 80 mm"],["a4","Kertas biasa"]],x=>`<option value="${x[0]}" ${size==x[0]?"selected":""}>${x[1]}</option>`)}</select> <button class="btn" onclick="rcDo('${id}','${size}')">Cetak</button> <button class="btn s" onclick="closeM()">Tutup</button></div><div class="np prnmini" style="margin-bottom:8px">${prnMini()}</div>${linesHtml(rcLines(s,RC(),cplOf(size)),size)}`)}
+modal(`<div class="np" style="margin-bottom:8px;display:flex;gap:8px;flex-wrap:wrap;align-items:center"><select onchange="receipt('${id}',this.value)">${opt([["w58","Thermal 58 mm"],["w80","Thermal 80 mm"],["a4","Kertas biasa"]],x=>`<option value="${x[0]}" ${size==x[0]?"selected":""}>${x[1]}</option>`)}</select> <button class="btn" onclick="rcDo('${id}','${size}')">Cetak</button>${id!="__s"&&KT().mode!="off"?` <button class="btn s" onclick="kPrint('${id}')">${KT().mode=="list"?"Cetak dapur":"Cetak stiker"}</button>`:""} <button class="btn s" onclick="closeM()">Tutup</button></div><div class="np prnmini" style="margin-bottom:8px">${prnMini()}</div>${linesHtml(rcLines(s,RC(),cplOf(size)),size)}`)}
+
+
+/* ===== CETAK DAPUR & STIKER GELAS ===== */
+/* Mode (S.kt.mode) tersimpan di S dan sinkron ke semua perangkat. Sambungan printer dapur/stiker tersimpan per perangkat (slot 1 dan 2). */
+const KTD={mode:"off",auto:true,autoNo:true};
+const KT=()=>({...KTD,...(S.kt||{})});
+const ktSlot=m=>m=="sticker"?2:(PCS[1].own?1:0);
+let qno=null;
+const qnNext=()=>((S.qn||{})[br+tdy(br)]||0)+1;
+const qnVal=()=>qno!==null?qno:(KT().autoNo?String(qnNext()):"");
+const qnH=()=>`<div class="vch" style="margin:10px 0 0"><input id="qno" placeholder="No. urut pesanan" aria-label="Nomor urut pesanan" maxlength="12" value="${esc(qnVal())}" oninput="qno=this.value"><button class="btn s" onclick="qno=null;$('#qno').value=qnVal()">Otomatis</button></div>`;
+function ktSet(k,v){S.kt=S.kt||{};S.kt[k]=v;logA("atur-dapur","dapur",k+"="+v);save();render()}
+function kcSet(n,k,v){S1(n,()=>{PCFG[k]=v;if(k=="paper")PCFG.cpl=0;pSave()});render()}
+function ktLines(s,cpl){const B=LBD(cpl),n=s.qn?String(s.qn):"",tot=s.items.reduce((a,i)=>a+i.qty,0);
+B.c("DAPUR",{b:1,z:2});
+if(n){B.c("No. urut",{b:1});B.c(n,{b:1,z:n.length*3<=cpl?3:(n.length*2<=cpl?2:1)})}
+B.hr();
+B.lr(hm(s.at),"#"+String(s.no).split("-").pop());
+if(s.nm||s.by)B.lr("Kasir",s.nm||s.by);
+if(s.ev)B.lr("Event",s.ev);
+B.hr();
+s.items.forEach(i=>{B.t(i.qty+"x "+i.name,{b:1});if(i.o&&i.o.length)B.t("("+i.o.join(", ")+")",{i:3})});
+B.hr();B.lr("Total item",String(tot),{b:1});
+return B.L}
+function ktStickers(s,cpl){const out=[],tot=s.items.reduce((a,i)=>a+i.qty,0),n=s.qn?"No "+s.qn:"#"+String(s.no).split("-").pop();let k=0;
+s.items.forEach(i=>{for(let j=0;j<i.qty;j++){k++;const B=LBD(cpl);
+B.lr(n,k+"/"+tot,{b:1,z:cpl>=28?2:1});
+B.t(i.name,{b:1});
+if(i.o&&i.o.length)B.t(i.o.join(", "));
+B.t(hm(s.at));
+out.push(B.L)}});
+return out}
+async function pBuildMany(LL){const n=Math.min(5,Math.max(1,+PCFG.copies||1)),parts=[];
+for(const L of LL){const e=await linesBytes(L),fin=ESC().feed(Math.max(0,+PCFG.feed||0));if(PCFG.cut)fin.cut();const body=concatU(e.out(),fin.out());for(let i=0;i<n;i++)parts.push(body)}
+return concatU(...parts)}
+function pgViewMany(LL,size,title){pgSet(size);
+modal(`<div class="np" style="margin-bottom:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center"><b>${esc(title)}</b><button class="btn" onclick="print()">Cetak</button><button class="btn s" onclick="closeM()">Tutup</button></div>${LL.map((L,i)=>`<div style="${i<LL.length-1?"page-break-after:always;break-after:page;":""}margin-bottom:10px">${linesHtml(L,size)}</div>`).join("")}`)}
+function kPrint(id,mode,auto){const s=S.sales.find(x=>x.id==id);if(!s)return;mode=mode||KT().mode;if(mode!="list"&&mode!="sticker")return;
+const n=ktSlot(mode),LL=S1(n,()=>mode=="list"?[ktLines(s,cplOf(PCFG.paper))]:ktStickers(s,cplOf(PCFG.paper))),pm=S1(n,()=>PCFG.mode);
+if(pm=="browser"){if(auto)return;return S1(n,()=>pgViewMany(LL,PCFG.paper,mode=="list"?"Cetakan dapur":"Stiker gelas ("+LL.length+")"))}
+return pJob(n,()=>pRun(()=>pBuildMany(LL),mode=="list"?"Cetakan dapur terkirim":LL.length+" stiker terkirim"))}
+function kAuto(id){const K=KT();if(K.mode=="off"||!K.auto)return;const n=ktSlot(K.mode),ok=S1(n,()=>PCFG.mode=="rawbt"||(PCFG.mode!="browser"&&pOk()));
+if(!ok)return toast((K.mode=="list"?"Printer dapur":"Printer stiker")+" belum siap otomatis. Tekan tombol "+(K.mode=="list"?"Cetak dapur":"Cetak stiker")+" di layar struk.");
+kPrint(id,K.mode,1)}
+function kSample(n){const s={...rcSample(),qn:"12"},L=n==2?ktStickers(s,cplOf(PCFG.paper)):[ktLines(s,cplOf(PCFG.paper))];
+if(PCFG.mode=="browser")return pgViewMany(L,PCFG.paper,n==2?"Contoh stiker":"Contoh cetakan dapur");
+return pRun(()=>pBuildMany(L),n==2?"Contoh stiker terkirim":"Contoh cetakan dapur terkirim")}
+function kSlotH(n){return S1(n,()=>{const P=n==2?[["s40","Stiker 40 mm (22 kolom)"],["s50","Stiker 50 mm (28 kolom)"],["w58","Thermal 58 mm (32 kolom)"],["w80","Thermal 80 mm (48 kolom)"]]:[["w58","Thermal 58 mm (32 kolom)"],["w80","Thermal 80 mm (48 kolom)"]];
+return`<div class="prnbar" data-s="${n}">${prnBarH(n)}</div>
+<div class="pg" style="margin-top:8px">${fsel(n==2?"Ukuran stiker / kertas":"Ukuran kertas",P,PCFG.paper,`kcSet(${n},'paper',this.value)`)}
+<label class="fl">Kolom per baris (0 = otomatis)<input type="number" min="0" max="64" value="${+PCFG.cpl||0}" onchange="kcSet(${n},'cpl',Math.max(0,Math.min(64,Math.round(+this.value||0))))"></label>
+${fsel(n==2?"Salinan tiap stiker":"Jumlah salinan",[1,2,3].map(x=>[x,x+" salinan"]),PCFG.copies,`kcSet(${n},'copies',+this.value)`)}
+<label class="fl">Baris kosong sebelum potong<input type="number" min="0" max="10" value="${+PCFG.feed}" onchange="kcSet(${n},'feed',Math.max(0,Math.min(10,Math.round(+this.value||0))))"></label></div>
+<div style="display:grid;gap:8px;margin-top:4px"><label class="ck"><input type="checkbox" ${PCFG.cut?"checked":""} onchange="kcSet(${n},'cut',this.checked)">${n==2?"Potong setelah tiap stiker (jika printer punya pemotong)":"Potong kertas setelah cetak (jika printer punya pemotong)"}</label></div>`})}
+function ktCard(){const K=KT(),m=K.mode;
+const rad=(v,t,d)=>`<label class="ck" style="align-items:flex-start"><input type="radio" name="ktm" ${m==v?"checked":""} onchange="ktSet('mode','${v}')"><span><b>${t}</b><br><span class="mut">${d}</span></span></label>`;
+return`<div class="card" style="margin-bottom:12px"><b>Cetak pesanan untuk dapur</b><p class="mut" style="margin:6px 0">Pilih cara bagian dapur/bar menerima pesanan setelah kasir menekan Konfirmasi Bayar. Pilihan ini berlaku untuk semua perangkat. Nomor urut diisi kasir di layar Kasir (kolom di atas kode voucher) dan ikut tercetak.</p>
+<div style="display:grid;gap:10px">${rad("off","Nonaktif","Tidak ada cetakan untuk dapur.")}${rad("list","1. Cetakan dapur: semua daftar pesanan","Satu cetakan berisi seluruh item pesanan beserta opsi/add-on dan nomor urut, untuk dipakai dapur menyiapkan pesanan.")}${rad("sticker","2. Stiker per item untuk gelas","Satu stiker untuk setiap gelas (qty 2 = 2 stiker) berisi nomor urut, nama menu, dan opsi. Memakai printer stiker yang terpisah dari printer kasir.")}</div>
+${m!="off"?`<div style="display:grid;gap:10px;margin-top:12px"><label class="ck"><input type="checkbox" ${K.auto?"checked":""} onchange="ktSet('auto',this.checked)">Cetak otomatis setelah pembayaran selesai (printer harus sudah terhubung)</label>
+<label class="ck"><input type="checkbox" ${K.autoNo?"checked":""} onchange="ktSet('autoNo',this.checked)">Isi nomor urut otomatis di layar Kasir (kasir tetap bisa mengubahnya)</label></div>`:""}</div>
+${m=="list"?`<div class="card" style="margin-bottom:12px"><b>Printer dapur</b><p class="mut" style="margin:6px 0">Sambungan printer disimpan di perangkat ini saja. Tanpa printer terpisah, cetakan dapur keluar di printer kasir (diatur di Printer & Struk).</p><label class="ck"><input type="checkbox" ${PCS[1].own?"checked":""} onchange="kcSet(1,'own',this.checked)">Pakai printer terpisah khusus dapur</label>${PCS[1].own?`<div style="margin-top:10px">${kSlotH(1)}</div>`:""}</div>`:""}
+${m=="sticker"?`<div class="card" style="margin-bottom:12px"><b>Printer stiker gelas</b><p class="mut" style="margin:6px 0">Printer ini terpisah dari printer kasir dan disimpan di perangkat ini saja. Printer stiker harus mendukung perintah ESC/POS. Dengan jenis Dialog cetak browser, stiker tidak bisa otomatis: tekan tombol Cetak stiker di layar struk.</p>${kSlotH(2)}</div>`:""}`}
 
 /* ---- tombol Back ponsel ---- */
 let exitT=0;
@@ -818,7 +891,8 @@ if(Date.now()-exitT<2000){history.back();return}
 exitT=Date.now();history.pushState({zv:view},"");toast("Tekan Back sekali lagi untuk keluar")});
 /* ---- Pengaturan > Printer & Struk (satu menu, dua tab) ---- */
 let ptab="printer";
-function vPrnMenu(){return`<div class="tabs"><button class="${ptab=="printer"?"on":""}" onclick="ptab='printer';render()">Printer</button><button class="${ptab=="struk"?"on":""}" onclick="ptab='struk';render()">Struk</button></div>`+(ptab=="struk"?vStrukTab():vPrinterTab())}
+function vPrnMenu(){return S1(0,vPrnMenu0)}
+function vPrnMenu0(){return`<div class="tabs"><button class="${ptab=="printer"?"on":""}" onclick="ptab='printer';render()">Printer</button><button class="${ptab=="struk"?"on":""}" onclick="ptab='struk';render()">Struk</button></div>`+(ptab=="struk"?vStrukTab():vPrinterTab())}
 /* ---- halaman Pengaturan > Printer ---- */
 const fsel=(l,opts,val,fn)=>`<label class="fl">${l}<select onchange="${fn}">${opts.map(o=>`<option value="${o[0]}" ${String(o[0])==String(val)?"selected":""}>${o[1]}</option>`).join("")}</select></label>`;
 const pck=(k,l)=>`<label class="ck"><input type="checkbox" ${PCFG[k]?"checked":""} onchange="pSet('${k}',this.checked)">${l}</label>`;
@@ -844,7 +918,7 @@ ${m=="serial"?fsel("Baud rate",[9600,19200,38400,57600,115200].map(n=>[n,n]),PCF
 <p><b>Cetak lambat atau putus di tengah (Bluetooth):</b> kecilkan ukuran paket dan naikkan jeda, atau matikan logo di menu Struk.</p>
 <p><b>Logo tidak keluar / terlalu gelap:</b> kecilkan lebar logo atau matikan logo.</p>
 <p><b>Tidak memotong / laci tidak terbuka:</b> pastikan printer punya pemotong dan kabel laci (RJ11) terpasang, lalu tes lewat tombol Tes potong / Buka laci kas.</p></div></details>`}
-function pReset(){if(!confirm("Kembalikan semua pengaturan printer di perangkat ini?"))return;if(PST.t)pClose(true);PCFG={...PDEF};pSave();render()}
+function pReset(){if(!confirm("Kembalikan semua pengaturan printer di perangkat ini?"))return;if(PST.t)pClose(true);PCS[PSL]={...PDEFS[PSL]};pSave();render()}
 const prnLink=()=>`<div class="card" style="margin-bottom:12px"><b>Printer & struk</b><p class="mut" style="margin:6px 0">Hubungkan printer thermal, tes cetak, dan atur tampilan struk.</p><div class="fm"><button class="btn" onclick="ptab='printer';go('printer')">Pengaturan printer</button><button class="btn s" onclick="ptab='struk';go('printer')">Pengaturan struk</button></div></div>`;
 
 /* ---- halaman Pengaturan > Struk ---- */
@@ -864,15 +938,15 @@ ${rck("showNo","Nomor transaksi")}${rck("showDate","Tanggal & jam")}${rck("showC
 <div class="stk card"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><b>Pratinjau</b>${fsel("",[["w58","58 mm"],["w80","80 mm"]],size,"pSet('paper',this.value,1)")}</div><p class="mut" style="margin:6px 0">Contoh transaksi, ${cplOf(size)} kolom. Hasil di printer bisa sedikit berbeda.</p><div class="rz" id="rcpv">${linesHtml(rcLines(rcSample(),RC(),cplOf(size)),size,size=="w80"?1.1:1.3)}</div></div></div>`}
 
 /* sambung ulang otomatis ke perangkat yang pernah diizinkan */
-if(navigator.usb)navigator.usb.addEventListener("disconnect",e=>{if(e.device===PST.dev){PST.t="";PST.dev=null;pMsg("Printer USB terlepas.",1)}});
-if(navigator.serial)navigator.serial.addEventListener("disconnect",e=>{if(e.target===PST.port){PST.t="";PST.port=null;PST.w=null;pMsg("Port serial terputus.",1)}});
-setTimeout(async()=>{try{const m=PCFG.mode;
-if(m=="usb"&&navigator.usb){const ds=await navigator.usb.getDevices(),d=ds.find(x=>x.productName==PCFG.name)||ds[0];if(d){await usbOpen(d);prnRefresh()}}
-else if(m=="serial"&&navigator.serial){const ps=await navigator.serial.getPorts();if(ps[0]){await serOpen(ps[0]);prnRefresh()}}
-else if(m=="ble"&&navigator.bluetooth&&navigator.bluetooth.getDevices){const d=(await navigator.bluetooth.getDevices()).find(x=>x.name==PCFG.name);if(d){await bleOpen(d);prnRefresh()}}}catch(e){console.log("sambung ulang printer:",e)}},800);
+if(navigator.usb)navigator.usb.addEventListener("disconnect",e=>{PSTS.forEach((p,i)=>{if(e.device===p.dev){p.t="";p.dev=null;S1(i,()=>pMsg("Printer USB terlepas.",1))}})});
+if(navigator.serial)navigator.serial.addEventListener("disconnect",e=>{PSTS.forEach((p,i)=>{if(e.target===p.port){p.t="";p.port=null;p.w=null;S1(i,()=>pMsg("Port serial terputus.",1))}})});
+setTimeout(async()=>{for(const n of [0,1,2])await pJob(n,async()=>{try{const m=PCFG.mode;
+if(m=="usb"&&navigator.usb){const ds=await navigator.usb.getDevices(),d=ds.find(x=>x.productName==PCFG.name&&!PSTS.some((p,i)=>i!=PSL&&p.dev===x))||(PSL==0?ds.find(x=>!PSTS.some(p=>p.dev===x)):null);if(d){await usbOpen(d);prnRefresh()}}
+else if(m=="serial"&&navigator.serial){const ps=await navigator.serial.getPorts();if(ps[PSL]){await serOpen(ps[PSL]);prnRefresh()}}
+else if(m=="ble"&&navigator.bluetooth&&navigator.bluetooth.getDevices){const d=(await navigator.bluetooth.getDevices()).find(x=>PCFG.name&&x.name==PCFG.name);if(d){await bleOpen(d);prnRefresh()}}}catch(e){console.log("sambung ulang printer:",e)}})},800);
 
 
-function vSet(){return`${prnLink()}<div class="card" style="margin-bottom:12px"><b>Ubah password saya</b><div class="fm" style="margin-top:8px">${pwf("pw0","Kata sandi lama","current-password")}${pwf("pw1","Kata sandi baru","new-password")}<button class="btn" onclick="chpw()">Ubah</button></div></div>${payCard()}${logCard()}<div class="card" style="margin-bottom:12px"><b>Cabang</b>${opt(S.branches,b=>`<div style="margin:6px 0">${esc(b.name)} — ${esc(b.addr||"")} <button class="btn s" onclick="bedit('${b.id}')">Edit</button> <span class="mut">Jam potong hari buka: ${String(cutH(b.id)).padStart(2,"0")}.00</span> <button class="btn s" onclick="bcut('${b.id}')">Atur jam potong</button> <button class="btn s" onclick="bshop('${b.id}')">Buka/tutup toko</button> <span class="mut">${{off:"Nonaktif",auto:"Buka otomatis",manual:"Buka manual"}[modeOf(b.id)]}${b.close?" · tutup "+esc(b.close):""}</span></div>`)}<div class="fm"><input id="b1" placeholder="Nama cabang baru"><input id="b2" placeholder="Alamat"><button class="btn" onclick="badd()">Tambah cabang</button></div></div>
+function vSet(){return`${prnLink()}${ktCard()}<div class="card" style="margin-bottom:12px"><b>Ubah password saya</b><div class="fm" style="margin-top:8px">${pwf("pw0","Kata sandi lama","current-password")}${pwf("pw1","Kata sandi baru","new-password")}<button class="btn" onclick="chpw()">Ubah</button></div></div>${payCard()}${logCard()}<div class="card" style="margin-bottom:12px"><b>Cabang</b>${opt(S.branches,b=>`<div style="margin:6px 0">${esc(b.name)} — ${esc(b.addr||"")} <button class="btn s" onclick="bedit('${b.id}')">Edit</button> <span class="mut">Jam potong hari buka: ${String(cutH(b.id)).padStart(2,"0")}.00</span> <button class="btn s" onclick="bcut('${b.id}')">Atur jam potong</button> <button class="btn s" onclick="bshop('${b.id}')">Buka/tutup toko</button> <span class="mut">${{off:"Nonaktif",auto:"Buka otomatis",manual:"Buka manual"}[modeOf(b.id)]}${b.close?" · tutup "+esc(b.close):""}</span></div>`)}<div class="fm"><input id="b1" placeholder="Nama cabang baru"><input id="b2" placeholder="Alamat"><button class="btn" onclick="badd()">Tambah cabang</button></div></div>
 <div class="card"><b>Data & backup</b><p class="mut">Data disinkronkan ke Firebase Firestore (proyek zona-c04ee) dan tersimpan juga di browser ini sebagai cadangan. Perangkat lain yang membuka halaman ini otomatis menerima perubahan. Jika dua perangkat mengubah data bersamaan, perubahan terakhir yang menang. Tetap ekspor backup secara berkala.</p><div class="fm" style="margin-top:8px"><button class="btn" onclick="bak()">Ekspor backup JSON</button><input type="file" id="imp" accept=".json" onchange="impF(this)"><button class="btn r" onclick="rst()">Reset semua data</button></div></div>`}
 function badd(){const n=V("b1").trim();if(!n)return alert("Nama wajib");S.branches.push({id:"c"+uid(),name:n,addr:V("b2")});save();render()}
 function logCard(){if(!cur||brLock(cur))return"";const L=(S.log||[]).slice(-40).reverse();return`<div class="card" style="margin-bottom:12px"><b>Jejak aktivitas</b> <span class="mut">(40 terakhir)</span><div class="tw" style="max-height:260px;overflow:auto;margin-top:6px"><table><tr><th>Waktu</th><th>Pengguna</th><th>Aksi</th><th>Ref</th><th>Catatan</th></tr>${opt(L,x=>`<tr><td>${dt(x.at)}</td><td>${esc(x.by)}</td><td>${esc(x.act)}</td><td>${esc(x.ref)}</td><td>${esc(x.note)}</td></tr>`)||'<tr><td colspan="5" class="mut">Belum ada aktivitas.</td></tr>'}</table></div></div>`}
@@ -881,7 +955,7 @@ function setDay(id){const s=S.sales.find(x=>x.id==id),v=prompt("Hari buka untuk 
 function bedit(id){const b=S.branches.find(x=>x.id==id),n=prompt("Nama cabang",b.name);if(n){b.name=n;b.addr=prompt("Alamat",b.addr||"")??b.addr;save();render()}}
 function bak(){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(S)],{type:"application/json"}));a.download="zona-backup-"+jk()+".json";a.click()}
 function impF(el){const f=el.files[0];if(!f)return;f.text().then(t=>{try{const d=JSON.parse(t);if(!d.products||!d.branches)throw 0;if(confirm("Timpa semua data saat ini dengan backup?")){d.users=S.users;S=d;S.promos=S.promos||[];fixS();save();br=S.branches[0].id;render()}}catch{alert("File backup tidak valid")}})}
-function rst(){if(confirm("Hapus SEMUA data?")&&confirm("Yakin? Tindakan ini tidak bisa dibatalkan.")){{const u=S.users,pp=S.pay,rcc=S.rc;S=seed();S.users=u;S.pay=pp;if(rcc)S.rc=rcc;S.promos=[];fixS()}save();br=S.branches[0].id;cart=[];render()}}
+function rst(){if(confirm("Hapus SEMUA data?")&&confirm("Yakin? Tindakan ini tidak bisa dibatalkan.")){{const u=S.users,pp=S.pay,rcc=S.rc,ktt=S.kt;S=seed();S.users=u;S.pay=pp;if(rcc)S.rc=rcc;if(ktt)S.kt=ktt;S.promos=[];fixS()}save();br=S.branches[0].id;cart=[];render()}}
 async function init(){fixS();if(!S.users.length){const salt=uid()+uid();S.users.push({id:"u-admin",username:"admin",name:"Administrator",role:"owner",br:"",salt,h:await hash("admin123",salt)});save()}
 S.branches.forEach(b=>{b.name=b.name.replace(/ZONA Coffee/i,"ZONA")});save();if(document.head){const l=document.createElement("link");l.rel="icon";l.href=LOGO;document.head.appendChild(l)}
 const id=localStorage.getItem("zona_uid")||sessionStorage.getItem("zona_uid");cur=S.users.find(u=>u.id==id)||null;authed=!!cur;if(cur&&innerWidth>800)document.body.classList.add("navopen");if(brLock(cur))br=cur.br;
