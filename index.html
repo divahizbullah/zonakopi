@@ -554,7 +554,7 @@ return`<tr style="background:var(--c);font-weight:700"><td colspan="2">${fd(x.d)
 function expJual(){const r=[["Tanggal","Produk","Terjual","Omzet","HPP"]];dayList().filter(x=>x.n>0).reverse().forEach(x=>{Object.entries(x.items).forEach(([k,i])=>r.push([x.d,k,i.q,i.o,i.h]));if(x.disc)r.push([x.d,"Diskon promo","",-x.disc,""])});csv("laporan-penjualan-per-item.csv",r)}
 /* ===== PENGGAJIAN / BAGI HASIL OWNER (per bulan) ===== */
 let gKas="";
-function gj(){const G=S.gaji=S.gaji||{};G.owners=G.owners||[];G.inc=G.inc||[];G.bex=G.bex||[];G.taken=G.taken||{};G.base=G.base||"jual";return G}
+function gj(){const G=S.gaji=S.gaji||{};G.owners=G.owners||[];G.inc=G.inc||[];G.bex=G.bex||[];G.kin=G.kin||[];G.taken=G.taken||{};G.base=G.base||"jual";return G}
 const gjMonth=()=>gj().month||tdy().slice(0,7);
 const gjTot=()=>gj().owners.reduce((a,o)=>a+o.pct,0);
 const gjSum=a=>a.reduce((s,x)=>s+x.amt,0);
@@ -569,7 +569,7 @@ Object.keys(G.taken).forEach(k=>{const p=k.split("|");if(p[0]==o.id&&p[1]<mo)pri
 const inm=tk?tk.amt:0;return{o,sh,tk,prior,inm,kas:prior+inm}});
 return{mo,om:n.om,ex:n.ex,inc:n.inc,net:n.net,b:n.b,rows,rest:n.b-rows.reduce((a,r)=>a+r.sh,0)}}
 const gCard=(t,v)=>`<div class="card"><div class="mut">${t}</div><div class="big">${v}</div></div>`;
-function gBar(csvFn,own){const G=gj();return`<div class="fm"><input type="month" aria-label="Bulan" value="${gjMonth()}" onchange="if(this.value){gj().month=this.value;save();render()}">${brLock(cur)?"":`<select onchange="rf.all=+this.value;render()"><option value="1" ${rf.all?"selected":""}>Semua cabang</option><option value="0" ${rf.all?"":"selected"}>${esc(bn(br))}</option></select>`}<select aria-label="Dasar pembagian" ${own?"":"disabled"} onchange="gBase(this.value)"><option value="jual" ${G.base=="jual"?"selected":""}>Dasar: Penjualan bersih</option><option value="arus" ${G.base=="arus"?"selected":""}>Dasar: Penjualan bersih − pengeluaran</option></select><button class="btn s" onclick="${csvFn}">Ekspor CSV</button><button class="btn s" onclick="prRep()">Cetak</button></div>`}
+function gBar(csvFn,own,nm){const G=gj();return`<div class="fm">${nm?"":`<input type="month" aria-label="Bulan" value="${gjMonth()}" onchange="if(this.value){gj().month=this.value;save();render()}">`}${brLock(cur)?"":`<select onchange="rf.all=+this.value;render()"><option value="1" ${rf.all?"selected":""}>Semua cabang</option><option value="0" ${rf.all?"":"selected"}>${esc(bn(br))}</option></select>`}<select aria-label="Dasar pembagian" ${own?"":"disabled"} onchange="gBase(this.value)"><option value="jual" ${G.base=="jual"?"selected":""}>Dasar: Penjualan bersih</option><option value="arus" ${G.base=="arus"?"selected":""}>Dasar: Penjualan bersih − pengeluaran</option></select><button class="btn s" onclick="${csvFn}">Ekspor CSV</button><button class="btn s" onclick="prRep()">Cetak</button></div>`}
 function vGaji(){const G=gj(),own=cur.role=="owner",D=gjData(),O=G.owners,tp=gjTot(),pool=S.users.filter(u=>(u.role=="owner"||u.role=="manager")&&!O.some(o=>o.uid==u.id));
 if(!O.some(o=>o.id==gKas))gKas=O.length?O[0].id:"";
 const sum=f=>D.rows.reduce((a,r)=>a+f(r),0),incL=G.inc.filter(i=>i.m==D.mo),
@@ -604,22 +604,29 @@ if(gjTot()-o.pct+p>100.0001){alert("Total persentase melebihi 100%");return rend
 o.pct=p;logA("gaji-ubah","gaji",o.name+" "+p+"%");save();render()}
 function gDel(id){if(cur.role!="owner")return;const G=gj(),o=G.owners.find(x=>x.id==id);if(!o||!confirm("Hapus "+o.name+" dari pembagian? Catatan gaji diambil owner ini juga ikut terhapus."))return;G.owners=G.owners.filter(x=>x.id!=id);Object.keys(G.taken).forEach(k=>{if(k.split("|")[0]==id)delete G.taken[k]});logA("gaji-hapus","gaji",o.name);save();render()}
 function gExp(){const D=gjData();csv("penggajian-"+D.mo+".csv",[["Bulan","Penjualan bersih","Pengeluaran","Pemasukan lain","Penghasilan bersih"],[D.mo,D.om,D.ex,D.inc,D.net],[],["Owner","Persen","Gaji","Status gaji","Kas bulan lalu","Pemasukan kas","Jumlah kas"],...D.rows.map(r=>[r.o.name,r.o.pct,r.sh,r.tk?"Sudah diambil":"Belum diambil",r.prior,r.inm,r.kas]),["Sisa kas usaha","",D.rest,"","","",""]])}
-/* ===== SISA KAS USAHA ===== */
-function gkData(){const mo=gjMonth(),G=gj(),M=gjMap(),ms=new Set([...Object.keys(M),...G.inc.map(i=>i.m)]);let pr=0;ms.forEach(k=>{if(k<mo)pr+=gjSisaM(M,k)});
-const sisa=gjSisaM(M,mo),bx=G.bex.filter(x=>x.m==mo),exN=gjSum(bx),exP=gjSum(G.bex.filter(x=>x.m<mo)),prior=pr-exP;
-return{mo,prior,sisa,bx,exN,saldo:prior+sisa-exN}}
-function vKasUsaha(){const own=cur.role=="owner",D=gkData(),tp=gjTot();
-return`${gBar("gkExp()",own)}<div id="rep"><div class="g">${gCard("Kas usaha bulan lalu",rn(D.prior))}${gCard("Sisa kas usaha "+esc(fmo(D.mo))+" ("+(+(100-tp).toFixed(2))+"%)",rp(D.sisa))}${gCard("Pengeluaran kas usaha",rp(D.exN))}${gCard("Saldo kas usaha",rn(D.saldo))}</div>
-<p class="mut" style="margin-bottom:12px">Sisa kas usaha = penghasilan bersih bulan itu dikurangi bagian semua owner (lihat menu Penggajian). Saldo = kas usaha bulan lalu + sisa bulan ini − pengeluaran kas usaha. Pilih <b>Semua cabang</b> untuk melihat kas usaha keseluruhan.</p>
+/* ===== SISA KAS USAHA (akumulasi semua uang masuk) ===== */
+function gkData(){const G=gj(),M=gjMap(),ms=new Set([...Object.keys(M),...G.inc.map(i=>i.m)]),
+rows=[...ms].sort().reverse().map(k=>{const n=gjNetM(M,k),sisa=gjSisaM(M,k);return{k,net:n.net,own:n.b-sisa,sisa}}).filter(r=>r.net||r.sisa),
+sisa=rows.reduce((a,r)=>a+r.sisa,0),inN=gjSum(G.kin),exN=gjSum(G.bex);
+return{rows,sisa,kin:G.kin.slice().sort((a,b)=>b.date.localeCompare(a.date)),bex:G.bex.slice().sort((a,b)=>b.date.localeCompare(a.date)),inN,exN,saldo:sisa+inN-exN}}
+function vKasUsaha(){const own=cur.role=="owner",D=gkData(),tp=gjTot(),
+lst=(L,del,empty)=>`<div class="tw"><table><tr><th>Tanggal</th><th>Keterangan</th><th>Nominal</th>${own?"<th></th>":""}</tr>${opt(L,x=>`<tr><td>${fd(x.date)}</td><td>${esc(x.note)}</td><td>${rp(x.amt)}</td>${own?`<td><button class="btn r np" onclick="${del}('${x.id}')">Hapus</button></td>`:""}</tr>`)||`<tr><td colspan="${own?4:3}" class="mut">${empty}</td></tr>`}${L.length?`<tr style="background:var(--c);font-weight:700"><td colspan="2">Total</td><td>${rp(gjSum(L))}</td>${own?"<td></td>":""}</tr>`:""}</table></div>`;
+return`${gBar("gkExp()",own,1)}<div id="rep"><div class="g">${gCard("Total sisa kas usaha (semua bulan)",rp(D.sisa))}${gCard("Pemasukan lain kas usaha",rp(D.inN))}${gCard("Pengeluaran kas usaha",rp(D.exN))}${gCard("Saldo kas usaha",rn(D.saldo))}</div>
+<p class="mut" style="margin-bottom:12px">Data diambil dari seluruh uang masuk sejak awal, bukan satu bulan. Sisa kas usaha = penghasilan bersih tiap bulan dikurangi bagian semua owner (lihat menu Penggajian), dijumlahkan semua bulan (saat ini ${+(100-tp).toFixed(2)}% dari penghasilan bersih). Saldo = total sisa + pemasukan lain − pengeluaran kas usaha. Pilih <b>Semua cabang</b> untuk kas usaha keseluruhan.</p>
+<div class="card" style="margin-bottom:12px"><b>Pemasukan lain kas usaha</b> <span class="mut">(menambah kas usaha)</span>
+${own?`<div class="fm np" style="margin:8px 0"><input id="gn1" type="number" min="1" placeholder="Nominal" style="width:150px"><input id="gn2" type="date" value="${tdy()}"><input id="gn3" placeholder="Keterangan" style="min-width:200px"><button class="btn" onclick="gnAdd()">+ Tambah pemasukan</button></div>`:""}${lst(D.kin,"gnDel","Belum ada pemasukan lain kas usaha.")}</div>
 <div class="card" style="margin-bottom:12px"><b>Pengeluaran kas usaha</b> <span class="mut">(untuk kepentingan usaha)</span>
-${own?`<div class="fm np" style="margin:8px 0"><input id="gk1" type="number" min="1" placeholder="Nominal" style="width:150px"><input id="gk2" type="date" value="${tdy()}"><input id="gk3" placeholder="Keperluan usaha" style="min-width:200px"><button class="btn" onclick="gkAdd()">Catat pengeluaran</button></div>`:""}
-<div class="tw"><table><tr><th>Tanggal</th><th>Keperluan</th><th>Nominal</th>${own?"<th></th>":""}</tr>${opt(D.bx,x=>`<tr><td>${fd(x.date)}</td><td>${esc(x.note)}</td><td>${rp(x.amt)}</td>${own?`<td><button class="btn r np" onclick="gkDel('${x.id}')">Hapus</button></td>`:""}</tr>`)||`<tr><td colspan="${own?4:3}" class="mut">Belum ada pengeluaran kas usaha pada bulan ini.</td></tr>`}${D.bx.length?`<tr style="background:var(--c);font-weight:700"><td colspan="2">Total</td><td>${rp(D.exN)}</td>${own?"<td></td>":""}</tr>`:""}</table></div></div></div>`}
+${own?`<div class="fm np" style="margin:8px 0"><input id="gk1" type="number" min="1" placeholder="Nominal" style="width:150px"><input id="gk2" type="date" value="${tdy()}"><input id="gk3" placeholder="Keperluan usaha" style="min-width:200px"><button class="btn" onclick="gkAdd()">Catat pengeluaran</button></div>`:""}${lst(D.bex,"gkDel","Belum ada pengeluaran kas usaha.")}</div>
+<b>Rincian sisa kas usaha per bulan</b><div class="tw" style="margin-top:6px"><table><tr><th>Bulan</th><th>Penghasilan bersih</th><th>Bagian owner</th><th>Sisa kas usaha</th></tr>${opt(D.rows,r=>`<tr><td>${esc(fmo(r.k))}</td><td>${rn(r.net)}</td><td>${rp(r.own)}</td><td>${rp(r.sisa)}</td></tr>`)||'<tr><td colspan="4" class="mut">Belum ada data.</td></tr>'}${D.rows.length?`<tr style="background:var(--c);font-weight:700"><td>Total</td><td>${rn(D.rows.reduce((a,r)=>a+r.net,0))}</td><td>${rp(D.rows.reduce((a,r)=>a+r.own,0))}</td><td>${rp(D.sisa)}</td></tr>`:""}</table></div></div>`}
+function gnAdd(){if(cur.role!="owner")return;const amt=Math.round(+V("gn1"));if(!(amt>0))return alert("Isi nominal pemasukan");
+gj().kin.push({id:uid(),amt,date:V("gn2")||tdy(),note:V("gn3").trim()||"Pemasukan lain"});logA("kas-usaha-masuk","gaji",amt+"");save();render()}
+function gnDel(id){if(cur.role!="owner"||!confirm("Hapus pemasukan lain kas usaha ini?"))return;const G=gj();G.kin=G.kin.filter(x=>x.id!=id);logA("kas-usaha-masuk-hapus","gaji",id);save();render()}
 function gkAdd(){if(cur.role!="owner")return;const D=gkData(),amt=Math.round(+V("gk1")),note=V("gk3").trim();
 if(!(amt>0))return alert("Isi nominal pengeluaran");if(!note)return alert("Isi keperluan usaha");
 if(amt>D.saldo&&!confirm("Nominal melebihi saldo kas usaha ("+rp(Math.max(0,D.saldo))+"). Tetap catat?"))return;
-gj().bex.push({id:uid(),m:D.mo,amt,date:V("gk2")||tdy(),note});logA("kas-usaha-keluar","gaji",amt+" "+note);save();render()}
+gj().bex.push({id:uid(),amt,date:V("gk2")||tdy(),note});logA("kas-usaha-keluar","gaji",amt+" "+note);save();render()}
 function gkDel(id){if(cur.role!="owner"||!confirm("Hapus catatan pengeluaran kas usaha ini?"))return;const G=gj();G.bex=G.bex.filter(x=>x.id!=id);logA("kas-usaha-hapus","gaji",id);save();render()}
-function gkExp(){const D=gkData();csv("kas-usaha-"+D.mo+".csv",[["Bulan","Kas usaha bulan lalu","Sisa kas usaha","Pengeluaran kas usaha","Saldo kas usaha"],[D.mo,D.prior,D.sisa,D.exN,D.saldo],[],["Tanggal","Keperluan","Nominal"],...D.bx.map(x=>[x.date,x.note,x.amt])])}
+function gkExp(){const D=gkData();csv("kas-usaha.csv",[["Total sisa kas usaha","Pemasukan lain","Pengeluaran kas usaha","Saldo kas usaha"],[D.sisa,D.inN,D.exN,D.saldo],[],["Jenis","Tanggal","Keterangan","Nominal"],...D.kin.map(x=>["Pemasukan lain",x.date,x.note,x.amt]),...D.bex.map(x=>["Pengeluaran",x.date,x.note,x.amt]),[],["Bulan","Penghasilan bersih","Bagian owner","Sisa kas usaha"],...D.rows.map(r=>[r.k,r.net,r.own,r.sisa])])}
 /* ===== UPDATE / SINKRON MANUAL (footer) ===== */
 let lastUpd="";
 function toast(m){let t=$("#toast");if(!t){t=document.createElement("div");t.id="toast";t.className="np";document.body.appendChild(t)}t.textContent=m;t.classList.add("on");clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove("on"),4000)}
