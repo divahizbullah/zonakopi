@@ -152,7 +152,8 @@ const dt=iso=>new Date(iso).toLocaleString("id-ID",{timeZone:"Asia/Jakarta"});
 const cutH=b=>{const c=S.branches.find(x=>x.id==b);return c&&c.cut!=null&&Number.isFinite(+c.cut)?+c.cut:5};
 const bdOf=(at,b)=>jk(new Date(new Date(at).getTime()-cutH(b)*36e5));
 const bd=s=>s.day||jk(s.at);
-const simple=()=>!authed||(!!cur&&cur.role=="kasir");
+const simple=()=>!authed||(!!cur&&cur.role=="kasir"&&ACC.kasir.length<2);
+const allB=()=>!!rf.all&&!brLock(cur);
 const brLock=u=>!!u&&(u.role=="kepala"||u.role=="kasir");
 const tdy=b=>bdOf(Date.now(),b||br);
 /* ===== MODE EVENT (harga jual khusus) ===== */
@@ -182,7 +183,7 @@ function bshopSave(id){const b=S.branches.find(x=>x.id==id);b.mode=V("sm");b.clo
 const DEV=localStorage.getItem("zona_dev")||(()=>{const d="D"+uid();localStorage.setItem("zona_dev",d);return d})();
 const logA=(act,ref,note)=>{S.log=S.log||[];S.log.push({at:new Date().toISOString(),by:cur?cur.username:"-",dev:DEV,act,ref:ref||"",note:note||""});if(S.log.length>500)S.log=S.log.slice(-500)};
 const IDLE_MIN=10;let idleT;
-const idleReset=()=>{clearTimeout(idleT);if(authed&&cur&&cur.role!="kasir")idleT=setTimeout(()=>{if(authed){lock();toast("Terkunci otomatis karena tidak aktif "+IDLE_MIN+" menit")}},IDLE_MIN*6e4)};
+const idleReset=()=>{clearTimeout(idleT);if(authed&&cur&&cur.role=="kepala")idleT=setTimeout(()=>{if(authed){lock();toast("Terkunci otomatis karena tidak aktif "+IDLE_MIN+" menit")}},IDLE_MIN*6e4)};
 ["click","keydown","touchstart","pointerdown"].forEach(e=>addEventListener(e,idleReset,{passive:true}));
 function seed(){const st={};["kopi:5000","susu:10000","aren:3000","krimer:2000","cup:200"].forEach(x=>{const[a,b]=x.split(":");st["pusat|"+a]=+b});
 return{branches:[{id:"pusat",name:"ZONA Pusat",addr:"Isi alamat di Pengaturan"}],
@@ -220,7 +221,7 @@ const open=gopen==n.g,act=grpOf(view)==n;
 return`<button class="grp ${act?"gon":""}" onclick="gh(${k})">${n.g}<span style="float:right">${open?"▾":"▸"}</span></button>`+(open?ch.map(c=>c[0]=="__out"?`<button class="sub" onclick="lock()">${c[1]}</button>`:`<button class="sub ${view==c[0]?"on":""}" onclick="go('${c[0]}')">${c[1]}</button>`).join(""):"")}).join("")}
 function gh(k){const n=NAVG[k];if(gopen==n.g){gopen="";return render()}
 gopen=n.g;const t=n.v&&okv(n.v)?n.v:(n.c.find(c=>c[0]!="__out"&&okv(c[0]))||[])[0];if(t&&grpOf(view)!=n)go(t);else render()}
-function render(){if(shopGuard())return;
+function render(){applyAcc();if(shopGuard())return;
 if(view!="kasir"&&(!cur||!ACC[cur.role].includes(view)))view="kasir";
 document.body.classList.toggle("pub",!authed);document.body.classList.toggle("simple",simple());if(simple())document.body.classList.remove("navopen");
 $("#nav").innerHTML='<span class="x" onclick="tnav()">✕</span><div style="margin-bottom:12px">'+brandH()+'</div>'+(authed?'<div style="margin-bottom:10px;font-size:.85rem">'+esc(cur.name)+'<br>'+ROLEN[cur.role]+'</div>'+navH():`<button class="${view=="kasir"?"on":""}" onclick="go('kasir')">Kasir</button><button onclick="document.body.classList.remove('navopen');loginM('riwayat')">Login</button>`);
@@ -229,6 +230,8 @@ $("#main").innerHTML=top+({kasir:vKasir,riwayat:vRiwayat,produk:vProduk,stok:vSt
 /* ===== LOGIN & PERAN ===== */
 const ALL=["kasir","riwayat","produk","promo","event","stok","keluar","ringkasan","laporan","pengguna","set"];
 const ACC={owner:ALL,manager:ALL,kepala:["kasir","produk","promo","keluar"],kasir:["kasir"]};
+const ACCDEF={...ACC},VLBL={kasir:"Kasir",riwayat:"Riwayat",produk:"Produk & Resep",promo:"Promo",event:"Event",stok:"Stok",keluar:"Pengeluaran",ringkasan:"Ringkasan",laporan:"Laporan",pengguna:"Pengguna",set:"Pengaturan"};
+function applyAcc(){["owner","manager","kepala","kasir"].forEach(r=>{const a=S.acc&&S.acc[r];let l=Array.isArray(a)&&a.length?a:ACCDEF[r];if(r=="kepala"||r=="kasir")l=l.filter(v=>v!="pengguna");if(r=="owner")l=[...l,"pengguna","set"];ACC[r]=ALL.filter(v=>v=="kasir"||l.includes(v))})}
 const ROLEN={owner:"Owner",manager:"Manager",kepala:"Kepala outlet",kasir:"Kasir"};
 async function hash(p,salt){if(crypto.subtle){const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(salt+p));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("")}let h=5381;for(const c of salt+p)h=(h*33^c.charCodeAt(0))>>>0;return"f"+h}
 const userBtn=()=>`<span class="np" style="margin-left:auto"><button class="btn ${authed?"":"s"} acb" onclick="acctM()" aria-label="${authed?"Akun":"Login"}" title="${authed?esc(cur.name)+" · "+ROLEN[cur.role]:"Login"}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg></button></span>`;
@@ -255,7 +258,7 @@ const pwf=(id,ph,ac)=>`<span class="pw"><input id="${id}" ${ac=="current-passwor
 function eye(b){const i=b.previousElementSibling,sh=i.type=="password";i.type=sh?"text":"password";b.innerHTML=sh?EYEOFF:EYE}
 const keepSess=(id,keep)=>{localStorage.removeItem("zona_uid");sessionStorage.removeItem("zona_uid");(keep?localStorage:sessionStorage).setItem("zona_uid",id)};
 function loginM(v){const lu=localStorage.getItem("zona_lastuser")||"";modal(`<div style="text-align:center">${brandH()}</div><h3 style="margin-top:10px">Login</h3><form class="fm" style="flex-direction:column;align-items:stretch;margin-top:8px" onsubmit="event.preventDefault();doLogin('${v}')"><input id="lu" name="username" placeholder="Username" autocapitalize="none" autocomplete="username" value="${esc(lu)}">${pwf("lp","Password","current-password")}<label class="mut" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="lr" checked style="padding:0"> Tetap masuk di perangkat ini</label><button class="btn" type="submit">Masuk</button><button class="btn s" type="button" onclick="closeM()">Batal</button></form>`);setTimeout(()=>$(lu?"#lp":"#lu").focus(),50)}
-async function doLogin(v){const u=S.users.find(x=>x.username==V("lu").trim().toLowerCase());
+async function doLogin(v){applyAcc();const u=S.users.find(x=>x.username==V("lu").trim().toLowerCase());
 const FK="zona_fail",F=JSON.parse(localStorage.getItem(FK)||"{}");if(F.until&&Date.now()<F.until)return alert("Terlalu banyak percobaan salah. Coba lagi dalam "+Math.ceil((F.until-Date.now())/6e4)+" menit.");
 if(!u||await hash(V("lp"),u.salt)!==u.h){F.n=(F.n||0)+1;if(F.n>=5){F.until=Date.now()+3e5;F.n=0}localStorage.setItem(FK,JSON.stringify(F));return alert("Username atau password salah")}
 localStorage.removeItem(FK);
@@ -263,7 +266,11 @@ cur=u;authed=true;keepSess(u.id,u.role=="kasir"?true:($("#lr")?$("#lr").checked:
 function lock(){document.body.classList.remove("navopen");cur=null;authed=false;sessionStorage.removeItem("zona_uid");localStorage.removeItem("zona_uid");view="kasir";cart=[];render()}
 async function chpw(){const o=V("pw0"),n=V("pw1");if(await hash(o,cur.salt)!==cur.h)return alert("Password lama salah");if(n.length<6)return alert("Minimal 6 karakter");cur.salt=uid()+uid();cur.h=await hash(n,cur.salt);save();alert("Password diubah");render()}
 /* ===== PENGGUNA ===== */
-function vUser(){const own=cur.role=="owner";return`<div class="card fm"><input id="u1" placeholder="Username" autocapitalize="none"><input id="u2" placeholder="Nama">${pwf("u3","Password (min 6)","new-password")}<select id="u4"><option value="kasir">Kasir (hanya checkout)</option><option value="kepala">Kepala outlet</option><option value="manager">Manager</option>${own?'<option value="owner">Owner</option>':""}</select><select id="u5">${opt(S.branches,b=>`<option value="${b.id}">${esc(b.name)}</option>`)}</select><button class="btn" onclick="uadd()">Tambah</button></div>
+function accCard(){if(cur.role!="owner")return"";const R=[["owner","Owner"],["manager","Manager"],["kepala","Kepala outlet"],["kasir","Kasir"]];
+return`<div class="card" style="margin-bottom:12px"><b>Hak akses per peran</b><p class="mut" style="margin:6px 0">Centang menu yang boleh dibuka tiap peran, lalu simpan. Layar Kasir selalu ada untuk semua peran, Owner selalu punya Pengguna dan Pengaturan, dan menu Pengguna tidak bisa diberikan ke Kepala outlet maupun Kasir. Kepala outlet dan Kasir hanya melihat data cabangnya sendiri. Perubahan berlaku saat halaman di perangkat mereka diperbarui atau dibuka ulang.</p><div class="tw"><table><tr><th>Menu</th>${R.map(r=>`<th style="text-align:center">${r[1]}</th>`).join("")}</tr>${ALL.map(v=>`<tr><td>${VLBL[v]}</td>${R.map(r=>{const lim=r[0]=="kepala"||r[0]=="kasir",fixed=v=="kasir"||(r[0]=="owner"&&(v=="pengguna"||v=="set"))||(lim&&v=="pengguna");return`<td style="text-align:center"><input type="checkbox" data-acc="${r[0]}|${v}" ${(ACC[r[0]]||[]).includes(v)?"checked":""} ${fixed?"disabled":""}></td>`}).join("")}</tr>`).join("")}</table></div><div class="fm" style="margin-top:8px"><button class="btn" onclick="accSave()">Simpan hak akses</button><button class="btn s" onclick="accReset()">Kembalikan default</button></div></div>`}
+function accSave(){if(cur.role!="owner")return;const A={owner:[],manager:[],kepala:[],kasir:[]};document.querySelectorAll("[data-acc]").forEach(c=>{if(c.checked){const[r,v]=c.dataset.acc.split("|");A[r].push(v)}});S.acc=A;applyAcc();logA("atur-akses","peran",Object.keys(A).map(r=>r+":"+ACC[r].length).join(" "));save();toast("Hak akses disimpan");render()}
+function accReset(){if(cur.role!="owner"||!confirm("Kembalikan hak akses semua peran ke pengaturan awal?"))return;delete S.acc;applyAcc();logA("atur-akses","peran","default");save();render()}
+function vUser(){const own=cur.role=="owner";return`${accCard()}<div class="card fm"><input id="u1" placeholder="Username" autocapitalize="none"><input id="u2" placeholder="Nama">${pwf("u3","Password (min 6)","new-password")}<select id="u4"><option value="kasir">Kasir (hanya checkout)</option><option value="kepala">Kepala outlet</option><option value="manager">Manager</option>${own?'<option value="owner">Owner</option>':""}</select><select id="u5">${opt(S.branches,b=>`<option value="${b.id}">${esc(b.name)}</option>`)}</select><button class="btn" onclick="uadd()">Tambah</button></div>
 <p class="mut">Cabang dipakai untuk Kasir dan Kepala outlet. Owner & Manager: akses semua menu. Kepala outlet: hanya tambah produk baru, buat promo, dan input pengeluaran harian cabangnya.</p>
 <div class="tw"><table><tr><th>Username</th><th>Nama</th><th>Peran</th><th>Cabang</th><th></th></tr>${opt(S.users,u=>`<tr><td>${esc(u.username)}</td><td>${esc(u.name)}</td><td>${ROLEN[u.role]}</td><td>${brLock(u)?esc(bn(u.br)):"Semua"}</td><td>${u.role=="owner"&&!own?"":`<button class="btn s" onclick="uedit('${u.id}')">Edit</button> <button class="btn s" onclick="upw('${u.id}')">Reset password</button> ${u.id!=cur.id?`<button class="btn r" onclick="udel('${u.id}')">Hapus</button>`:""}`}</td></tr>`)}</table></div>`}
 async function uadd(){const un=V("u1").trim().toLowerCase(),pw=V("u3"),role=V("u4");if(!/^[a-z0-9._-]{3,20}$/.test(un))return alert("Username 3-20 karakter (huruf kecil, angka, . _ -)");if(S.users.some(x=>x.username==un))return alert("Username sudah dipakai");if(pw.length<6)return alert("Password minimal 6 karakter");if(role=="owner"&&cur.role!="owner")return;const salt=uid()+uid();S.users.push({id:uid(),username:un,name:V("u2").trim()||un,role,br:(role=="kepala"||role=="kasir")?V("u5"):"",salt,h:await hash(pw,salt)});save();render()}
@@ -292,7 +299,7 @@ return`<div class="card fm"><input id="m1" placeholder="Nama promo"><select id="
 function madd(){const name=V("m1").trim(),type=V("m2"),val=+V("m3"),from=V("m6"),to=V("m7"),code=V("m5").trim();
 if(!name||!(val>0)||(type=="P"&&val>100)||!from||!to||from>to)return alert("Lengkapi nama, nilai valid (persen maks 100), dan periode");
 if(code&&S.promos.some(p=>p.code&&p.code.toLowerCase()==code.toLowerCase()))return alert("Kode voucher sudah dipakai");
-S.promos.push({id:uid(),name,type,val:type=="P"?val:Math.round(val),min:Math.round(+V("m4")||0),code,from,to,br:cur.role=="kepala"?cur.br:V("m8"),on:1,by:cur.username});save();render()}
+S.promos.push({id:uid(),name,type,val:type=="P"?val:Math.round(val),min:Math.round(+V("m4")||0),code,from,to,br:brLock(cur)?cur.br:V("m8"),on:1,by:cur.username});save();render()}
 function ptog(id){const p=S.promos.find(x=>x.id==id);p.on=p.on?0:1;save();render()}
 /* ===== KASIR ===== */
 const adl=l=>(prod(l.pid).addons||[]).filter(a=>l.ad.includes(a.id));
@@ -365,9 +372,9 @@ modal(`<div class="np" style="margin-bottom:10px"><select onchange="receipt('${i
 ${opt(s.items,i=>`<div><span>${i.qty}x ${esc(i.name)}${i.o.length?" ("+esc(i.o.join(", "))+")":""}</span><span>${rp(i.price*i.qty)}</span></div>`)}<hr>
 ${s.disc?`<div><span>Subtotal</span><span>${rp(s.sub)}</span></div><div><span>Diskon ${esc(s.promo)}</span><span>-${rp(s.disc)}</span></div>`:""}<div><b>Total</b><b>${rp(s.total)}</b></div>${s.parts?s.parts.map(x=>`<div><span>${x.m=="CASH"?"Tunai":x.m=="QRIS"?"QRIS":"Transfer"}</span><span>${rp(x.amt)}</span></div>`).join("")+`<div><span>Tunai diterima</span><span>${rp(s.cash)}</span></div>`:`<div><span>${s.pay}</span><span>${rp(s.cash)}</span></div>`}${s.bank?`<div><span>Bank</span><span>${esc(s.bank)}</span></div>`:""}<div><span>Kembali</span><span>${rp(s.change)}</span></div><hr><div style="justify-content:center">Terima kasih!</div><div style="justify-content:center">Tentukan Zona Mu</div></div>`)}
 /* ===== RIWAYAT ===== */
-function riwList(){const R=rng(),sc=b=>rf.all||b==br,k=rq.trim().toLowerCase();
+function riwList(){const R=rng(),sc=b=>allB()||b==br,k=rq.trim().toLowerCase();
 return S.sales.filter(s=>{const d=bd(s);return sc(s.br)&&d>=R.from&&d<=R.to&&(!k||s.no.toLowerCase().includes(k))}).slice().reverse()}
-function vRiwayat(){const L=riwList(),ok=L.filter(s=>s.st=="OK"),MX=300,sh=L.slice(0,MX),cb=!!rf.all&&S.branches.length>1;
+function vRiwayat(){const L=riwList(),ok=L.filter(s=>s.st=="OK"),MX=300,sh=L.slice(0,MX),cb=allB()&&S.branches.length>1;
 return`${fbar("expRiw()")}<div class="fm np" style="margin-bottom:10px"><input placeholder="Cari nomor transaksi" value="${esc(rq)}" onchange="rq=this.value;render()" style="max-width:100%">${cur.role=="owner"?'<button class="btn r" onclick="delM()">🗑 Hapus riwayat…</button>':""}</div>
 <div id="rep"><p class="mut" style="margin-bottom:8px">${L.length} transaksi · ${ok.length} selesai · Penjualan ${rp(ok.reduce((a,s)=>a+s.total,0))}${L.length>MX?` · menampilkan ${MX} terbaru, persempit filter atau ekspor CSV untuk semua`:""}</p><div class="tw"><table><tr><th>No</th><th>Waktu</th>${cb?"<th>Cabang</th>":""}<th>Item</th><th>Total</th><th>Bayar</th><th>Status</th><th class="np"></th></tr>
 ${opt(sh,s=>`<tr><td>${s.no}</td><td>${dt(s.at)}${bd(s)!=jk(s.at)?`<br><span class="mut">Hari buka ${bd(s)}</span>`:""}${s.by?`<br><span class="mut">Kasir ${esc(s.nm||s.by)}</span>`:""}${s.ev?`<br><span class="mut">🎪 ${esc(s.ev)}</span>`:""}${s.voidWhy?`<br><span class="warn">Batal: ${esc(s.voidWhy)}</span>`:""}</td>${cb?`<td>${esc(bn(s.br))}</td>`:""}<td>${s.items.reduce((a,i)=>a+i.qty,0)}</td><td>${rp(s.total)}</td><td>${s.pay}</td><td>${s.st=="OK"?"Selesai":'<span class="warn">Batal</span>'}</td><td class="np"><button class="btn s" onclick="receipt('${s.id}')">Struk</button> ${!brLock(cur)?`<button class="btn s" onclick="setDay('${s.id}')">Hari buka</button> `:""}${s.st=="OK"?`<button class="btn r" onclick="voidS('${s.id}')">Batalkan</button>`:""}${cur.role=="owner"?` <button class="btn s" onclick="delOne('${s.id}')" aria-label="Hapus transaksi">Hapus</button>`:""}</td></tr>`)||`<tr><td colspan="${cb?8:7}" class="mut">Tidak ada transaksi pada periode ini.</td></tr>`}</table></div></div>`}
@@ -394,7 +401,7 @@ modal(`<h3>Hapus riwayat transaksi</h3><p class="mut" style="margin:6px 0">Untuk
 <button class="btn r" onclick="delGo()">Hapus permanen</button><button class="btn s" onclick="closeM()">Batal</button></div>`)}
 function delGo(){if(!cur||cur.role!="owner")return;if(V("dcf").trim().toUpperCase()!=="HAPUS")return alert("Ketik HAPUS untuk konfirmasi");
 const all=V("dsc")=="a",L=all?S.sales.slice():riwList(),de=$("#dex").checked,R=rng();
-const E=de?S.exp.filter(e=>all||((rf.all||e.br==br)&&e.date>=R.from&&e.date<=R.to)):[];
+const E=de?S.exp.filter(e=>all||((allB()||e.br==br)&&e.date>=R.from&&e.date<=R.to)):[];
 if(!L.length&&!E.length)return alert("Tidak ada data pada cakupan ini");
 delCore(L,$("#drs").checked);
 if(E.length){const ids=new Set(E.map(e=>e.id));S.exp=S.exp.filter(e=>!ids.has(e.id));S.tomb=[...new Set([...(S.tomb||[]),...ids])]}
@@ -415,7 +422,7 @@ slots.forEach((pos,k)=>{A[pos]=ns[k]});save();ordM()}
 /* ===== PRODUK ===== */
 const adTxt=a=>`${esc(a.name)} +${rp(a.price)}`+((a.recipe||[]).length?` <span class="mut">(${a.recipe.map(r=>esc(ing(r.i)?.name||r.i)+" "+r.q+" "+(ing(r.i)?.unit||"")).join(", ")})</span>`:"");
 function vProduk(){return`<button class="btn" onclick="pform()">+ Produk</button>${cur.role=="owner"?' <button class="btn s" onclick="ordM()">↕ Atur urutan kasir</button>':""}<p class="mut" style="margin:8px 0">Isi harga Reguler dan Large di tiap produk. Add-on (mis. Extra Espresso) diatur lewat tombol Add-on: tentukan nama, harga, dan item bahannya. HPP = resep produk × harga bahan saat ini, ditambah bahan add-on yang dipilih saat transaksi (snapshot disimpan di transaksi).</p><div class="tw"><table><tr><th>Nama</th><th>Reguler</th><th>Large</th><th>Add-on</th><th>Status</th><th></th></tr>
-${opt(S.products,p=>{const h=hpp(p);return`<tr><td>${p.photo?`<img class="pth" loading="lazy" src="${phUrl(p.photo,120)}" alt="">`:""}<span style="display:inline-block;vertical-align:middle"><b>${esc(p.name)}</b><div class="mut">${esc(p.cat)}</div></span></td><td>${rp(p.price)}<div class="mut">HPP ${rp(h)} · ${p.price?Math.round((p.price-h)/p.price*100):0}%</div></td><td>${Number.isFinite(p.priceL)?rp(p.priceL):'<span class="mut">-</span>'}</td><td>${(p.addons||[]).map(a=>`<div>${adTxt(a)}</div>`).join("")||'<span class="mut">-</span>'}</td><td>${p.active?"Aktif":"Diarsipkan"}</td><td>${cur.role=="kepala"?"":`<button class="btn s" onclick="pform('${p.id}')">Edit</button> <button class="btn s" onclick="aform('${p.id}')">Add-on</button> <button class="btn s" onclick="parch('${p.id}')">${p.active?"Arsipkan":"Aktifkan"}</button>`}</td></tr>`})}</table></div>`}
+${opt(S.products,p=>{const h=hpp(p);return`<tr><td>${p.photo?`<img class="pth" loading="lazy" src="${phUrl(p.photo,120)}" alt="">`:""}<span style="display:inline-block;vertical-align:middle"><b>${esc(p.name)}</b><div class="mut">${esc(p.cat)}</div></span></td><td>${rp(p.price)}<div class="mut">HPP ${rp(h)} · ${p.price?Math.round((p.price-h)/p.price*100):0}%</div></td><td>${Number.isFinite(p.priceL)?rp(p.priceL):'<span class="mut">-</span>'}</td><td>${(p.addons||[]).map(a=>`<div>${adTxt(a)}</div>`).join("")||'<span class="mut">-</span>'}</td><td>${p.active?"Aktif":"Diarsipkan"}</td><td>${brLock(cur)?"":`<button class="btn s" onclick="pform('${p.id}')">Edit</button> <button class="btn s" onclick="aform('${p.id}')">Add-on</button> <button class="btn s" onclick="parch('${p.id}')">${p.active?"Arsipkan":"Aktifkan"}</button>`}</td></tr>`})}</table></div>`}
 /* ----- menu khusus Add-on per produk ----- */
 let AD=null;
 function aform(pid){if(cur.role=="kepala")return;AD={pid,list:JSON.parse(JSON.stringify(prod(pid).addons||[]))};adraw()}
@@ -455,7 +462,7 @@ function pform(id){const p=id?prod(id):{name:"",cat:"",price:"",recipe:[]};PF={i
 modal(`<h3>${id?"Edit":"Tambah"} produk</h3><div class="fm" style="flex-direction:column;align-items:stretch"><input id="f1" placeholder="Nama" value="${esc(p.name)}"><input id="f2" placeholder="Kategori" value="${esc(p.cat)}"><label class="mut">Harga Reguler (Rp)<input id="f3" inputmode="numeric" placeholder="Harga Reguler (Rp)" value="${p.price}" style="width:100%"></label><label class="mut">Harga Large (Rp) — kosongkan jika tidak ada varian Large<input id="f5" inputmode="numeric" placeholder="Harga Large (Rp)" value="${p.priceL??""}" style="width:100%"></label>
 <div class="mut">Foto produk <small>(disimpan di Google Drive, bukan di database)</small><img id="phi" ${p.photo?`src="${phUrl(p.photo,400)}"`:""} style="display:${p.photo?"block":"none"};width:120px;height:120px;object-fit:cover;border-radius:14px;margin:6px 0"><input type="file" id="phf" accept="image/*" onchange="phPick(this)" style="width:100%"><div id="phs" class="mut"></div><button class="btn s" type="button" onclick="phDel()">Hapus foto</button></div>
 <input id="f4" placeholder="Resep, mis. kopi:18,susu:120" value="${esc(p.recipe.map(r=>r.i+":"+r.q).join(","))}"><span class="mut">ID bahan: ${S.ings.map(i=>i.id+" ("+i.unit+")").join(", ")}</span><button class="btn" id="psv" onclick="psave('${id||""}')">Simpan</button> <button class="btn s" onclick="closeM()">Batal</button></div>`)}
-function psave(id){if(PF.busy)return alert("Tunggu, foto masih diunggah");if(id&&cur.role=="kepala")return alert("Kepala outlet hanya boleh menambah produk baru");const name=V("f1").trim(),price=Math.round(+V("f3"));if(!name||!(price>=0)||V("f3")==="")return alert("Nama dan harga wajib valid");
+function psave(id){if(PF.busy)return alert("Tunggu, foto masih diunggah");if(id&&brLock(cur))return alert("Kepala outlet hanya boleh menambah produk baru");const name=V("f1").trim(),price=Math.round(+V("f3"));if(!name||!(price>=0)||V("f3")==="")return alert("Nama dan harga wajib valid");
 const pl=V("f5").trim()===""?null:Math.round(+V("f5"));if(pl!==null&&!(pl>=0))return alert("Harga Large tidak valid");
 const recipe=[];for(const x of V("f4").split(",").filter(Boolean)){const[i,n]=x.split(":");if(!ing(i?.trim())||!(+n>0))return alert("Resep tidak valid: "+x);recipe.push({i:i.trim(),q:+n})}
 if(id){Object.assign(prod(id),{name,cat:V("f2"),price,priceL:pl,recipe,photo:PF.id||undefined})}else S.products.push({id:uid(),name,cat:V("f2")||"Lainnya",price,priceL:pl,addons:[],active:1,recipe,photo:PF.id||undefined});save();closeM();render()}
@@ -478,11 +485,11 @@ function ning(){const n=V("n1").trim();if(!n||!V("n2"))return alert("Nama & satu
 function vKeluar(){const L=S.exp.filter(e=>e.br==br).slice().reverse();
 return`<div class="card fm"><input id="e1" type="date" value="${tdy()}"><select id="e2">${opt(["Gaji","Listrik","Air","Internet","Sewa","Transportasi","Perawatan","Promosi","Perlengkapan","Lainnya"],c=>`<option>${c}</option>`)}</select><input id="e3" placeholder="Deskripsi"><input id="e4" type="number" placeholder="Nominal Rp" style="width:120px"><select id="e5"><option>Tunai</option><option>Transfer</option><option>QRIS</option></select><button class="btn" onclick="eadd()">Catat</button></div>
 <p class="mut">Pembelian bahan baku dicatat di menu Stok (bukan di sini) agar tidak terhitung ganda.</p>
-<div class="tw"><table><tr><th>Tanggal</th><th>Kategori</th><th>Deskripsi</th><th>Nominal</th><th>Status</th><th></th></tr>${opt(L,e=>`<tr><td>${e.date}</td><td>${e.cat}</td><td>${esc(e.desc)}</td><td>${rp(e.amt)}</td><td>${e.st=="OK"?"Aktif":'<span class="warn">Batal</span>'}</td><td>${e.st=="OK"&&cur.role!="kepala"?`<button class="btn r" onclick="evoid('${e.id}')">Batalkan</button>`:""}</td></tr>`)||'<tr><td colspan="6" class="mut">Belum ada pengeluaran.</td></tr>'}</table></div>`}
+<div class="tw"><table><tr><th>Tanggal</th><th>Kategori</th><th>Deskripsi</th><th>Nominal</th><th>Status</th><th></th></tr>${opt(L,e=>`<tr><td>${e.date}</td><td>${e.cat}</td><td>${esc(e.desc)}</td><td>${rp(e.amt)}</td><td>${e.st=="OK"?"Aktif":'<span class="warn">Batal</span>'}</td><td>${e.st=="OK"&&!brLock(cur)?`<button class="btn r" onclick="evoid('${e.id}')">Batalkan</button>`:""}</td></tr>`)||'<tr><td colspan="6" class="mut">Belum ada pengeluaran.</td></tr>'}</table></div>`}
 function eadd(){const a=Math.round(+V("e4"));if(!(a>0)||!V("e1"))return alert("Tanggal dan nominal wajib");S.exp.push({id:uid(),br,date:V("e1"),cat:V("e2"),desc:V("e3"),amt:a,pm:V("e5"),by:cur.username,st:"OK"});save();render()}
 function evoid(id){if(confirm("Batalkan pengeluaran ini?")){S.exp.find(e=>e.id==id).st="VOID";save();render()}}
 /* ===== LAPORAN ===== */
-function rep(){const R=rng(),inR=d=>d>=R.from&&d<=R.to,sc=b=>rf.all||b==br;
+function rep(){const R=rng(),inR=d=>d>=R.from&&d<=R.to,sc=b=>allB()||b==br;
 const L=S.sales.filter(s=>s.st=="OK"&&sc(s.br)&&inR(bd(s))),E=S.exp.filter(e=>e.st=="OK"&&sc(e.br)&&inR(e.date)),B=S.buys.filter(b=>sc(b.br)&&inR(bdOf(b.at,b.br)));
 const omzet=L.reduce((a,s)=>a+s.total,0),h=L.reduce((a,s)=>a+s.hpp,0),ex=E.reduce((a,e)=>a+e.amt,0),pay={},tp={},bb={};
 L.forEach(s=>{(s.parts||[{m:s.pay,amt:s.total}]).forEach(x=>pay[x.m]=(pay[x.m]||0)+x.amt);bb[s.br]=(bb[s.br]||0)+s.total;s.items.forEach(i=>{const t=tp[i.name]||(tp[i.name]={q:0,o:0,h:0});t.q+=i.qty;t.o+=i.price*i.qty;t.h+=i.hpp*i.qty})});
@@ -501,13 +508,13 @@ const fmo=k=>new Date(k+"-01T00:00:00Z").toLocaleDateString("id-ID",{month:"long
 const rn=n=>n<0?`<span style="color:#b42318">-${rp(-n)}</span>`:rp(n);
 const rbtn=(k,t)=>`<button class="btn ${rf.m==k?"":"s"}" onclick="rf.m='${k}';render()">${t}</button>`;
 function fbar(csvFn){const R=rng();return`<div class="fm"><select aria-label="Periode" onchange="rf.m=this.value;render()">${opt([["hari","Hari ini"],["kemarin","Kemarin"],["bulan","Bulan ini"],["tahun","Tahun ini"],["khusus","Khusus"]],x=>`<option value="${x[0]}" ${rf.m==x[0]?"selected":""}>${x[1]}</option>`)}</select>${rf.m=="khusus"?`<input type="date" value="${rf.from}" onchange="rf.from=this.value;render()"><input type="date" value="${rf.to}" onchange="rf.to=this.value;render()">`:`<span class="mut">${fd(R.from)} – ${fd(R.to)}</span>`}</div>
-<div class="fm"><select onchange="rf.all=+this.value;render()"><option value="1" ${rf.all?"selected":""}>Semua cabang</option><option value="0" ${rf.all?"":"selected"}>${esc(bn(br))}</option></select><button class="btn s" onclick="${csvFn}">Ekspor CSV</button><button class="btn s" onclick="prRep()">Cetak</button></div>`}
+<div class="fm">${brLock(cur)?"":`<select onchange="rf.all=+this.value;render()"><option value="1" ${rf.all?"selected":""}>Semua cabang</option><option value="0" ${rf.all?"":"selected"}>${esc(bn(br))}</option></select>`}<button class="btn s" onclick="${csvFn}">Ekspor CSV</button><button class="btn s" onclick="prRep()">Cetak</button></div>`}
 function prRep(){const h=$("#rep").innerHTML;modal(h);setTimeout(()=>{print();closeM()},150)}
 function vRingkasan(){return`${fbar("expCsv()")}<div id="rep">${vRing()}</div>`}
 function vLaporan(){const T=[["arus","Arus Keuangan",vArus,"expArus()"],["jual","Penjualan",vJual,"expJual()"]],t=T.find(x=>x[0]==rf.sub)||T[0];
 return`<div class="tabs">${opt(T,x=>`<button class="${x[0]==t[0]?"on":""}" onclick="rf.sub='${x[0]}';render()">${x[1]}</button>`)}</div>${fbar(t[3])}<div id="rep">${t[2]()}</div>`}
 /* data harian: dari riwayat transaksi (selain batal) + pengeluaran aktif */
-function dayList(){const R=rng(),sc=b=>rf.all||b==br,m={};
+function dayList(){const R=rng(),sc=b=>allB()||b==br,m={};
 const g=d=>m[d]||(m[d]={d,n:0,om:0,h:0,ex:0,disc:0,items:{}});
 S.sales.forEach(s=>{if(s.st!="OK"||!sc(s.br))return;const d=bd(s);if(d<R.from||d>R.to)return;const x=g(d);x.n++;x.om+=s.total;x.h+=s.hpp;x.disc+=s.disc||0;
 s.items.forEach(i=>{const t=x.items[i.name]||(x.items[i.name]={q:0,o:0,h:0});t.q+=i.qty;t.o+=i.price*i.qty;t.h+=i.hpp*i.qty})});
