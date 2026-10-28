@@ -552,46 +552,56 @@ return`<tr style="background:var(--c);font-weight:700"><td colspan="2">${fd(x.d)
 +opt(it,([k,i])=>`<tr><td></td><td>${esc(k)}</td><td>${i.q}</td><td>${rp(i.o)}</td><td>${rp(i.h)}</td><td>${rn(i.o-i.h)}</td></tr>`)
 +(x.disc?`<tr><td></td><td class="mut">Diskon promo</td><td></td><td>${rn(-x.disc)}</td><td></td><td>${rn(-x.disc)}</td></tr>`:"")})||'<tr><td colspan="6" class="mut">Belum ada penjualan pada periode ini.</td></tr>'}</table></div>`}
 function expJual(){const r=[["Tanggal","Produk","Terjual","Omzet","HPP"]];dayList().filter(x=>x.n>0).reverse().forEach(x=>{Object.entries(x.items).forEach(([k,i])=>r.push([x.d,k,i.q,i.o,i.h]));if(x.disc)r.push([x.d,"Diskon promo","",-x.disc,""])});csv("laporan-penjualan-per-item.csv",r)}
-/* ===== PENGGAJIAN / BAGI HASIL OWNER (per bulan) ===== */
-let gKas="";
+/* ===== PENGGAJIAN / BAGI HASIL OWNER (per bulan + buku kas owner) ===== */
+let gKas="",gKasAmt=0;
 function gj(){S.gaji=S.gaji||{};S.gaji.owners=S.gaji.owners||[];S.gaji.pay=S.gaji.pay||[];S.gaji.base=S.gaji.base||"jual";return S.gaji}
 const gjMonth=()=>gj().month||tdy().slice(0,7);
 const gjTot=()=>gj().owners.reduce((a,o)=>a+o.pct,0);
-function gjData(){const mo=gjMonth(),sc=b=>allB()||b==br,G=gj();let om=0,ex=0;
-S.sales.forEach(s=>{if(s.st=="OK"&&sc(s.br)&&bd(s).slice(0,7)==mo)om+=s.total});
-S.exp.forEach(e=>{if(e.st=="OK"&&sc(e.br)&&e.date.slice(0,7)==mo)ex+=e.amt});
-const net=G.base=="arus"?om-ex:om,b=Math.max(0,net),
-rows=G.owners.map(o=>{const sh=Math.round(b*o.pct/100),tk=G.pay.filter(p=>p.oid==o.id&&p.m==mo).reduce((a,p)=>a+p.amt,0);return{o,sh,tk,left:sh-tk}});
-return{mo,om,ex,net,b,rows,rest:b-rows.reduce((a,r)=>a+r.sh,0)}}
+function gjMap(){const sc=b=>allB()||b==br,m={};
+S.sales.forEach(s=>{if(s.st!="OK"||!sc(s.br))return;const k=bd(s).slice(0,7);(m[k]=m[k]||{om:0,ex:0}).om+=s.total});
+S.exp.forEach(e=>{if(e.st!="OK"||!sc(e.br))return;const k=e.date.slice(0,7);(m[k]=m[k]||{om:0,ex:0}).ex+=e.amt});return m}
+function gjData(){const mo=gjMonth(),G=gj(),M=gjMap(),x=M[mo]||{om:0,ex:0},net=G.base=="arus"?x.om-x.ex:x.om,b=Math.max(0,net),
+nt=k=>Math.max(0,G.base=="arus"?M[k].om-M[k].ex:M[k].om),
+rows=G.owners.map(o=>{const fr=o.from||"",sh=mo>=fr?Math.round(b*o.pct/100):0;
+let prior=0;Object.keys(M).forEach(k=>{if(k<mo&&k>=fr)prior+=Math.round(nt(k)*o.pct/100)});
+let ms=0,kl=0;G.pay.filter(p=>p.oid==o.id).forEach(p=>{const v=p.t=="masuk"?p.amt:-p.amt;if(p.m<mo)prior+=v;else if(p.m==mo){if(p.t=="masuk")ms+=p.amt;else kl+=p.amt}});
+return{o,sh,prior,ms,kl,kas:prior+sh+ms-kl}});
+return{mo,om:x.om,ex:x.ex,net,b,rows,rest:b-rows.reduce((a,r)=>a+r.sh,0)}}
 function vGaji(){const G=gj(),own=cur.role=="owner",D=gjData(),O=G.owners,tp=gjTot(),pool=S.users.filter(u=>(u.role=="owner"||u.role=="manager")&&!O.some(o=>o.uid==u.id));
 if(!O.some(o=>o.id==gKas))gKas=O.length?O[0].id:"";
-const c=(t,v)=>`<div class="card"><div class="mut">${t}</div><div class="big">${v}</div></div>`,
+const sum=f=>D.rows.reduce((a,r)=>a+f(r),0),
+c=(t,v)=>`<div class="card"><div class="mut">${t}</div><div class="big">${v}</div></div>`,
 bar=`<div class="fm"><input type="month" aria-label="Bulan" value="${D.mo}" onchange="if(this.value){gj().month=this.value;save();render()}">${brLock(cur)?"":`<select onchange="rf.all=+this.value;render()"><option value="1" ${rf.all?"selected":""}>Semua cabang</option><option value="0" ${rf.all?"":"selected"}>${esc(bn(br))}</option></select>`}<select aria-label="Dasar pembagian" ${own?"":"disabled"} onchange="gBase(this.value)"><option value="jual" ${G.base=="jual"?"selected":""}>Dasar: Penjualan bersih</option><option value="arus" ${G.base=="arus"?"selected":""}>Dasar: Penjualan bersih − pengeluaran</option></select><button class="btn s" onclick="gExp()">Ekspor CSV</button><button class="btn s" onclick="prRep()">Cetak</button></div>`,
-tb=`<div class="tw"><table><tr><th>Owner</th><th>Persen</th><th>Gaji ${esc(fmo(D.mo))}</th><th>Sudah diambil</th><th>Belum diambil</th>${own?"<th></th>":""}</tr>${opt(D.rows,r=>`<tr><td>${esc(r.o.name)}</td><td>${own?`<input type="number" min="0.1" max="100" step="0.1" value="${r.o.pct}" style="width:80px" onchange="gPct('${r.o.id}',this.value)"> %`:r.o.pct+"%"}</td><td><b>${rp(r.sh)}</b></td><td>${rp(r.tk)}</td><td>${rn(r.left)}</td>${own?`<td><button class="btn r np" onclick="gDel('${r.o.id}')">Hapus</button></td>`:""}</tr>`)||`<tr><td colspan="${own?6:5}" class="mut">Belum ada owner dalam pembagian.</td></tr>`}${O.length?`<tr style="background:var(--c);font-weight:700"><td>Total</td><td><span ${tp>100?'style="color:#b42318"':""}>${+tp.toFixed(2)}%</span></td><td>${rp(D.rows.reduce((a,r)=>a+r.sh,0))}</td><td>${rp(D.rows.reduce((a,r)=>a+r.tk,0))}</td><td>${rn(D.rows.reduce((a,r)=>a+r.left,0))}</td>${own?"<td></td>":""}</tr>`:""}</table></div>`,
-add=own?`<div class="card np" style="margin-bottom:12px"><b>Tambah owner</b><p class="mut" style="margin:6px 0">Pilih owner dan isi persentase dari penghasilan bersih bulanan. Total maksimal 100%, sisanya menjadi kas usaha.</p><div class="fm" style="margin-bottom:0"><select id="go1" onchange="$('#go2').style.display=this.value=='__m'?'':'none'">${opt(pool,u=>`<option value="${esc(u.id)}">${esc(u.name)} (${ROLEN[u.role]})</option>`)}<option value="__m">Nama lain (ketik manual)…</option></select><input id="go2" placeholder="Nama owner" style="display:${pool.length?"none":""}"><input id="go3" type="number" min="0.1" max="100" step="0.1" placeholder="Persen %" style="width:110px"><button class="btn" onclick="gAdd()">+ Tambah</button></div></div>`:"",
-K=D.rows.find(r=>r.o.id==gKas),hist=G.pay.filter(p=>p.oid==gKas&&p.m==D.mo),
-kas=O.length?`<div class="card" style="margin-bottom:12px"><b>Informasi kas owner</b><div class="fm" style="margin:8px 0"><select aria-label="Pilih owner" onchange="gKas=this.value;render()">${opt(O,o=>`<option value="${o.id}" ${o.id==gKas?"selected":""}>${esc(o.name)} (${o.pct}%)</option>`)}</select><span class="mut">${esc(fmo(D.mo))}</span></div>
-<div class="g" style="margin-bottom:8px">${c("Gaji bulan ini",rp(K.sh))}${c("Sudah diambil",rp(K.tk))}${c("Kas belum diambil",rn(K.left))}</div>
-${own?`<div class="fm np"><input id="gp1" type="number" min="1" placeholder="Nominal pengambilan" style="width:180px"><input id="gp2" type="date" value="${tdy()}"><input id="gp3" placeholder="Catatan (opsional)"><button class="btn" onclick="gPay()">Catat pengambilan</button></div>`:""}
-<div class="tw"><table><tr><th>Tanggal</th><th>Nominal</th><th>Catatan</th>${own?"<th></th>":""}</tr>${opt(hist,p=>`<tr><td>${fd(p.date)}</td><td>${rp(p.amt)}</td><td>${esc(p.note||"-")}</td>${own?`<td><button class="btn r np" onclick="gPayDel('${p.id}')">Hapus</button></td>`:""}</tr>`)||`<tr><td colspan="${own?4:3}" class="mut">Belum ada pengambilan pada bulan ini.</td></tr>`}</table></div></div>`:"";
+tb=`<div class="tw"><table><tr><th>Owner</th><th>Persen</th><th>Gaji ${esc(fmo(D.mo))}</th><th>Jumlah kas</th>${own?"<th></th>":""}</tr>${opt(D.rows,r=>`<tr><td>${esc(r.o.name)}</td><td>${own?`<input type="number" min="0.1" max="100" step="0.1" value="${r.o.pct}" style="width:80px" onchange="gPct('${r.o.id}',this.value)"> %`:r.o.pct+"%"}</td><td><b>${rp(r.sh)}</b></td><td>${rn(r.kas)}</td>${own?`<td><button class="btn r np" onclick="gDel('${r.o.id}')">Hapus</button></td>`:""}</tr>`)||`<tr><td colspan="${own?5:4}" class="mut">Belum ada owner dalam pembagian.</td></tr>`}${O.length?`<tr style="background:var(--c);font-weight:700"><td>Total</td><td><span ${tp>100?'style="color:#b42318"':""}>${+tp.toFixed(2)}%</span></td><td>${rp(sum(r=>r.sh))}</td><td>${rn(sum(r=>r.kas))}</td>${own?"<td></td>":""}</tr>`:""}</table></div>`,
+add=own?`<div class="card np" style="margin-bottom:12px"><b>Tambah owner</b><p class="mut" style="margin:6px 0">Pilih owner dan isi persentase dari penghasilan bersih bulanan. Total maksimal 100%, sisanya menjadi kas usaha. Gaji owner dihitung mulai bulan yang sedang dipilih.</p><div class="fm" style="margin-bottom:0"><select id="go1" onchange="$('#go2').style.display=this.value=='__m'?'':'none'">${opt(pool,u=>`<option value="${esc(u.id)}">${esc(u.name)} (${ROLEN[u.role]})</option>`)}<option value="__m">Nama lain (ketik manual)…</option></select><input id="go2" placeholder="Nama owner" style="display:${pool.length?"none":""}"><input id="go3" type="number" min="0.1" max="100" step="0.1" placeholder="Persen %" style="width:110px"><button class="btn" onclick="gAdd()">+ Tambah</button></div></div>`:"",
+K=D.rows.find(r=>r.o.id==gKas),hist=G.pay.filter(p=>p.oid==gKas&&p.m==D.mo);gKasAmt=K?Math.max(0,K.kas):0;
+const kas=K?`<div class="card" style="margin-bottom:12px"><b>Informasi kas owner</b><div class="fm" style="margin:8px 0"><select aria-label="Pilih owner" onchange="gKas=this.value;render()">${opt(O,o=>`<option value="${o.id}" ${o.id==gKas?"selected":""}>${esc(o.name)} (${o.pct}%)</option>`)}</select><span class="mut">${esc(fmo(D.mo))}</span></div>
+<div class="g" style="margin-bottom:8px">${c("Kas bulan lalu",rn(K.prior))}${c("Gaji bulan ini",rp(K.sh))}${c("Pemasukan kas",rp(K.ms))}${c("Pengeluaran kas (diambil)",rp(K.kl))}${c("Jumlah kas",rn(K.kas))}</div>
+<p class="mut" style="margin-bottom:8px">Jumlah kas = kas bulan lalu + gaji bulan ini + pemasukan kas − pengeluaran kas. Kas ini dapat dianggap uang asli owner/pemilik brand.</p>
+${own?`<div class="fm np"><select id="gp0" onchange="gFm()"><option value="keluar">Pengeluaran kas (ambil)</option><option value="masuk">Pemasukan kas</option></select><select id="gp4" onchange="gFm()"><option value="all">Ambil semua</option><option value="nom">Ketik nominal</option></select><span id="gp5" class="mut"></span><input id="gp1" type="number" min="1" placeholder="Nominal" style="width:150px;display:none"><input id="gp2" type="date" value="${tdy()}"><input id="gp3" placeholder="Catatan (opsional)"><button class="btn" onclick="gPay()">Catat</button></div>`:""}
+<div class="tw"><table><tr><th>Tanggal</th><th>Jenis</th><th>Nominal</th><th>Catatan</th>${own?"<th></th>":""}</tr>${opt(hist,p=>`<tr><td>${fd(p.date)}</td><td>${p.t=="masuk"?"Pemasukan kas":"Pengeluaran kas"}</td><td>${p.t=="masuk"?"+":"−"}${rp(p.amt)}</td><td>${esc(p.note||"-")}</td>${own?`<td><button class="btn r np" onclick="gPayDel('${p.id}')">Hapus</button></td>`:""}</tr>`)||`<tr><td colspan="${own?5:4}" class="mut">Belum ada transaksi kas pada bulan ini.</td></tr>`}</table></div></div>`:"";
+setTimeout(()=>{if($("#gp0"))gFm()},0);
 return`${bar}<div id="rep"><div class="g">${c("Penjualan bersih "+esc(fmo(D.mo)),rp(D.om))}${G.base=="arus"?c("Pengeluaran",rp(D.ex)):""}${c("Penghasilan bersih (dasar gaji)",rn(D.net))}${c("Sisa kas usaha ("+(+(100-tp).toFixed(2))+"%)",rp(D.rest))}</div>
 <p class="mut" style="margin-bottom:12px">Penjualan bersih = penjualan setelah diskon promo, tanpa transaksi batal (sama dengan menu Laporan). ${G.base=="arus"?"Penghasilan bersih = penjualan bersih − pengeluaran.":"Penghasilan bersih = penjualan bersih."} Jika negatif, gaji dihitung Rp0.</p>${tb}${kas}</div>${add}`}
+function gFm(){const t=V("gp0"),m=V("gp4"),all=t=="keluar"&&m=="all";$("#gp4").style.display=t=="keluar"?"":"none";$("#gp1").style.display=all?"none":"";$("#gp5").textContent=all?"Akan diambil: "+rp(gKasAmt):""}
 function gBase(v){if(cur.role!="owner")return;gj().base=v;logA("gaji-dasar","gaji",v);save();render()}
 function gAdd(){if(cur.role!="owner")return;const G=gj(),sel=V("go1"),pct=parseFloat(V("go3"));let name,u=null;
 if(sel=="__m"||!sel){name=V("go2").trim();if(!name)return alert("Isi nama owner")}else{u=S.users.find(x=>x.id==sel);if(!u)return;name=u.name}
 if(!(pct>0&&pct<=100))return alert("Persen harus lebih dari 0 dan maksimal 100");
 if(gjTot()+pct>100.0001)return alert("Total persentase melebihi 100%. Sisa yang tersedia: "+(+(100-gjTot()).toFixed(2))+"%");
-const o={id:uid(),uid:u?u.id:"",name,pct};G.owners.push(o);gKas=o.id;logA("gaji-tambah","gaji",name+" "+pct+"%");save();render()}
+const o={id:uid(),uid:u?u.id:"",name,pct,from:gjMonth()};G.owners.push(o);gKas=o.id;logA("gaji-tambah","gaji",name+" "+pct+"%");save();render()}
 function gPct(id,v){if(cur.role!="owner")return;const o=gj().owners.find(x=>x.id==id),p=parseFloat(v);if(!o)return;
 if(!(p>0&&p<=100)){alert("Persen harus lebih dari 0 dan maksimal 100");return render()}
 if(gjTot()-o.pct+p>100.0001){alert("Total persentase melebihi 100%");return render()}
 o.pct=p;logA("gaji-ubah","gaji",o.name+" "+p+"%");save();render()}
-function gDel(id){if(cur.role!="owner")return;const G=gj(),o=G.owners.find(x=>x.id==id);if(!o||!confirm("Hapus "+o.name+" dari pembagian? Catatan pengambilan kas owner ini juga ikut terhapus."))return;G.owners=G.owners.filter(x=>x.id!=id);G.pay=G.pay.filter(p=>p.oid!=id);logA("gaji-hapus","gaji",o.name);save();render()}
-function gPay(){if(cur.role!="owner"||!gKas)return;const D=gjData(),K=D.rows.find(r=>r.o.id==gKas),amt=Math.round(+V("gp1"));if(!(amt>0))return alert("Isi nominal pengambilan");
-if(K&&amt>K.left&&!confirm("Nominal melebihi kas yang belum diambil ("+rp(Math.max(0,K.left))+"). Tetap catat?"))return;
-gj().pay.push({id:uid(),oid:gKas,m:D.mo,amt,date:V("gp2")||tdy(),note:V("gp3").trim()});logA("gaji-ambil","gaji",(K?K.o.name:"")+" "+amt);save();render()}
-function gPayDel(id){if(cur.role!="owner"||!confirm("Hapus catatan pengambilan ini?"))return;const G=gj();G.pay=G.pay.filter(p=>p.id!=id);logA("gaji-ambil-hapus","gaji",id);save();render()}
-function gExp(){const D=gjData();csv("penggajian-"+D.mo+".csv",[["Bulan","Penjualan bersih","Pengeluaran","Penghasilan bersih"],[D.mo,D.om,D.ex,D.net],[],["Owner","Persen","Gaji","Sudah diambil","Belum diambil"],...D.rows.map(r=>[r.o.name,r.o.pct,r.sh,r.tk,r.left]),["Sisa kas usaha","",D.rest,"",""]])}
+function gDel(id){if(cur.role!="owner")return;const G=gj(),o=G.owners.find(x=>x.id==id);if(!o||!confirm("Hapus "+o.name+" dari pembagian? Catatan kas owner ini juga ikut terhapus."))return;G.owners=G.owners.filter(x=>x.id!=id);G.pay=G.pay.filter(p=>p.oid!=id);logA("gaji-hapus","gaji",o.name);save();render()}
+function gPay(){if(cur.role!="owner"||!gKas)return;const D=gjData(),K=D.rows.find(r=>r.o.id==gKas),t=V("gp0")=="masuk"?"masuk":"keluar";if(!K)return;
+let amt;if(t=="keluar"&&V("gp4")=="all"){amt=Math.round(Math.max(0,K.kas));if(!(amt>0))return alert("Tidak ada kas yang bisa diambil")}
+else{amt=Math.round(+V("gp1"));if(!(amt>0))return alert("Isi nominal")}
+if(t=="keluar"&&amt>K.kas&&!confirm("Nominal melebihi jumlah kas ("+rp(Math.max(0,K.kas))+"). Tetap catat?"))return;
+gj().pay.push({id:uid(),oid:gKas,m:D.mo,amt,t,date:V("gp2")||tdy(),note:V("gp3").trim()});logA(t=="masuk"?"gaji-kas-masuk":"gaji-kas-keluar","gaji",K.o.name+" "+amt);save();render()}
+function gPayDel(id){if(cur.role!="owner"||!confirm("Hapus catatan kas ini?"))return;const G=gj();G.pay=G.pay.filter(p=>p.id!=id);logA("gaji-kas-hapus","gaji",id);save();render()}
+function gExp(){const D=gjData();csv("penggajian-"+D.mo+".csv",[["Bulan","Penjualan bersih","Pengeluaran","Penghasilan bersih"],[D.mo,D.om,D.ex,D.net],[],["Owner","Persen","Kas bulan lalu","Gaji","Pemasukan kas","Pengeluaran kas","Jumlah kas"],...D.rows.map(r=>[r.o.name,r.o.pct,r.prior,r.sh,r.ms,r.kl,r.kas]),["Sisa kas usaha","","",D.rest,"","",""]])}
 /* ===== UPDATE / SINKRON MANUAL (footer) ===== */
 let lastUpd="";
 function toast(m){let t=$("#toast");if(!t){t=document.createElement("div");t.id="toast";t.className="np";document.body.appendChild(t)}t.textContent=m;t.classList.add("on");clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove("on"),4000)}
