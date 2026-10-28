@@ -226,11 +226,10 @@ const okv=v=>!!cur&&ACC[cur.role].includes(v);
 const grpOf=v=>NAVG.find(n=>!Array.isArray(n)&&(n.v==v||n.c.some(c=>c[0]==v)));
 function navH(){return NAVG.map((n,k)=>{
 if(Array.isArray(n))return okv(n[0])?`<button class="${view==n[0]?"on":""}" onclick="go('${n[0]}')">${n[1]}</button>`:"";
-const ch=n.c.filter(c=>c[0]=="__out"||okv(c[0]));if(!ch.length)return"";
+const ch=[...(n.v&&okv(n.v)&&!n.c.some(c=>c[0]==n.v)?[[n.v,"Umum"]]:[]),...n.c.filter(c=>c[0]=="__out"||okv(c[0]))];if(!ch.length)return"";
 const open=gopen==n.g,act=grpOf(view)==n;
 return`<button class="grp ${act?"gon":""}" onclick="gh(${k})">${n.g}<span style="float:right">${open?"▾":"▸"}</span></button>`+(open?ch.map(c=>c[0]=="__out"?`<button class="sub" onclick="lock()">${c[1]}</button>`:`<button class="sub ${view==c[0]?"on":""}" onclick="go('${c[0]}')">${c[1]}</button>`).join(""):"")}).join("")}
-function gh(k){const n=NAVG[k];if(gopen==n.g){gopen="";return render()}
-gopen=n.g;const t=n.v&&okv(n.v)?n.v:(n.c.find(c=>c[0]!="__out"&&okv(c[0]))||[])[0];if(t&&grpOf(view)!=n)go(t);else render()}
+function gh(k){const n=NAVG[k];gopen=gopen==n.g?"":n.g;render()}
 function render(){applyAcc();if(shopGuard())return;
 if(view!="kasir"&&(!cur||!ACC[cur.role].includes(view)))view="kasir";
 document.body.classList.toggle("pub",!authed);document.body.classList.toggle("simple",simple());if(simple())document.body.classList.remove("navopen");
