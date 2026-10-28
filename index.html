@@ -334,13 +334,17 @@ return`<div class="pos"><section>${modeBar()}<div class="srch">${SRCH}<input pla
 <aside class="cartp"><div class="cph"><div><b class="cpt">Pesanan</b><span class="mut" id="cn">${n} item</span></div><div><button class="lnk" onclick="clr()">Kosongkan</button><button class="btn s mclose" onclick="cartClose()">Tutup ✕</button></div></div>
 <div class="cbody"><div id="cl">${lines()}</div>
 <div class="vch"><input id="vc" placeholder="Kode voucher" value="${esc(vcode)}"><button class="btn s" onclick="vcode=V('vc').trim();refC();if(vcode&&!best(sub()).p)alert('Voucher tidak berlaku (kode salah, belum memenuhi syarat, atau promo otomatis lebih besar)')">Pakai</button></div><div id="dsc">${dscH()}</div>
-<div class="seg s4">${[["CASH","Tunai"],["QRIS","QRIS"],["TRANSFER","Transfer"],["SPLIT","Campur"]].map(x=>`<button class="${payM==x[0]?"on":""}" onclick="setPM('${x[0]}')">${x[1]}</button>`).join("")}</div>
-${payM=="CASH"?`<div class="cash"><input id="cash" inputmode="numeric" placeholder="Uang diterima" oninput="this.dataset.exact='';$('#kb').textContent=rp(Math.max(0,(+this.value||0)-tot()))"><div class="qrow"><button class="qk" onclick="setCash()">Uang pas</button>${[20000,50000,100000].map(v=>`<button class="qk" onclick="setCash(${v})">${v/1000}rb</button>`).join("")}</div><div class="kbr"><span>Kembalian</span><b id="kb">Rp0</b></div></div>`:payM=="SPLIT"?splitUI():payInfo()}</div>
-<div class="cft"><div class="ttr"><span>Total</span><b class="big" id="tt">${rp(tot())}</b></div><button class="pay" id="pb" onclick="doPay()">Bayar ${rp(tot())}</button></div></aside>
+</div>
+<div class="cft"><div class="ttr"><span>Total</span><b class="big" id="tt">${rp(tot())}</b></div><button class="pay" id="pb" onclick="payOpen()">Pembayaran · ${rp(tot())}</button></div></aside>
 <div class="cbd" onclick="cartClose()"></div>
 <div class="mbar ${n?"":"empty"}" role="button" tabindex="0" onclick="cartOpen()" onkeydown="if(event.key=='Enter')cartOpen()"><span class="mbi">${BAG}<i id="mn">${n}</i></span><span class="mbt"><small>Total</small><b id="mt">${rp(tot())}</b></span><span class="mbb">Lihat & Bayar</span></div>`}
 const cartOpen=()=>$(".cartp").classList.add("open"),cartClose=()=>$(".cartp").classList.remove("open");
-function setPM(m){const o=$(".cartp")&&$(".cartp").classList.contains("open");payM=m;render();if(o)cartOpen()}
+function payHtml(){return`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><b style="font-size:1.1rem">Pembayaran</b><button class="btn s" onclick="closeM()">Tutup ✕</button></div><div class="ttr"><span>Total</span><b class="big">${rp(tot())}</b></div><div class="seg s4">${[["CASH","Tunai"],["QRIS","QRIS"],["TRANSFER","Transfer"],["SPLIT","Campur"]].map(x=>`<button class="${payM==x[0]?"on":""}" onclick="setPM('${x[0]}')">${x[1]}</button>`).join("")}</div>
+${payM=="CASH"?`<div class="cash"><input id="cash" inputmode="numeric" placeholder="Uang diterima" oninput="this.dataset.exact='';$('#kb').textContent=rp(Math.max(0,(+this.value||0)-tot()))"><div class="qrow"><button class="qk" onclick="setCash()">Uang pas</button>${[20000,50000,100000].map(v=>`<button class="qk" onclick="setCash(${v})">${v/1000}rb</button>`).join("")}</div><div class="kbr"><span>Kembalian</span><b id="kb">Rp0</b></div></div>`:payM=="SPLIT"?splitUI():payInfo()}<button class="pay" id="pb2" style="margin-top:14px" onclick="doPay()">Konfirmasi Bayar ${rp(tot())}</button>`}
+function payOpen(){if(!cart.length)return alert("Keranjang kosong");if(!authed||!cur){toast("Login kasir dulu untuk menyelesaikan pembayaran");loginM("kasir");return}
+if(!shopOpen(br))return alert("Toko belum dibuka. Tekan tombol Buka toko di bagian atas layar.");modal(payHtml())}
+const payBack=()=>cart.length?modal(payHtml()):closeM();
+function setPM(m){payM=m;modal(payHtml())}
 function dec(id,sz){for(let i=cart.length-1;i>=0;i--)if(cart[i].pid==id&&(!sz||cart[i].sz==sz)){qty(i,-1);return}}
 function clr(){if(cart.length&&confirm("Kosongkan semua pesanan?")){cart=[];vcode="";refC()}}
 function addC(id,sz="R"){const l=cart.find(x=>x.pid==id&&x.sz==sz&&!x.ad.length);l?l.qty++:cart.push({pid:id,qty:1,sz,ad:[]});refC()}
@@ -348,7 +352,7 @@ function qty(i,d){cart[i].qty+=d;if(cart[i].qty<1)cart.splice(i,1);refC()}
 function tg(i,o){const a=cart[i].ad;a.includes(o)?a.splice(a.indexOf(o),1):a.push(o);refC()}
 function setCash(n){const c=$("#cash"),t=tot();c.dataset.exact=n==null?"1":"";c.value=n==null?t:n;$("#kb").textContent=rp(Math.max(0,+c.value-t))}
 function refC(){const gd=$("#grid");if(gd)gd.innerHTML=grid();$("#cl").innerHTML=lines();$("#tt").textContent=rp(tot());$("#dsc").innerHTML=dscH();const c=$("#cash");if(c){if(c.dataset.exact)c.value=tot();$("#kb").textContent=rp(Math.max(0,(+c.value||0)-tot()))}
-const n=cart.reduce((a,l)=>a+l.qty,0);$("#mn").textContent=n;$("#mt").textContent=rp(tot());$("#cn").textContent=n+" item";$("#pb").textContent="Bayar "+rp(tot());if($("#sp2"))spUp();if($("#qn"))$("#qn").textContent=rp(payM=="SPLIT"?spAmt():tot());$(".mbar").classList.toggle("empty",!n)}
+const n=cart.reduce((a,l)=>a+l.qty,0);$("#mn").textContent=n;$("#mt").textContent=rp(tot());$("#cn").textContent=n+" item";$("#pb").textContent="Pembayaran · "+rp(tot());if($("#sp2"))spUp();if($("#qn"))$("#qn").textContent=rp(payM=="SPLIT"?spAmt():tot());$(".mbar").classList.toggle("empty",!n)}
 function doPay(){
 if(!cart.length)return alert("Keranjang kosong");
 if(!authed||!cur){toast("Login kasir dulu untuk menyelesaikan pembayaran");loginM("kasir");return}
@@ -575,7 +579,7 @@ finally{b.classList.remove("spin");$("#ftl").textContent="Update";delete b.datas
 /* ===== PEMBAYARAN NON-TUNAI (QRIS & rekening bank) ===== */
 let payBank="",spM="QRIS",spV=0,spC=0;
 const PM2=()=>payM=="SPLIT"?spM:payM,spAmt=()=>Math.min(tot(),Math.max(0,Math.round(spV||0)));
-function setSP(m){const o=$(".cartp")&&$(".cartp").classList.contains("open");spM=m;render();if(o)cartOpen()}
+function setSP(m){spM=m;modal(payHtml())}
 function spUp(){spV=+V("sp2")||0;const c=$("#sp1");spC=c?(+c.value||0):0;const n=spAmt(),due=tot()-n;$("#spd").textContent=rp(due);$("#kb2").textContent=rp(Math.max(0,spC-due));if($("#qn"))$("#qn").textContent=rp(n)}
 function spCash(n){const c=$("#sp1");c.value=n==null?tot()-spAmt():n;spUp()}
 const splitUI=()=>{const n=spAmt(),due=tot()-n,nm=spM=="QRIS"?"QRIS":"Transfer";
@@ -588,7 +592,7 @@ return`<div class="cash"><div class="seg s2" style="margin:0 0 10px">${[["QRIS",
 const bankSel=()=>S.pay.banks.find(b=>b.id==payBank)||S.pay.banks[0];
 const bankLbl=()=>{const b=bankSel();return b?b.bank+" "+b.no:""};
 function setPB(id){payBank=id}
-function qrBig(){modal(`<div class="qrb"><img src="${phUrl(S.pay.qris,1200)}" alt="QRIS ZONA" style="max-width:100%;width:420px;cursor:default"><div><b>${rp(payM=="SPLIT"?spAmt():tot())}</b></div><button class="btn" style="margin-top:10px" onclick="closeM()">Tutup</button></div>`)}
+function qrBig(){modal(`<div class="qrb"><img src="${phUrl(S.pay.qris,1200)}" alt="QRIS ZONA" style="max-width:100%;width:420px;cursor:default"><div><b>${rp(payM=="SPLIT"?spAmt():tot())}</b></div><button class="btn" style="margin-top:10px" onclick="payBack()">Kembali</button></div>`)}
 const payInfo=()=>{const cf='<p class="mut sm">Konfirmasi pembayaran '+(PM2()=="QRIS"?"QRIS":"transfer")+' secara manual sebelum menekan Bayar.</p>';
 if(PM2()=="QRIS")return(S.pay.qris?`<div class="qrb"><img src="${phUrl(S.pay.qris,800)}" alt="QRIS ZONA" onclick="qrBig()"><div class="sm">${payM=="SPLIT"?"Nominal":"Total"}: <b id="qn">${rp(payM=="SPLIT"?spAmt():tot())}</b> · ketuk gambar untuk memperbesar</div></div>`:'<p class="mut sm">QRIS belum diunggah. Owner/Manager dapat mengunggahnya di Pengaturan, bagian Pembayaran non-tunai.</p>')+cf;
 const bs=S.pay.banks,sel=bankSel();
