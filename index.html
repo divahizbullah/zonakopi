@@ -182,6 +182,18 @@ details.card summary{cursor:pointer}
 .fm select,.fm input[type=date]{min-width:0;flex:1 1 130px;max-width:100%}.fm>.mut{flex-basis:100%}
 .chc{padding:10px}
 }
+
+/* header ringkas di ponsel; pilihan cabang pindah ke dasar menu */
+.nbr{display:none}
+@media(max-width:800px){
+.top{flex-wrap:nowrap;gap:6px}.top .brand{display:none}
+body:not(.simple) .top .brh{display:none}body.simple .top .brh{min-width:0;flex:1 1 90px;max-width:150px}
+.top .hm{display:none}
+.top .btn{padding:6px 10px;min-height:36px;font-size:.8rem;white-space:nowrap}.top .hb{padding:6px 11px}.top .acb{padding:6px 8px}
+.top .np{flex-wrap:nowrap!important;gap:4px!important}.top .np>b{padding:5px 9px!important;font-size:.78rem!important;text-transform:capitalize}
+.nbr{display:block;position:sticky;bottom:0;background:var(--d);border-top:1px solid rgba(255,255,255,.18);margin-top:14px;padding:10px 0 4px}
+.nbr label{display:block;font-size:.78rem;opacity:.8}.nbr select{width:100%;margin-top:4px}
+}
 </style></head><body>
 <div id="app"><aside id="nav"></aside><main id="main"></main></div>
 <div id="modal"><div id="mb"></div></div>
@@ -222,9 +234,9 @@ function shopTick(){let ch=0;S.branches.forEach(b=>{if(!shopOn(b.id))return;cons
 setInterval(shopTick,3e4);
 function shopBar(){if(!authed||!cur)return"";
 const pill=(bg,t)=>`<b style="background:${bg};color:#fff;padding:6px 12px;border-radius:99px;font-size:.85rem;white-space:nowrap">${t}</b>`;
-if(!shopOn(br))return brLock(cur)?"":`<span class="np" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">${pill("#6b7a90","⚪ Buka/tutup toko nonaktif")}<button class="btn s" onclick="bshop(br)">Aktifkan</button></span>`;
+if(!shopOn(br))return brLock(cur)?"":`<span class="np" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">${pill("#6b7a90",'⚪ <span class="hm">Buka/tutup toko </span>nonaktif')}<button class="btn s" onclick="bshop(br)">Aktifkan</button></span>`;
 const o=shopOpen(br),h=(S.shop||{})[br]||{};
-return`<span class="np" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">${o?pill("#12a150","🟢 Toko buka"+(h.openAt?" sejak "+hm(h.openAt):"")):pill("#d92d20","🔴 Toko tutup")}${o?'<button class="btn r" onclick="closeBtn()">Tutup toko</button>':'<button class="btn" style="background:#12a150;color:#fff" onclick="openShop(br,1)">Buka toko</button>'}</span>`}
+return`<span class="np" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">${o?pill("#12a150",'🟢 <span class="hm">Toko </span>buka'+(h.openAt?'<span class="hm"> sejak '+hm(h.openAt)+'</span>':"")):pill("#d92d20",'🔴 <span class="hm">Toko </span>tutup')}${o?'<button class="btn r" onclick="closeBtn()">Tutup toko</button>':'<button class="btn" style="background:#12a150;color:#fff" onclick="openShop(br,1)">Buka toko</button>'}</span>`}
 function bshop(id){const b=S.branches.find(x=>x.id==id),m=modeOf(id);modal(`<h3>Buka/tutup toko: ${esc(b.name)}</h3><div class="fm" style="flex-direction:column;align-items:stretch;gap:10px;margin-top:8px"><label class="mut">Mode<select id="sm" style="width:100%"><option value="off" ${m=="off"?"selected":""}>Nonaktif (tanpa buka/tutup)</option><option value="auto" ${m=="auto"?"selected":""}>Buka otomatis saat kasir login</option><option value="manual" ${m=="manual"?"selected":""}>Buka manual (tombol Buka toko)</option></select></label><label class="mut">Jam tutup otomatis (kosongkan jika tutup manual saja)<input id="sc" type="time" value="${esc(b.close||"")}" style="width:100%"></label><p class="mut">Saat toko tutup, semua akun kasir cabang ini keluar otomatis dan harus login lagi untuk membuka toko. Jika hari buka berganti, toko ikut tertutup otomatis. Jam tutup setelah tengah malam (mis. 01:00) tetap dihitung ke hari buka yang sama.</p><div><button class="btn" onclick="bshopSave('${id}')">Simpan</button> <button class="btn s" onclick="closeM()">Batal</button></div></div>`)}
 function bshopSave(id){const b=S.branches.find(x=>x.id==id);b.mode=V("sm");b.close=V("sc");logA("atur-toko",b.name,b.mode+" "+(b.close||"-"));save();closeM();render()}
 /* ===== PROTEKSI AWAL KASIR ===== */
@@ -269,11 +281,13 @@ const ch=[...(n.v&&okv(n.v)&&!n.c.some(c=>c[0]==n.v)?[[n.v,"Umum"]]:[]),...n.c.f
 const open=gopen==n.g,act=grpOf(view)==n;
 return`<button class="grp ${act?"gon":""}" onclick="gh(${k})">${n.g}<span style="float:right">${open?"▾":"▸"}</span></button>`+(open?ch.map(c=>c[0]=="__out"?`<button class="sub" onclick="lock()">${c[1]}</button>`:`<button class="sub ${view==c[0]?"on":""}" onclick="go('${c[0]}')">${c[1]}</button>`).join(""):"")}).join("")}
 function gh(k){const n=NAVG[k];gopen=gopen==n.g?"":n.g;render()}
+const brOpts=()=>opt(S.branches.filter(b=>!cur||!brLock(cur)||b.id==cur.br),b=>`<option value="${b.id}" ${b.id==br?"selected":""}>${esc(b.name)}</option>`);
+const brNav=()=>`<div class="nbr"><label>Cabang<select aria-label="Pilih cabang" onchange="document.body.classList.remove('navopen');br=this.value;cart=[];render()">${brOpts()}</select></label></div>`;
 function render(){applyAcc();if(shopGuard())return;
 if(view!="kasir"&&(!cur||!ACC[cur.role].includes(view)))view="kasir";
 document.body.classList.toggle("pub",!authed);document.body.classList.toggle("simple",simple());if(simple())document.body.classList.remove("navopen");
-$("#nav").innerHTML='<span class="x" onclick="tnav()">✕</span><div style="margin-bottom:12px">'+brandH()+'</div>'+(authed?'<div style="margin-bottom:10px;font-size:.85rem">'+esc(cur.name)+'<br>'+ROLEN[cur.role]+'</div>'+navH():`<button class="${view=="kasir"?"on":""}" onclick="go('kasir')">Kasir</button><button onclick="document.body.classList.remove('navopen');loginM('riwayat')">Login</button>`);
-const top=`<div class="top">${simple()?"":'<button class="btn s hb" onclick="tnav()" aria-label="Menu">☰</button>'}${brandH()}<select onchange="br=this.value;cart=[];render()">${opt(S.branches.filter(b=>!cur||!brLock(cur)||b.id==cur.br),b=>`<option value="${b.id}" ${b.id==br?"selected":""}>${esc(b.name)}</option>`)}</select>${shopBar()}${userBtn()}</div>`;
+$("#nav").innerHTML='<span class="x" onclick="tnav()">✕</span><div style="margin-bottom:12px">'+brandH()+'</div>'+(authed?'<div style="margin-bottom:10px;font-size:.85rem">'+esc(cur.name)+'<br>'+ROLEN[cur.role]+'</div>'+navH():`<button class="${view=="kasir"?"on":""}" onclick="go('kasir')">Kasir</button><button onclick="document.body.classList.remove('navopen');loginM('riwayat')">Login</button>`)+brNav();
+const top=`<div class="top">${simple()?"":'<button class="btn s hb" onclick="tnav()" aria-label="Menu">☰</button>'}${brandH()}<select class="brh" aria-label="Cabang" onchange="br=this.value;cart=[];render()">${brOpts()}</select>${shopBar()}${userBtn()}</div>`;
 $("#main").innerHTML=top+({kasir:vKasir,riwayat:vRiwayat,produk:vProduk,stok:vStok,keluar:vKeluar,laporan:vLaporan,gaji:vGaji,kasusaha:vKasUsaha,ringkasan:vRingkasan,promo:vPromo,event:vEvent,online:vOnline,pengguna:vUser,set:vSet,printer:vPrnMenu})[view]();hhSet()}
 function hhSet(){const t=document.querySelector("#main .top");document.documentElement.style.setProperty("--hh",(t?t.offsetHeight:0)+"px")}addEventListener("resize",()=>hhSet());
 /* ===== LOGIN & PERAN ===== */
