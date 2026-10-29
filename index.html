@@ -5,7 +5,7 @@
 :root{--d:#0b3a75;--m:#1d5fb4;--c:#eef5ff;--s:#d3e3fa;--a:#2f80ed}
 *{box-sizing:border-box;margin:0}
 body{font:15px "Plus Jakarta Sans",system-ui,sans-serif;background:var(--c);color:var(--d)}
-#app{min-height:100vh}
+#app{min-height:calc(100vh - 42px)}
 aside#nav{position:fixed;top:0;left:0;bottom:0;width:240px;max-width:85vw;z-index:20;overflow:auto;background:var(--d);color:var(--c);padding:14px;transform:translateX(-100%);transition:transform .2s}body.navopen aside#nav{transform:none;box-shadow:4px 0 18px rgba(0,0,0,.25)}#ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:19}body.navopen #ov{display:block}.x{float:right;cursor:pointer;padding:2px 8px;font-size:1.2rem}.hb{font-size:1.2rem;min-height:42px}body.simple #nav,body.simple #ov{display:none!important}body.simple main{margin-left:0!important}.acb{display:inline-flex;align-items:center;justify-content:center;width:42px;height:42px;padding:0;border-radius:50%}.top select{flex:1;min-width:130px;max-width:260px}main{transition:margin .2s}@media(min-width:801px){body.navopen main{margin-left:240px}body.navopen #ov{display:none}body.navopen .top .brand{display:none}body.navopen aside#nav{box-shadow:none}}
 #nav b{letter-spacing:.12em;display:block;margin-bottom:12px}
 #nav button{display:block;width:100%;text-align:left;background:none;border:0;color:inherit;padding:9px 10px;border-radius:8px;cursor:pointer;font:inherit}
@@ -127,13 +127,13 @@ main{padding:10px 10px 104px}.pos{grid-template-columns:1fr}.pg{grid-template-co
 .gcb{width:32px;height:32px;border-radius:10px;border:1.5px solid var(--m);background:#fff;color:var(--m);font:inherit;font-weight:800;cursor:pointer}
 .gcb.on{background:var(--m);color:#fff}
 /* ===== footer statis di dasar layar ===== */
-:root{--fh:42px}
-.ftr{position:fixed;left:0;right:0;bottom:0;height:var(--fh);z-index:3;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#fff;border-top:1px solid var(--s);color:var(--m);font-weight:800;line-height:1.2;text-align:center;transition:left .2s}
+:root{--fh:0px}
+.ftr{position:relative;height:42px;z-index:3;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#fff;border-top:1px solid var(--s);color:var(--m);font-weight:800;line-height:1.2;text-align:center;transition:left .2s}
 .ftr b{font-size:.78rem;letter-spacing:.35em;padding-left:.35em}
 .ftr span{font-size:.68rem;font-weight:600;letter-spacing:.12em;opacity:.75}
 main{padding-bottom:calc(16px + var(--fh))}
-@media(min-width:801px){body.navopen .ftr{left:240px}.cartp{max-height:calc(100vh - 24px - var(--fh))}}
-@media(max-width:800px){main{padding-bottom:calc(104px + var(--fh))}.mbar{bottom:var(--fh)}}
+@media(min-width:801px){body.navopen .ftr{margin-left:240px}.cartp{max-height:calc(100vh - 24px)}}
+@media(max-width:800px){main{padding-bottom:calc(104px + var(--fh))}.mbar{bottom:max(12px,env(safe-area-inset-bottom))}}
 @media print{.ftr{display:none}}
 .qrb{text-align:center;margin:8px 0}.qrb img{width:100%;max-width:260px;border-radius:14px;background:#fff;border:1px solid var(--s);cursor:zoom-in}
 .bkl{display:grid;gap:8px;margin:8px 0}.bk{display:flex;gap:10px;align-items:center;border:1.5px solid var(--s);border-radius:14px;padding:10px 12px;background:#fff;cursor:pointer}.bk:has(input:checked){border-color:var(--a);background:color-mix(in srgb,var(--a) 8%,#fff)}.bk b{display:block}.bk span.sm{display:block}
@@ -170,6 +170,17 @@ details.card summary{cursor:pointer}
 .rbq{display:flex;gap:6px;align-items:center}.rbq input{flex:1;min-width:0}.rbu{min-width:34px;font-weight:600}.rbs{font-size:.8rem}.rct{font-weight:700}
 .rzt{display:flex;gap:6px}.rzt .btn{flex:1;line-height:1.25}.rzt .btn.on{background:var(--d);color:#fff}.rzt small{font-weight:500}
 .rcd{margin-top:4px;font-size:.82rem}.rcd summary{cursor:pointer;color:var(--m);font-weight:600}.rcl{display:grid;grid-template-columns:1fr auto auto;gap:8px;padding:2px 0}.rcl.tot{font-weight:700;border-top:1px dashed var(--s);margin-top:2px}
+
+/* ringkasan: aman di layar ponsel */
+.g>.card{min-width:0}.g .big,.g .mut,.dl b,.hv{overflow-wrap:anywhere}.card .mut{overflow-wrap:anywhere}
+@media(max-width:800px){
+.g{gap:8px}.g>.card{padding:10px}.g .big{font-size:clamp(.95rem,4.8vw,1.25rem);line-height:1.2}.g>.card>.mut{font-size:.76rem;line-height:1.25}
+.hbr{grid-template-columns:minmax(0,1fr) auto;gap:3px 8px}.hbr .hl{grid-area:1/1}.hbr .hv{grid-area:1/2;white-space:normal;font-size:.8rem}.hbr .ht{grid-area:2/1/3/3}
+.dn{justify-content:center}.dl{min-width:0;flex-basis:100%}.dl div{gap:5px}.dl b{font-size:.8rem}.dl em{width:40px}
+.rtb th,.rtb td{padding:7px 5px;font-size:.76rem}.rtb td:first-child{overflow-wrap:anywhere;min-width:84px}.rtb td+td{white-space:nowrap}
+.fm select,.fm input[type=date]{min-width:0;flex:1 1 130px;max-width:100%}.fm>.mut{flex-basis:100%}
+.chc{padding:10px}
+}
 </style></head><body>
 <div id="app"><aside id="nav"></aside><main id="main"></main></div>
 <div id="modal"><div id="mb"></div></div>
@@ -670,8 +681,8 @@ function vRing(){const r=rep(),c=(t,v)=>`<div class="card"><div class="mut">${t}
 return`
 <div class="g">${c("Penjualan bersih (setelah diskon)",rp(r.omzet))}${c("Transaksi",r.L.length)}${c("Total diskon promo",rp(r.disc))}${c("Rata-rata transaksi",rp(r.L.length?r.omzet/r.L.length:0))}${c("HPP (snapshot)",rp(r.h))}${c("Laba kotor",rp(r.omzet-r.h))}${c("Biaya operasional",rp(r.ex))}${c("Laba operasional",rp(r.omzet-r.h-r.ex))}${c("Pembelian stok (info, bukan biaya)",rp(r.buy))}</div>
 <p class="mut">Penjualan dihitung setelah diskon promo dan tanpa transaksi batal (belum ada pajak). Pembelian stok tidak dikurangkan lagi karena sudah masuk HPP saat terjual.</p>
-${chRing(r)}<div class="g" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr))"><div class="card"><b>Per cabang</b>${opt(Object.entries(r.bb),([k,v])=>`<div>${esc(bn(k))}: ${rp(v)}</div>`)||"<div class=mut>-</div>"}</div><div class="card"><b>Metode pembayaran</b>${opt(Object.entries(r.pay),([k,v])=>`<div>${(OLP[k]||{}).n||k}: ${rp(v)}</div>`)||"<div class=mut>-</div>"}</div></div>
-<div class="tw"><table><tr><th>Produk</th><th>Terjual</th><th>Omzet</th><th>HPP</th><th>Laba kotor</th></tr>${opt(Object.entries(r.tp).sort((a,b)=>b[1].q-a[1].q),([k,t])=>`<tr><td>${esc(k)}</td><td>${t.q}</td><td>${rp(t.o)}</td><td>${rp(t.h)}</td><td>${rp(t.o-t.h)}</td></tr>`)||'<tr><td colspan="5" class="mut">Belum ada data.</td></tr>'}</table></div>`}
+${chRing(r)}<div class="g" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr))"><div class="card"><b>Per cabang</b>${opt(Object.entries(r.bb),([k,v])=>`<div>${esc(bn(k))}: ${rp(v)}</div>`)||"<div class=mut>-</div>"}</div><div class="card"><b>Metode pembayaran</b>${opt(Object.entries(r.pay),([k,v])=>`<div>${(OLP[k]||{}).n||k}: ${rp(v)}</div>`)||"<div class=mut>-</div>"}</div></div>
+<div class="tw"><table class="rtb"><tr><th>Produk</th><th>Terjual</th><th>Omzet</th><th>HPP</th><th>Laba kotor</th></tr>${opt(Object.entries(r.tp).sort((a,b)=>b[1].q-a[1].q),([k,t])=>`<tr><td>${esc(k)}</td><td>${t.q}</td><td>${rp(t.o)}</td><td>${rp(t.h)}</td><td>${rp(t.o-t.h)}</td></tr>`)||'<tr><td colspan="5" class="mut">Belum ada data.</td></tr>'}</table></div>`}
 function expCsv(){const r=rep();csv("laporan-penjualan.csv",[["No","Waktu","Cabang","Total","HPP","Bayar"],...r.L.map(s=>[s.no,dt(s.at),bn(s.br),s.total,s.hpp,s.pay])])}
 /* ===== LAPORAN: FILTER & SUB-LAPORAN ===== */
 function rng(){const t=tdy();if(rf.m=="hari")return{from:t,to:t};if(rf.m=="kemarin"){const y=new Date(Date.parse(t+"T00:00:00Z")-864e5).toISOString().slice(0,10);return{from:y,to:y}}if(rf.m=="bulan"){const[y,m]=t.split("-").map(Number);return{from:t.slice(0,8)+"01",to:new Date(Date.UTC(y,m,0)).toISOString().slice(0,10)}}if(rf.m=="tahun")return{from:t.slice(0,4)+"-01-01",to:t.slice(0,4)+"-12-31"};return{from:rf.from,to:rf.to}}
