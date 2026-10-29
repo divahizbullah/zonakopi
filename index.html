@@ -184,9 +184,10 @@ details.card summary{cursor:pointer}
 }
 
 /* header ringkas di ponsel; pilihan cabang pindah ke dasar menu */
-.nbr{display:none}
-@media(max-width:800px){
-.top{flex-wrap:nowrap;gap:6px}.top .brand{display:none}
+.nbr,.mo{display:none}
+@media(max-width:800px){.mo{display:block}
+.top{flex-wrap:nowrap;gap:6px}.top .brand{gap:6px;min-width:0}.top .brand small{display:none}.top .lg{height:34px}.top .brand b{font-size:1rem;letter-spacing:.1em}
+.top .shbtn{display:none!important}.top .shb{margin-left:auto}.top .shb+.np{margin-left:0!important}
 body:not(.simple) .top .brh{display:none}body.simple .top .brh{min-width:0;flex:1 1 90px;max-width:150px}
 .top .hm{display:none}
 .top .btn{padding:6px 10px;min-height:36px;font-size:.8rem;white-space:nowrap}.top .hb{padding:6px 11px}.top .acb{padding:6px 8px}
@@ -232,11 +233,15 @@ function closeBtn(){const d=tdy(br),L=S.sales.filter(s=>s.st=="OK"&&s.br==br&&bd
 function shopGuard(){if(authed&&cur&&cur.role=="kasir"&&shopOn(cur.br)){const h=(S.shop||{})[cur.br];if(h&&h.closeAt&&+(localStorage.getItem("zona_lt")||0)<Date.parse(h.closeAt)){lock();toast("Toko sudah tutup. Login lagi untuk membuka toko.");return true}}return false}
 function shopTick(){let ch=0;S.branches.forEach(b=>{if(!shopOn(b.id))return;const h=(S.shop||{})[b.id];if(!h||h.st!="open")return;if(h.day!=tdy(b.id)){closeShop(b.id,"pergantian hari buka");ch=1;return}if(b.close&&/^\d{2}:\d{2}$/.test(b.close)){const cm=closeMs(b,h.day);if(cm>Date.parse(h.openAt)&&Date.now()>=cm){closeShop(b.id,"jam tutup "+b.close);ch=1}}});if(ch)render();else shopGuard()}
 setInterval(shopTick,3e4);
+function shopBtn(m){if(!authed||!cur)return"";const c=m?"closeM();":"",w=m?"width:100%;":"";
+if(!shopOn(br))return brLock(cur)?"":`<button class="btn s" style="${w}" onclick="${c}bshop(br)">${m?"Aktifkan buka/tutup toko":"Aktifkan"}</button>`;
+return shopOpen(br)?`<button class="btn r" style="${w}" onclick="${c}closeBtn()">Tutup toko</button>`:`<button class="btn" style="${w}background:#12a150;color:#fff" onclick="${c}openShop(br,1)">Buka toko</button>`}
+function shopTxt(){if(!shopOn(br))return"Buka/tutup toko nonaktif";const h=(S.shop||{})[br]||{};return shopOpen(br)?"🟢 Toko buka"+(h.openAt?" sejak "+hm(h.openAt):""):"🔴 Toko tutup"}
 function shopBar(){if(!authed||!cur)return"";
 const pill=(bg,t)=>`<b style="background:${bg};color:#fff;padding:6px 12px;border-radius:99px;font-size:.85rem;white-space:nowrap">${t}</b>`;
-if(!shopOn(br))return brLock(cur)?"":`<span class="np" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">${pill("#6b7a90",'⚪ <span class="hm">Buka/tutup toko </span>nonaktif')}<button class="btn s" onclick="bshop(br)">Aktifkan</button></span>`;
+if(!shopOn(br))return brLock(cur)?"":`<span class="np shb" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">${pill("#6b7a90",'⚪ <span class="hm">Buka/tutup toko </span>nonaktif')}<span class="shbtn" style="display:contents">${shopBtn()}</span></span>`;
 const o=shopOpen(br),h=(S.shop||{})[br]||{};
-return`<span class="np" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">${o?pill("#12a150",'🟢 <span class="hm">Toko </span>buka'+(h.openAt?'<span class="hm"> sejak '+hm(h.openAt)+'</span>':"")):pill("#d92d20",'🔴 <span class="hm">Toko </span>tutup')}${o?'<button class="btn r" onclick="closeBtn()">Tutup toko</button>':'<button class="btn" style="background:#12a150;color:#fff" onclick="openShop(br,1)">Buka toko</button>'}</span>`}
+return`<span class="np shb" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">${o?pill("#12a150",'🟢 <span class="hm">Toko </span>buka'+(h.openAt?'<span class="hm"> sejak '+hm(h.openAt)+'</span>':"")):pill("#d92d20",'🔴 <span class="hm">Toko </span>tutup')}<span class="shbtn" style="display:contents">${shopBtn()}</span></span>`}
 function bshop(id){const b=S.branches.find(x=>x.id==id),m=modeOf(id);modal(`<h3>Buka/tutup toko: ${esc(b.name)}</h3><div class="fm" style="flex-direction:column;align-items:stretch;gap:10px;margin-top:8px"><label class="mut">Mode<select id="sm" style="width:100%"><option value="off" ${m=="off"?"selected":""}>Nonaktif (tanpa buka/tutup)</option><option value="auto" ${m=="auto"?"selected":""}>Buka otomatis saat kasir login</option><option value="manual" ${m=="manual"?"selected":""}>Buka manual (tombol Buka toko)</option></select></label><label class="mut">Jam tutup otomatis (kosongkan jika tutup manual saja)<input id="sc" type="time" value="${esc(b.close||"")}" style="width:100%"></label><p class="mut">Saat toko tutup, semua akun kasir cabang ini keluar otomatis dan harus login lagi untuk membuka toko. Jika hari buka berganti, toko ikut tertutup otomatis. Jam tutup setelah tengah malam (mis. 01:00) tetap dihitung ke hari buka yang sama.</p><div><button class="btn" onclick="bshopSave('${id}')">Simpan</button> <button class="btn s" onclick="closeM()">Batal</button></div></div>`)}
 function bshopSave(id){const b=S.branches.find(x=>x.id==id);b.mode=V("sm");b.close=V("sc");logA("atur-toko",b.name,b.mode+" "+(b.close||"-"));save();closeM();render()}
 /* ===== PROTEKSI AWAL KASIR ===== */
@@ -298,7 +303,7 @@ function applyAcc(){["owner","manager","kepala","kasir"].forEach(r=>{const a=S.a
 const ROLEN={owner:"Owner",manager:"Manager",kepala:"Kepala outlet",kasir:"Kasir"};
 async function hash(p,salt){if(crypto.subtle){const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(salt+p));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("")}let h=5381;for(const c of salt+p)h=(h*33^c.charCodeAt(0))>>>0;return"f"+h}
 const userBtn=()=>`<span class="np" style="margin-left:auto"><button class="btn ${authed?"":"s"} acb" onclick="acctM()" aria-label="${authed?"Akun":"Login"}" title="${authed?esc(cur.name)+" · "+ROLEN[cur.role]:"Login"}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg></button></span>`;
-function acctM(){if(!authed||!cur)return loginM("riwayat");modal(`<div style="text-align:center">${brandH()}</div><h3 style="margin-top:10px;text-align:center">${esc(cur.name)}</h3><p class="mut" style="text-align:center">${ROLEN[cur.role]}${brLock(cur)?" · "+esc(bn(cur.br)):""}</p><div class="fm" style="flex-direction:column;align-items:stretch;margin-top:10px"><button class="btn s" onclick="closeM();loginM('riwayat')">${cur.role=="kasir"?"Login Manager / Owner":"Ganti akun"}</button><button class="btn r" onclick="closeM();lock()">Keluar</button></div>`)}
+function acctM(){if(!authed||!cur)return loginM("riwayat");modal(`<div style="text-align:center">${brandH()}</div><h3 style="margin-top:10px;text-align:center">${esc(cur.name)}</h3><p class="mut" style="text-align:center">${ROLEN[cur.role]}${brLock(cur)?" · "+esc(bn(cur.br)):""}</p>${shopOn(br)||shopBtn(1)?`<p class="mo mut" style="text-align:center;margin-top:6px">${esc(bn(br))}: <b>${shopTxt()}</b></p>`:""}<div class="fm" style="flex-direction:column;align-items:stretch;margin-top:10px">${shopBtn(1)?`<div class="mo">${shopBtn(1)}</div>`:""}<button class="btn s" onclick="closeM();loginM('riwayat')">${cur.role=="kasir"?"Login Manager / Owner":"Ganti akun"}</button><button class="btn r" onclick="closeM();lock()">Keluar</button></div>`)}
 function modeBar(){const E=S.event||{},o=evOn(),can=cur&&!brLock(cur);
 if(!can)return o?`<div class="np" style="margin-bottom:8px"><b style="background:#f59e0b;color:#fff;padding:6px 12px;border-radius:99px;font-size:.85rem">🎪 MODE EVENT${E.name?": "+esc(E.name):""}</b></div>`:"";
 return`<div class="np" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px"><span class="mut">Mode kasir (${esc(bn(br))})</span><button class="btn ${o?"s":""}" onclick="setMode('n')">Normal</button><button class="btn ${o?"":"s"}" style="${o?"background:#f59e0b;color:#fff":""}" onclick="setMode('e')">🎪 Event${E.name?": "+esc(E.name):""}</button></div>`}
