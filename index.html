@@ -203,17 +203,17 @@ body.cust main{padding:0!important;margin:0!important}
 .cu{--r:22px;position:relative;display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidden;color:var(--d);background:radial-gradient(1200px 600px at 85% -10%,color-mix(in srgb,var(--a) 22%,transparent),transparent 60%),radial-gradient(900px 500px at -10% 110%,color-mix(in srgb,var(--m) 18%,transparent),transparent 60%),var(--c)}
 .cuov{position:fixed;inset:0;z-index:70}
 .cuh{flex:none;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px clamp(14px,2.4vw,32px);background:linear-gradient(110deg,var(--d),var(--m) 70%,var(--a));color:#fff;box-shadow:0 6px 24px rgba(11,58,117,.25)}
-.cuh .brand b{font-size:clamp(1.1rem,2vw,1.7rem);letter-spacing:.18em}.cuh .lg{height:clamp(40px,5vw,60px)}.cuh .brand small{font-size:.8rem}
-.cuhm{text-align:right;line-height:1.3}.cuhm b{display:block;font-size:clamp(.95rem,1.5vw,1.25rem)}.cuhm span{opacity:.85;font-size:.85rem;font-variant-numeric:tabular-nums}
-.cuev{flex:none;text-align:center;padding:7px 12px;font-weight:800;font-size:.9rem;color:#fff;background:linear-gradient(90deg,#d1495b,#c47a2c);letter-spacing:.03em}
-.cub{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) clamp(300px,var(--pw,33vw),520px);gap:clamp(12px,1.6vw,22px);padding:clamp(12px,1.6vw,22px)}
+.cuh .brand b{font-size:clamp(1.1em,2vw,1.7em);letter-spacing:.18em}.cuh .lg{height:clamp(40px,5vw,60px)}.cuh .brand small{font-size:.8em}
+.cuhm{text-align:right;line-height:1.3}.cuhm b{display:block;font-size:clamp(.95em,1.5vw,1.25em)}.cuhm span{opacity:.85;font-size:.85em;font-variant-numeric:tabular-nums}
+.cuev{flex:none;text-align:center;padding:7px 12px;font-weight:800;font-size:.9em;color:#fff;background:linear-gradient(90deg,#d1495b,#c47a2c);letter-spacing:.03em}
+.cub{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) var(--pwpx,360px);gap:clamp(12px,1.6vw,22px);padding:clamp(12px,1.6vw,22px)}
 .cum{min-width:0;min-height:0;display:flex;flex-direction:column}
 .cucs{flex:none;display:flex;gap:8px;overflow-x:auto;padding:2px 2px 12px;scrollbar-width:none}.cucs::-webkit-scrollbar{display:none}
 .cucp{flex:none;border:0;cursor:pointer;font:inherit;font-weight:700;padding:10px 20px;border-radius:99px;background:#fff;color:var(--m);box-shadow:0 1px 4px rgba(11,58,117,.12);transition:.15s}
 .cucp.on{background:var(--d);color:#fff;box-shadow:0 6px 16px rgba(11,58,117,.3)}
 .cug{flex:1;min-height:0;overflow-y:auto;padding:2px 4px 24px 2px;scrollbar-width:thin}
 .cucat{display:flex;align-items:baseline;gap:10px;margin:16px 0 10px}.cucat:first-child{margin-top:2px}
-.cucat h3{font-size:1.15rem;display:flex;align-items:center;gap:8px}.cucat h3:before{content:"";width:10px;height:22px;border-radius:5px;background:var(--k)}.cucat span{font-size:.8rem;opacity:.55;font-weight:600}
+.cucat h3{font-size:1.15em;display:flex;align-items:center;gap:8px}.cucat h3:before{content:"";width:10px;height:22px;border-radius:5px;background:var(--k)}.cucat span{font-size:.8em;opacity:.55;font-weight:600}
 .cug2{display:grid;grid-template-columns:repeat(auto-fill,minmax(var(--cw,130px),1fr));gap:12px}
 .cuc{position:relative;display:flex;flex-direction:column;background:#fff;border-radius:var(--r);padding:10px;box-shadow:0 2px 10px rgba(11,58,117,.1);border:2px solid transparent;transition:transform .2s,box-shadow .2s,border-color .2s}
 .cuc.on{border-color:var(--k);box-shadow:0 10px 28px color-mix(in srgb,var(--k) 35%,transparent);transform:translateY(-3px)}
@@ -223,47 +223,52 @@ body.cust main{padding:0!important;margin:0!important}
 .cubd{position:absolute;top:8px;right:8px;min-width:34px;height:34px;padding:0 10px;border-radius:99px;background:var(--k);color:#fff;font-weight:800;display:none;place-items:center;box-shadow:0 4px 12px rgba(0,0,0,.25)}
 .cuc.on .cubd{display:grid;animation:cupop .3s}
 @keyframes cupop{0%{transform:scale(.4)}70%{transform:scale(1.2)}100%{transform:scale(1)}}
-.cun{font-weight:800;line-height:1.25;margin:8px 4px 6px;font-size:clamp(.82rem,1vw,1rem);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.cun{font-weight:800;line-height:1.25;margin:8px 4px 6px;font-size:clamp(.82em,1vw,1em);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .cup{margin-top:auto;display:flex;gap:6px;flex-wrap:wrap}
 .cup span{flex:1;min-width:0;background:color-mix(in srgb,var(--k) 10%,#fff);border-radius:12px;padding:6px 10px;display:flex;flex-direction:column;line-height:1.2}
-.cup small{font-size:.7rem;font-weight:700;color:var(--k);text-transform:uppercase;letter-spacing:.06em}
-.cup b{font-size:clamp(.8rem,.95vw,.95rem);font-variant-numeric:tabular-nums;white-space:nowrap}
+.cup small{font-size:.7em;font-weight:700;color:var(--k);text-transform:uppercase;letter-spacing:.06em}
+.cup b{font-size:clamp(.8em,.95vw,.95em);font-variant-numeric:tabular-nums;white-space:nowrap}
 .cuemp{padding:40px;text-align:center;opacity:.6}
 .cuo{min-height:0;display:flex;flex-direction:column;background:#fff;border-radius:28px;box-shadow:0 12px 40px rgba(11,58,117,.18);overflow:hidden}
 .cuoh{flex:none;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:18px 22px;background:linear-gradient(110deg,var(--d),var(--m));color:#fff}
-.cuoh b{font-size:1.25rem;letter-spacing:.02em}.cuoh span{font-weight:700;opacity:.9;font-size:.9rem}
+.cuoh b{font-size:1.25em;letter-spacing:.02em}.cuoh span{font-weight:700;opacity:.9;font-size:.9em}
 .cuoh span.cuqn{background:#fff;color:var(--d);padding:3px 12px;border-radius:99px;opacity:1}
 #cuOrd{flex:1;min-height:0;display:flex;flex-direction:column}
 .cuol{flex:1;min-height:0;overflow-y:auto;padding:8px 18px}
 .cuoi{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:start;padding:13px 0;border-bottom:1px dashed var(--s);animation:cuin .3s}
 @keyframes cuin{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:none}}
-.cuq{min-width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:var(--c);color:var(--m);font-weight:800;font-size:1.05rem}
-.cuin b{display:block;line-height:1.25}.cuin small{display:block;opacity:.65;font-size:.78rem;line-height:1.35}
+.cuq{min-width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:var(--c);color:var(--m);font-weight:800;font-size:1.05em}
+.cuin b{display:block;line-height:1.25}.cuin small{display:block;opacity:.65;font-size:.78em;line-height:1.35}
 .cuip{font-variant-numeric:tabular-nums;white-space:nowrap}
 .cuot{flex:none;padding:14px 22px 20px;background:linear-gradient(180deg,#fff,var(--c));border-top:1px solid var(--s)}
 .cur{display:flex;justify-content:space-between;gap:10px;padding:3px 0;font-weight:600}.cur.ds{color:#067647}
 .cutt{margin-top:10px;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 18px;border-radius:18px;color:#fff;background:linear-gradient(110deg,var(--d),var(--a));box-shadow:0 8px 20px color-mix(in srgb,var(--a) 40%,transparent)}
-.cutt span{font-weight:700}.cutt b{font-size:clamp(1.4rem,2.4vw,2rem);font-variant-numeric:tabular-nums}
+.cutt span{font-weight:700}.cutt b{font-size:clamp(1.4em,2.4vw,2em);font-variant-numeric:tabular-nums}
 .cuid,.cupd{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:10px;padding:28px}
 .cuid svg{width:96px;height:96px;color:var(--a);animation:cufl 3s ease-in-out infinite}
 @keyframes cufl{50%{transform:translateY(-8px)}}
-.cuid h2,.cupd h2{font-size:1.5rem}.cuid p,.cupd p{opacity:.7;line-height:1.45}
+.cuid h2,.cupd h2{font-size:1.5em}.cuid p,.cupd p{opacity:.7;line-height:1.45}
 .cuck{width:96px;height:96px;border-radius:50%;display:grid;place-items:center;background:#e3f6ea;color:#067647;animation:cupop .5s}.cuck svg{width:52px;height:52px}
-.cupt{width:100%;display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-radius:14px;background:var(--c);font-weight:700}.cupt b{font-size:1.2rem;font-variant-numeric:tabular-nums}
+.cupt{width:100%;display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-radius:14px;background:var(--c);font-weight:700}.cupt b{font-size:1.2em;font-variant-numeric:tabular-nums}
 .cu.nof .cui{display:none}.cu.nof .cuc{padding:12px 10px}
 .cuset{position:absolute;right:10px;bottom:52px;width:min(300px,calc(100% - 20px));background:#fff;color:var(--d);border-radius:18px;padding:16px;box-shadow:0 12px 40px rgba(11,58,117,.3);z-index:8;display:flex;flex-direction:column;gap:12px}
-.cuset b{font-size:1.05rem}.cuset label{display:flex;flex-direction:column;gap:4px;font-size:.82rem;font-weight:700}.cuset label span{display:flex;justify-content:space-between}
+.cuset b{font-size:1.05em}.cuset label{display:flex;flex-direction:column;gap:4px;font-size:.82em;font-weight:700}.cuset label span{display:flex;justify-content:space-between}
 .cuset input[type=range]{width:100%;padding:0;accent-color:var(--m)}.cuset select{width:100%}
-.cuset .r{display:flex;gap:8px;flex-wrap:wrap}.cuset .r .btn{flex:1;padding:8px 10px;font-size:.82rem}
-.cust{position:absolute;left:12px;bottom:6px;font-size:.7rem;font-weight:700;opacity:.55;z-index:2}.cust.bad{color:#b42318;opacity:1}
+.cuset .r{display:flex;gap:8px;flex-wrap:wrap}.cuset .r .btn{flex:1;padding:8px 10px;font-size:.82em}
+.cust{position:absolute;left:12px;bottom:6px;font-size:.7em;font-weight:700;opacity:.55;z-index:2}.cust.bad{color:#b42318;opacity:1}
 .cuctl{position:absolute;right:10px;bottom:8px;display:flex;gap:6px;opacity:.3;transition:opacity .2s;z-index:2}.cuctl:hover{opacity:1}
-.cuctl button{width:34px;height:34px;border-radius:10px;border:0;background:rgba(11,58,117,.14);color:var(--d);cursor:pointer;font-size:1rem}
-@media(max-width:900px),(max-aspect-ratio:1/1){
-.cub{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) auto;gap:10px;padding:10px}
-.cuo{max-height:46vh;border-radius:22px}.cuoh{padding:12px 16px}.cuot{padding:10px 16px 14px}
-.cug2{gap:10px}
-.cuh{padding:10px 14px}
-}
+.cuctl button{width:34px;height:34px;border-radius:10px;border:0;background:rgba(11,58,117,.14);color:var(--d);cursor:pointer;font-size:1em}
+.cu{font-size:calc(1rem*var(--fs,1))}
+.cu[data-lay=stack] .cub{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) auto;gap:10px;padding:10px}
+.cu[data-lay=stack] .cuo{max-height:calc(var(--oh,40)*1vh);border-radius:22px}
+.cu[data-lay=stack] .cuoh{padding:12px 16px}.cu[data-lay=stack] .cuot{padding:10px 16px 14px}
+.cu[data-lay=stack] .cug2{gap:10px}.cu[data-lay=stack] .cuh{padding:10px 14px}
+.cu[data-c=sm] .cuh .brand small,.cu[data-c=sm] .cuhm span{display:none}
+.cu[data-c=sm] .cuh{padding:8px 12px}.cu[data-c=sm] .cuh .lg{height:34px}
+.cu[data-c=sm] .cuoi{padding:8px 0;gap:8px}.cu[data-c=sm] .cuq{min-width:36px;height:36px}
+.cu[data-c=sm] .cucp{padding:7px 14px}.cu[data-c=sm] .cuoh{padding:10px 14px}.cu[data-c=sm] .cuot{padding:8px 14px 12px}
+.cu[data-c=sm] .cub{padding:8px;gap:8px}.cu[data-c=sm] .cuid,.cu[data-c=sm] .cupd{padding:14px;gap:6px}
+.cu[data-c=sm] .cuid svg{width:60px;height:60px}.cu[data-c=sm] .cuck{width:64px;height:64px}
 @media(prefers-reduced-motion:reduce){.cu *{animation:none!important;transition:none!important}}
 </style></head><body>
 <div id="app"><aside id="nav"></aside><main id="main"></main></div>
@@ -1483,7 +1488,7 @@ function cuGrid(){const L=S.products.filter(p=>p.active&&(!CU.cat||p.cat==CU.cat
   return Object.keys(by).map(c=>`<div class="cucat" style="--k:${kcol(c)}"><h3>${esc(c)}</h3><span>${by[c].length} menu</span></div><div class="cug2">${by[c].map(cuCard).join("")}</div>`).join("")}
 function cuCat(c){CU.cat=c;$("#cuCats").innerHTML=cuChips();$("#cuGrid").innerHTML=cuGrid();$("#cuGrid").scrollTop=0;custUpd()}
 function custHTML(prev){const U=S.ui||{};if(CU.cat&&!cats().includes(CU.cat))CU.cat="";
-  return`<div class="cu${cuCfg().ar=="none"?" nof":""}" style="${cuStyle()}"><header class="cuh">${brandH()}<div class="cuhm"><b>${esc(bn(br))}</b><span id="cuClk"></span></div></header>${evOn()?`<div class="cuev">🎉 ${esc((S.event&&S.event.name)||"Event")} · harga spesial berlaku</div>`:""}
+  return`<div ${cuAttr()}><header class="cuh">${brandH()}<div class="cuhm"><b>${esc(bn(br))}</b><span id="cuClk"></span></div></header>${evOn()?`<div class="cuev">🎉 ${esc((S.event&&S.event.name)||"Event")} · harga spesial berlaku</div>`:""}
 <div class="cub"><section class="cum"><nav class="cucs" id="cuCats">${cuChips()}</nav><div class="cug" id="cuGrid">${cuGrid()}</div></section>
 <aside class="cuo"><div class="cuoh"><b>Pesanan Anda</b><span id="cuCnt"></span></div><div id="cuOrd"></div></aside></div>
 <div class="cust" id="cuSt"></div><div class="cuctl"><button onclick="cuGear()" aria-label="Pengaturan tampilan" title="Pengaturan tampilan">⚙</button><button onclick="cuFs()" aria-label="Layar penuh" title="Layar penuh">⛶</button><button onclick="cuOut()" aria-label="${prev?"Tutup":"Keluar"}" title="${prev?"Tutup":"Keluar"}">${prev?"✕":"⎋"}</button></div></div>`}
@@ -1512,20 +1517,35 @@ function cuOut(){const ov=$("#cuov");if(ov){ov.remove();return}if(confirm("Kelua
 function custPrev(){if($("#cuov"))return;const d=document.createElement("div");d.id="cuov";d.className="cuov";d.innerHTML=custHTML(true);document.body.appendChild(d);custUpd();cuClk()}
 function custCard(){if(!cur||(cur.role!="owner"&&cur.role!="manager"))return"";const u=S.users.filter(x=>x.role=="customer");
   return`<div class="card" style="margin-bottom:12px"><b>🖥 Display Customer</b><p class="mut" style="margin:6px 0 10px">Login dengan akun berperan <b>Display Customer</b> di layar/tablet pelanggan memakai link yang sama. Perangkat itu hanya menampilkan daftar menu dan pesanan yang sedang dicatat kasir di cabangnya, secara langsung.${u.length?`<br>Akun aktif: ${u.map(x=>`<b>${esc(x.username)}</b> (${esc(bn(x.br))})`).join(", ")}`:""}</p><button class="btn" onclick="custPrev()">Lihat tampilan</button></div>`}
-const CUD={w:130,ar:"4/3",pw:33};
-function cuCfg(){let l={};try{l=JSON.parse(localStorage.getItem("zona_cu")||"{}")}catch{}const c={...CUD,...(S.cuSet||{}),...l};
-  c.w=Math.min(260,Math.max(90,+c.w||CUD.w));c.pw=Math.min(45,Math.max(24,+c.pw||CUD.pw));if(!["4/3","1/1","16/9","none"].includes(c.ar))c.ar=CUD.ar;return c}
-const cuStyle=()=>{const c=cuCfg();return`--cw:${c.w}px;--ar:${c.ar=="none"?"4/3":c.ar};--pw:${c.pw}vw`};
-function cuApply(){const c=cuCfg();document.querySelectorAll(".cu").forEach(e=>{e.style.cssText=cuStyle();e.classList.toggle("nof",c.ar=="none")})}
-function cuSet(k,v){let l={};try{l=JSON.parse(localStorage.getItem("zona_cu")||"{}")}catch{}l[k]=v;localStorage.setItem("zona_cu",JSON.stringify(l));cuApply();const e=$("#cuWv"),f=$("#cuPv");if(e)e.textContent=cuCfg().w+" px";if(f)f.textContent=cuCfg().pw+"%"}
-function cuSetH(){const c=cuCfg(),adm=authed&&cur&&(cur.role=="owner"||cur.role=="manager");
-  return`<b>Pengaturan tampilan</b><label><span>Ukuran kartu menu <em id="cuWv" style="font-style:normal;opacity:.7">${c.w} px</em></span><input type="range" min="90" max="260" step="10" value="${c.w}" oninput="cuSet('w',+this.value)"></label>
+const cuClamp=(lo,hi,v)=>Math.min(hi,Math.max(lo,v));
+function cuDev(){const w=innerWidth,h=innerHeight,port=h>w,n=w>=950?6:w>=700?5:4;
+  if(w<600)return{k:"HP",lay:"stack",n:2,pw:0,fs:.92,oh:42,c:"sm"};
+  if(h<520)return{k:"HP mendatar",lay:"side",n:4,pw:38,fs:.88,oh:42,c:"sm"};
+  if(port&&w<1100)return{k:"Tablet tegak",lay:"stack",n,pw:0,fs:w>=800?1:.95,oh:w>=800?36:38,c:""};
+  if(port)return{k:"Layar tegak",lay:"stack",n:6,pw:0,fs:w>=1900?1.4:1.1,oh:34,c:""};
+  if(w<1280)return{k:"Tablet mendatar",lay:"side",n:4,pw:36,fs:.95,oh:40,c:""};
+  if(w<1920)return{k:"Desktop",lay:"side",n:5,pw:30,fs:1,oh:40,c:""};
+  if(w<2560)return{k:"Layar besar",lay:"side",n:6,pw:28,fs:1.25,oh:40,c:""};
+  return{k:"Layar 4K",lay:"side",n:8,pw:26,fs:1.6,oh:40,c:""}}
+function cuCfg(){let o={};try{o=JSON.parse(localStorage.getItem("zona_cu")||"{}")}catch{}
+  const w=innerWidth,d=cuDev(),stack=d.lay=="stack",pct=+o.pw>0?cuClamp(24,45,+o.pw):d.pw,
+  pwpx=stack?0:Math.round(Math.min(w*.45,Math.max(280,w*pct/100))),pad=stack?10:cuClamp(12,22,w*.016),gap=stack?10:12,
+  avail=stack?w-2*pad:w-pwpx-3*pad,auto=Math.max(80,Math.floor((avail-14-(d.n-1)*gap)/d.n)-1),
+  cw=+o.w>0?cuClamp(90,260,+o.w):auto,ar=["4/3","1/1","16/9","none"].includes(o.ar)?o.ar:"4/3";
+  return{...d,cw,ar,pct,pwpx,auto:!(+o.w>0||+o.pw>0||o.ar)}}
+const cuStyle=c=>{c=c||cuCfg();return`--cw:${c.cw}px;--ar:${c.ar=="none"?"4/3":c.ar};--pwpx:${c.pwpx}px;--fs:${c.fs};--oh:${c.oh}`};
+const cuAttr=()=>{const c=cuCfg();return`class="cu${c.ar=="none"?" nof":""}" style="${cuStyle(c)}" data-lay="${c.lay}" data-c="${c.c}"`};
+function cuApply(){const c=cuCfg();document.querySelectorAll(".cu").forEach(e=>{e.style.cssText=cuStyle(c);e.dataset.lay=c.lay;e.dataset.c=c.c;e.classList.toggle("nof",c.ar=="none")})}
+function cuSet(k,v){let l={};try{l=JSON.parse(localStorage.getItem("zona_cu")||"{}")}catch{}l[k]=v;localStorage.setItem("zona_cu",JSON.stringify(l));cuApply();const c=cuCfg(),e=$("#cuWv"),f=$("#cuPv"),m=$("#cuMd");if(e)e.textContent=c.cw+" px";if(f)f.textContent=c.pct+"%";if(m)m.textContent="Manual · "+c.k}
+function cuSetH(){const c=cuCfg();
+  return`<b>Pengaturan tampilan</b><div id="cuMd" style="font-size:.8rem;opacity:.7;font-weight:700;margin-top:-6px">${c.auto?"Otomatis":"Manual"} · ${esc(c.k)}</div><label><span>Ukuran kartu menu <em id="cuWv" style="font-style:normal;opacity:.7">${c.cw} px</em></span><input type="range" min="90" max="260" step="5" value="${c.cw}" oninput="cuSet('w',+this.value)"></label>
 <label>Foto menu<select onchange="cuSet('ar',this.value)">${[["4/3","Sedang (4:3)"],["16/9","Pendek (16:9)"],["1/1","Persegi (besar)"],["none","Tanpa foto"]].map(o=>`<option value="${o[0]}" ${c.ar==o[0]?"selected":""}>${o[1]}</option>`).join("")}</select></label>
-<label><span>Lebar panel pesanan <em id="cuPv" style="font-style:normal;opacity:.7">${c.pw}%</em></span><input type="range" min="24" max="45" step="1" value="${c.pw}" oninput="cuSet('pw',+this.value)"></label>
-<div class="r"><button class="btn s" onclick="cuReset()">Reset</button>${adm?'<button class="btn" onclick="cuSaveDef()">Jadikan default semua layar</button>':""}<button class="btn s" onclick="cuGear()">Tutup</button></div>`}
+${c.lay=="side"?`<label><span>Lebar panel pesanan <em id="cuPv" style="font-style:normal;opacity:.7">${c.pct}%</em></span><input type="range" min="24" max="45" step="1" value="${c.pct}" oninput="cuSet('pw',+this.value)"></label>`:""}
+<div class="r"><button class="btn s" onclick="cuReset()">Kembali ke otomatis</button><button class="btn s" onclick="cuGear()">Tutup</button></div>`}
 function cuGear(){const o=$("#cuSetP");if(o){o.remove();return}const cu=document.querySelector(".cu");if(!cu)return;const d=document.createElement("div");d.id="cuSetP";d.className="cuset";d.innerHTML=cuSetH();cu.appendChild(d)}
 function cuReset(){localStorage.removeItem("zona_cu");cuApply();const o=$("#cuSetP");if(o)o.innerHTML=cuSetH()}
-function cuSaveDef(){if(!cur||(cur.role!="owner"&&cur.role!="manager"))return;S.cuSet=cuCfg();localStorage.removeItem("zona_cu");save();cuApply();toast("Disimpan sebagai default semua layar customer")}
+let cuRT;function cuRel(){clearTimeout(cuRT);cuRT=setTimeout(()=>{if(document.querySelector(".cu")){cuApply();const p=$("#cuSetP");if(p)p.innerHTML=cuSetH()}},120)}
+addEventListener("resize",cuRel);addEventListener("orientationchange",cuRel);
 async function ensureCu(){S.cuSeed=1;if(S.users.some(u=>u.role=="customer"))return save();
   let un="customer";if(S.users.some(u=>u.username==un))un="customer1";
   const salt=uid()+uid();S.users.push({id:uid(),username:un,name:"Display Customer",role:"customer",br:S.branches[0].id,salt,h:await hash("customer123",salt)});
