@@ -615,7 +615,7 @@ return`<div class="card fm"><input id="e1" type="date" value="${tdy()}"><select 
 <p class="mut">Pembelian bahan baku dicatat di menu Stok (bukan di sini) agar tidak terhitung ganda.</p>${chKeluar(L)}
 <div class="tw"><table><tr><th>Tanggal</th><th>Kategori</th><th>Deskripsi</th><th>Nominal</th><th>Status</th><th></th></tr>${opt(L,e=>`<tr><td>${e.date}</td><td>${e.cat}</td><td>${esc(e.desc)}</td><td>${rp(e.amt)}</td><td>${e.st=="OK"?"Aktif":'<span class="warn">Batal</span>'}</td><td>${e.st=="OK"&&!brLock(cur)?`<button class="btn r" onclick="evoid('${e.id}')">Batalkan</button>`:""}</td></tr>`)||'<tr><td colspan="6" class="mut">Belum ada pengeluaran.</td></tr>'}</table></div>`}
 function eadd(){const a=Math.round(+V("e4"));if(!(a>0)||!V("e1"))return alert("Tanggal dan nominal wajib");S.exp.push({id:uid(),br,date:V("e1"),cat:V("e2"),desc:V("e3"),amt:a,pm:V("e5"),by:cur.username,st:"OK"});save();render()}
-function evoid(id){if(confirm("Batalkan pengeluaran ini?")){S.exp.find(e=>e.id==id).st="VOID";save();render()}}
+function evoid(id){const x=S.exp.find(e=>e.id==id);if(confirm(x&&x.kar?"Batalkan pengeluaran gaji karyawan ini? Status gaji minggu itu kembali menjadi Belum dibayar.":"Batalkan pengeluaran ini?")){x.st="VOID";if(x.kar&&S.gaji&&S.gaji.kpaid)delete S.gaji.kpaid[x.kar];save();render()}}
 /* ===== GRAFIK (SVG murni, tanpa library) ===== */
 const CHC=["#2f80ed","#0b3a75","#56b0f5","#f59e0b","#10b981","#8b5cf6","#ef4444","#94a3b8"];
 const shortN=n=>{const a=Math.abs(n),s=n<0?"-":"",f=x=>String(Number(x.toFixed(1))).replace(".",",");return a>=1e9?s+f(a/1e9)+" M":a>=1e6?s+f(a/1e6)+" jt":a>=1e3?s+Math.round(a/1e3)+" rb":s+Math.round(a)};
@@ -813,12 +813,18 @@ const kWs=d=>kAdd(d,-((new Date(d+"T00:00:00Z").getUTCDay()+6)%7));
 const kWeekD=()=>{if(!kWk)kWk=kWs(tdy());return[0,1,2,3,4,5,6].map(i=>kAdd(kWk,i))};
 function kg(){const G=gj();G.emp=G.emp||[];G.att=G.att||{};G.kpaid=G.kpaid||{};return G}
 const kTh=()=>{const t=+kg().kth;return t>0?t:30};
+const kEt=e=>e.th>0?e.th:kTh();
 const kHi=e=>e.hi>0?e.hi:e.rate;
 const kSh=v=>(v/1000).toLocaleString("id-ID")+"rb";
 function kCups(W){const sc=b=>allB()||b==br,m={};W.forEach(d=>m[d]=0);S.sales.forEach(s=>{if(s.st!="OK"||!sc(s.br))return;const d=bd(s);if(d in m)m[d]+=s.items.reduce((a,i)=>a+i.qty,0)});return m}
-const kDay=(e,c,th)=>(c>=th?kHi(e):e.rate)+e.meal;
-function kCalc(e,W,C){const G=kg(),th=kTh(),pd=G.kpaid[e.id+"|"+W[0]];if(pd)return{days:pd.days,hi:pd.hi||0,tot:pd.amt,pd};
-let days=0,hi=0,tot=0;W.forEach(d=>{if(G.att[e.id+"|"+d]){days++;if(C[d]>=th)hi++;tot+=kDay(e,C[d],th)}});return{days,hi,tot,pd}}
+const kDay=(e,c)=>(c>=kEt(e)?kHi(e):e.rate)+e.meal;
+function kCalc(e,W,C){const G=kg(),pd=G.kpaid[e.id+"|"+W[0]];if(pd)return{days:pd.days,hi:pd.hi||0,tot:pd.amt,pd};
+let days=0,hi=0,tot=0;W.forEach(d=>{if(G.att[e.id+"|"+d]){days++;if(C[d]>=kEt(e))hi++;tot+=kDay(e,C[d])}});return{days,hi,tot,pd}}
+/* pembayaran gaji otomatis tercatat di Pengeluaran (kategori Gaji); id tetap per karyawan-minggu supaya tidak dobel antar perangkat */
+const kXid=(id,wk)=>"kg_"+id+"_"+wk;
+function kXset(e,wk,W,c){const id=kXid(e.id,wk),f={br,date:tdy(),cat:"Gaji",desc:"Gaji karyawan "+e.name+" · "+W[0]+" s/d "+W[6]+" ("+c.days+" hari)",amt:c.tot,pm:"Tunai",by:cur.username,st:"OK",kar:e.id+"|"+wk};
+S.tomb=(S.tomb||[]).filter(t=>t!=id);const x=S.exp.find(y=>y.id==id);if(x)Object.assign(x,f);else S.exp.push({id,...f})}
+function kXvoid(eid,wk){const x=S.exp.find(y=>y.id==kXid(eid,wk));if(x)x.st="VOID"}
 function vGaji(){return`<div class="seg s2"><button class="${gTab=="own"?"on":""}" onclick="gTab='own';render()">Pembagian Owner</button><button class="${gTab=="kar"?"on":""}" onclick="gTab='kar';render()">Karyawan</button></div>`+(gTab=="kar"?vKar():vGajiOwner())}
 function vKar(){const G=kg(),own=cur.role=="owner",W=kWeekD(),C=kCups(W),th=kTh(),R=G.emp.map(e=>({e,...kCalc(e,W,C)})),
 tot=R.reduce((a,r)=>a+r.tot,0),paid=R.reduce((a,r)=>a+(r.pd?r.tot:0),0),hd=R.reduce((a,r)=>a+r.days,0),cups=W.reduce((a,d)=>a+C[d],0),HN=["Sen","Sel","Rab","Kam","Jum","Sab","Min"],
@@ -826,16 +832,16 @@ hist=Object.keys(G.kpaid).map(k=>({...G.kpaid[k],wk:k.split("|")[1]})).sort((a,b
 return`<div class="fm np" style="margin-bottom:10px"><button class="btn s" onclick="kWeek(-7)">◀ Minggu lalu</button><input type="date" aria-label="Pilih tanggal dalam minggu" value="${kWk}" onchange="kWeekSet(this.value)"><button class="btn s" onclick="kWeek(7)">Minggu depan ▶</button>${brLock(cur)?"":`<select aria-label="Cabang" onchange="rf.all=+this.value;render()"><option value="1" ${rf.all?"selected":""}>Semua cabang</option><option value="0" ${rf.all?"":"selected"}>${esc(bn(br))}</option></select>`}<button class="btn s" onclick="kExp()">Ekspor CSV</button></div>
 <p class="mut" style="margin-bottom:8px">Minggu ${fd(W[0])} s/d ${fd(W[6])} · penjualan minggu ini ${cups} cup</p>
 <div class="g" style="margin-bottom:10px">${gCard("Jumlah karyawan",G.emp.length)}${gCard("Total hari kerja",hd)}${gCard("Total gaji minggu ini",rp(tot))}${gCard("Sudah dibayar",rp(paid))}${gCard("Belum dibayar",rp(tot-paid))}</div>
-<div class="tw"><table><tr><th>Karyawan</th><th>Di bawah ${th} cup</th><th>${th} cup ke atas</th><th>Uang makan</th>${W.map((d,i)=>`<th>${HN[i]}<br><span class="mut">${d.slice(8)}/${d.slice(5,7)}</span><br><span class="${C[d]>=th?"":"warn"}">${C[d]} cup${C[d]>=th?" ✓":""}</span></th>`).join("")}<th>Hari</th><th>Total bayaran</th><th>Status</th></tr>
-${opt(R,r=>`<tr><td><b>${esc(r.e.name)}</b></td><td>${rp(r.e.rate)}</td><td>${rp(kHi(r.e))}</td><td>${rp(r.e.meal)}</td>${W.map(d=>{const on=G.att[r.e.id+"|"+d];return`<td><input type="checkbox" aria-label="${esc(r.e.name)} masuk ${d}" ${on?"checked":""} ${own&&!r.pd?"":"disabled"} onchange="kAtt('${r.e.id}','${d}',this.checked)">${on&&!r.pd?`<br><span class="mut">${kSh(kDay(r.e,C[d],th))}</span>`:""}</td>`}).join("")}<td>${r.days}${r.hi?`<div class="mut">${r.hi} hari ≥${th}</div>`:""}</td><td><b>${rp(r.tot)}</b></td><td>${own?`<select aria-label="Status bayar ${esc(r.e.name)}" onchange="kPay('${r.e.id}',this.value)"><option value="0">Belum dibayar</option><option value="1" ${r.pd?"selected":""}>Sudah dibayar</option></select>`:r.pd?"Sudah dibayar":"Belum dibayar"}${r.pd?`<div class="mut">${fd(r.pd.date)}</div>`:""}</td></tr>`)||`<tr><td colspan="14" class="mut">Belum ada karyawan. Tambahkan di bagian Daftar karyawan di bawah.</td></tr>`}
-${R.length?`<tr style="background:var(--c);font-weight:700"><td colspan="11">Total</td><td>${hd}</td><td>${rp(tot)}</td><td></td></tr>`:""}</table></div>
-<p class="mut" style="margin:8px 0 12px">Setiap hari masuk dibayar sesuai total cup terjual hari itu: di bawah ${th} cup memakai bayaran biasa, ${th} cup ke atas memakai bayaran target tercapai, ditambah uang makan. Angka kecil di bawah centang adalah bayaran hari itu. Setelah ditandai "Sudah dibayar", nominal dan absensi minggu itu dikunci.</p>
-<div class="card" style="margin-bottom:12px"><b>Aturan bayaran harian</b>
+<div class="tw"><table><tr><th>Karyawan</th><th>Target (cup)</th><th>Di bawah target</th><th>Target tercapai</th><th>Uang makan</th>${W.map((d,i)=>`<th>${HN[i]}<br><span class="mut">${d.slice(8)}/${d.slice(5,7)}</span><br>${C[d]} cup</th>`).join("")}<th>Hari</th><th>Total bayaran</th><th>Status</th></tr>
+${opt(R,r=>`<tr><td><b>${esc(r.e.name)}</b></td><td>${kEt(r.e)}</td><td>${rp(r.e.rate)}</td><td>${rp(kHi(r.e))}</td><td>${rp(r.e.meal)}</td>${W.map(d=>{const on=G.att[r.e.id+"|"+d];return`<td><input type="checkbox" aria-label="${esc(r.e.name)} masuk ${d}" ${on?"checked":""} ${own&&!r.pd?"":"disabled"} onchange="kAtt('${r.e.id}','${d}',this.checked)">${on&&!r.pd?`<br><span class="mut">${kSh(kDay(r.e,C[d]))}${C[d]>=kEt(r.e)?" ✓":""}</span>`:""}</td>`}).join("")}<td>${r.days}${r.hi?`<div class="mut">${r.hi} hari capai target</div>`:""}</td><td><b>${rp(r.tot)}</b></td><td>${own?`<select aria-label="Status bayar ${esc(r.e.name)}" onchange="kPay('${r.e.id}',this.value)"><option value="0">Belum dibayar</option><option value="1" ${r.pd?"selected":""}>Sudah dibayar</option></select>`:r.pd?"Sudah dibayar":"Belum dibayar"}${r.pd?`<div class="mut">${fd(r.pd.date)}</div>`:""}</td></tr>`)||`<tr><td colspan="15" class="mut">Belum ada karyawan. Tambahkan di bagian Daftar karyawan di bawah.</td></tr>`}
+${R.length?`<tr style="background:var(--c);font-weight:700"><td colspan="12">Total</td><td>${hd}</td><td>${rp(tot)}</td><td></td></tr>`:""}</table></div>
+<p class="mut" style="margin:8px 0 12px">Tiap hari masuk dibayar sesuai cup terjual hari itu: di bawah target memakai bayaran biasa, target tercapai (✓) memakai bayaran target, ditambah uang makan. Angka kecil di bawah centang adalah bayaran hari itu. Saat ditandai "Sudah dibayar", nominal dan absensi minggu itu dikunci dan totalnya otomatis tercatat di menu Pengeluaran (kategori Gaji) serta masuk ke Ringkasan dan Laporan. Mengembalikan ke "Belum dibayar" membatalkan catatan pengeluaran itu.</p>
+<div class="card" style="margin-bottom:12px"><b>Target bawaan</b>
 <div class="fm np" style="margin:8px 0"><label>Target penjualan per hari (cup) <input id="kth" type="number" min="1" value="${th}" style="width:100px" ${own?"":"disabled"} onchange="kThSet(this.value)"></label></div>
-<p class="mut">Jumlah cup = jumlah item terjual pada hari buka itu (transaksi batal tidak dihitung), sesuai pilihan cabang di atas. Perubahan target berlaku untuk minggu yang belum dibayar.</p></div>
+<p class="mut">Dipakai untuk karyawan yang belum punya target sendiri dan sebagai isian awal karyawan baru. Target tiap karyawan diatur di Daftar karyawan sesuai kesepakatan, dan bisa diubah kapan saja (berlaku untuk minggu yang belum dibayar). Jumlah cup = jumlah item terjual pada hari buka itu, transaksi batal tidak dihitung.</p></div>
 <div class="card" style="margin-bottom:12px"><b>Daftar karyawan</b>
-${own?`<div class="fm np" style="margin:8px 0"><input id="ke1" placeholder="Nama karyawan" style="min-width:160px"><input id="ke2" type="number" min="1" placeholder="Bayaran di bawah target" style="width:190px"><input id="ke4" type="number" min="1" placeholder="Bayaran target tercapai" style="width:190px"><input id="ke3" type="number" min="0" placeholder="Uang makan per hari" style="width:170px"><button class="btn" onclick="kEmpAdd()">+ Tambah</button></div>`:""}
-<div class="tw"><table><tr><th>Nama</th><th>Di bawah ${th} cup</th><th>${th} cup ke atas</th><th>Uang makan</th>${own?"<th></th>":""}</tr>${opt(G.emp,e=>`<tr><td>${esc(e.name)}</td><td>${rp(e.rate)}</td><td>${rp(kHi(e))}</td><td>${rp(e.meal)}</td>${own?`<td><button class="btn s np" onclick="kEmpEdit('${e.id}')">Edit</button> <button class="btn r np" onclick="kEmpDel('${e.id}')">Hapus</button></td>`:""}</tr>`)||`<tr><td colspan="${own?5:4}" class="mut">Belum ada karyawan.</td></tr>`}</table></div></div>
+${own?`<div class="fm np" style="margin:8px 0"><input id="ke1" placeholder="Nama karyawan" style="min-width:160px"><input id="ke5" type="number" min="1" placeholder="Target (cup)" value="${th}" style="width:130px"><input id="ke2" type="number" min="1" placeholder="Bayaran di bawah target" style="width:190px"><input id="ke4" type="number" min="1" placeholder="Bayaran target tercapai" style="width:190px"><input id="ke3" type="number" min="0" placeholder="Uang makan per hari" style="width:170px"><button class="btn" onclick="kEmpAdd()">+ Tambah</button></div>`:""}
+<div class="tw"><table><tr><th>Nama</th><th>Target disepakati (cup)</th><th>Di bawah target</th><th>Target tercapai</th><th>Uang makan</th>${own?"<th></th>":""}</tr>${opt(G.emp,e=>`<tr><td>${esc(e.name)}</td><td>${kEt(e)}${e.th>0?"":' <span class="mut">(bawaan)</span>'}</td><td>${rp(e.rate)}</td><td>${rp(kHi(e))}</td><td>${rp(e.meal)}</td>${own?`<td><button class="btn s np" onclick="kEmpEdit('${e.id}')">Edit</button> <button class="btn r np" onclick="kEmpDel('${e.id}')">Hapus</button></td>`:""}</tr>`)||`<tr><td colspan="${own?6:5}" class="mut">Belum ada karyawan.</td></tr>`}</table></div></div>
 <div class="card"><b>Riwayat pembayaran karyawan</b> <span class="mut">(30 terakhir)</span>
 <div class="tw" style="margin-top:6px"><table><tr><th>Tanggal bayar</th><th>Karyawan</th><th>Minggu mulai</th><th>Hari</th><th>Total bayaran</th></tr>${opt(hist,h=>`<tr><td>${fd(h.date)}</td><td>${esc(h.name)}</td><td>${fd(h.wk)}</td><td>${h.days}</td><td>${rp(h.amt)}</td></tr>`)||`<tr><td colspan="5" class="mut">Belum ada pembayaran.</td></tr>`}</table></div></div>`}
 function kWeek(n){kWk=kAdd(kWk||kWs(tdy()),n);render()}
@@ -844,22 +850,23 @@ function kThSet(v){if(cur.role!="owner")return;const t=Math.round(+v);if(!(t>0))
 function kAtt(id,d,on){if(cur.role!="owner")return;const G=kg();if(G.kpaid[id+"|"+kWk])return render();if(on)G.att[id+"|"+d]=1;else delete G.att[id+"|"+d];save();render()}
 function kPay(id,v){if(cur.role!="owner")return;const G=kg(),e=G.emp.find(x=>x.id==id),W=kWeekD(),k=id+"|"+kWk;if(!e)return;
 if(v=="1"){const c=kCalc(e,W,kCups(W));if(!c.days){alert("Belum ada hari masuk yang dicentang minggu ini");return render()}
-G.kpaid[k]={date:tdy(),amt:c.tot,days:c.days,hi:c.hi,th:kTh(),name:e.name,rate:e.rate,rateHi:kHi(e),meal:e.meal};logA("gaji-karyawan-bayar","gaji",e.name+" "+kWk+" "+c.tot)}
-else{delete G.kpaid[k];logA("gaji-karyawan-batal","gaji",e.name+" "+kWk)}save();render()}
-function kEmpAdd(){if(cur.role!="owner")return;const n=V("ke1").trim(),r=Math.round(+V("ke2")),h=Math.round(+V("ke4")||0)||r,m=Math.round(+V("ke3")||0);
-if(!n)return alert("Isi nama karyawan");if(!(r>0))return alert("Bayaran di bawah target harus lebih dari 0");if(!(h>0))return alert("Bayaran target tercapai tidak valid");if(m<0)return alert("Uang makan tidak boleh minus");
-kg().emp.push({id:uid(),name:n,rate:r,hi:h,meal:m});logA("gaji-karyawan-tambah","gaji",n);save();render()}
+G.kpaid[k]={date:tdy(),amt:c.tot,days:c.days,hi:c.hi,th:kEt(e),name:e.name,rate:e.rate,rateHi:kHi(e),meal:e.meal};kXset(e,kWk,W,c);logA("gaji-karyawan-bayar","gaji",e.name+" "+kWk+" "+c.tot)}
+else{if(G.kpaid[k]&&!confirm("Kembalikan ke Belum dibayar? Catatan pengeluaran gaji untuk "+e.name+" minggu ini akan dibatalkan."))return render();delete G.kpaid[k];kXvoid(id,kWk);logA("gaji-karyawan-batal","gaji",e.name+" "+kWk)}save();render()}
+function kEmpAdd(){if(cur.role!="owner")return;const n=V("ke1").trim(),r=Math.round(+V("ke2")),h=Math.round(+V("ke4")||0)||r,m=Math.round(+V("ke3")||0),t=Math.round(+V("ke5")||0)||kTh();
+if(!n)return alert("Isi nama karyawan");if(!(t>0))return alert("Target cup harus lebih dari 0");if(!(r>0))return alert("Bayaran di bawah target harus lebih dari 0");if(!(h>0))return alert("Bayaran target tercapai tidak valid");if(m<0)return alert("Uang makan tidak boleh minus");
+kg().emp.push({id:uid(),name:n,th:t,rate:r,hi:h,meal:m});logA("gaji-karyawan-tambah","gaji",n+" target "+t);save();render()}
 function kEmpEdit(id){if(cur.role!="owner")return;const e=kg().emp.find(x=>x.id==id);if(!e)return;
 const n=(prompt("Nama karyawan",e.name)||"").trim();if(!n)return;
+const t=Math.round(+prompt("Target penjualan per hari yang disepakati (cup)",kEt(e)));if(!(t>0))return alert("Target harus lebih dari 0");
 const r=Math.round(+prompt("Bayaran per hari jika penjualan di bawah target (Rp)",e.rate));if(!(r>0))return alert("Bayaran harus lebih dari 0");
 const h=Math.round(+prompt("Bayaran per hari jika target tercapai (Rp)",kHi(e)));if(!(h>0))return alert("Bayaran harus lebih dari 0");
 const m=Math.round(+prompt("Uang makan per hari (Rp)",e.meal));if(!(m>=0))return alert("Uang makan tidak valid");
-e.name=n;e.rate=r;e.hi=h;e.meal=m;logA("gaji-karyawan-ubah","gaji",n+" "+r+" "+h+" "+m);save();render();alert("Perubahan berlaku untuk minggu yang belum ditandai Sudah dibayar. Minggu yang sudah dibayar tidak berubah.")}
-function kEmpDel(id){if(cur.role!="owner")return;const G=kg(),e=G.emp.find(x=>x.id==id);if(!e||!confirm("Hapus "+e.name+" dari daftar karyawan? Absensi minggu yang belum dibayar ikut terhapus, riwayat pembayaran tetap disimpan."))return;
+e.name=n;e.th=t;e.rate=r;e.hi=h;e.meal=m;logA("gaji-karyawan-ubah","gaji",n+" target "+t+" "+r+" "+h+" "+m);save();render();alert("Perubahan berlaku untuk minggu yang belum ditandai Sudah dibayar. Minggu yang sudah dibayar tidak berubah.")}
+function kEmpDel(id){if(cur.role!="owner")return;const G=kg(),e=G.emp.find(x=>x.id==id);if(!e||!confirm("Hapus "+e.name+" dari daftar karyawan? Absensi minggu yang belum dibayar ikut terhapus, riwayat pembayaran dan catatan pengeluaran tetap disimpan."))return;
 G.emp=G.emp.filter(x=>x.id!=id);Object.keys(G.att).forEach(k=>{if(k.split("|")[0]==id)delete G.att[k]});logA("gaji-karyawan-hapus","gaji",e.name);save();render()}
-function kExp(){const G=kg(),W=kWeekD(),C=kCups(W),th=kTh();csv("gaji-karyawan-"+W[0]+".csv",[["Karyawan","Bayaran di bawah "+th+" cup","Bayaran "+th+" cup ke atas","Uang makan",...W,"Hari","Total bayaran","Status","Tanggal dibayar"],
-["Penjualan (cup)","","","",...W.map(d=>C[d]),"","","",""],
-...G.emp.map(e=>{const c=kCalc(e,W,C);return[e.name,e.rate,kHi(e),e.meal,...W.map(d=>G.att[e.id+"|"+d]?1:0),c.days,c.tot,c.pd?"Sudah dibayar":"Belum dibayar",c.pd?c.pd.date:""]})])}
+function kExp(){const G=kg(),W=kWeekD(),C=kCups(W);csv("gaji-karyawan-"+W[0]+".csv",[["Karyawan","Target (cup)","Bayaran di bawah target","Bayaran target tercapai","Uang makan",...W,"Hari","Total bayaran","Status","Tanggal dibayar"],
+["Penjualan (cup)","","","","",...W.map(d=>C[d]),"","","",""],
+...G.emp.map(e=>{const c=kCalc(e,W,C);return[e.name,kEt(e),e.rate,kHi(e),e.meal,...W.map(d=>G.att[e.id+"|"+d]?1:0),c.days,c.tot,c.pd?"Sudah dibayar":"Belum dibayar",c.pd?c.pd.date:""]})])}
 function gExp(){const D=gjData();csv("penggajian-"+D.mo+".csv",[["Bulan","Penjualan bersih","Pengeluaran","Pemasukan lain","Pengeluaran lain","Penghasilan bersih"],[D.mo,D.om,D.ex,D.inc,D.out,D.net],[],["Owner","Persen","Gaji","Status gaji","Kas bulan lalu","Pemasukan kas","Jumlah kas"],...D.rows.map(r=>[r.o.name,r.o.pct,r.sh,r.tk?"Sudah diambil":"Belum diambil",r.prior,r.inm,r.kas]),["Sisa kas usaha","",D.rest,"","","",""]])}
 /* ===== SISA KAS USAHA (akumulasi semua uang masuk) ===== */
 function gkData(){const G=gj(),M=gjMap(),ms=new Set([...Object.keys(M),...G.inc.map(i=>i.m),...G.out.map(i=>i.m)]),
@@ -888,7 +895,7 @@ function gkExp(){const D=gkData();csv("kas-usaha.csv",[["Total sisa kas usaha","
 let lastUpd="";
 function toast(m){let t=$("#toast");if(!t){t=document.createElement("div");t.id="toast";t.className="np";document.body.appendChild(t)}t.textContent=m;t.classList.add("on");clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove("on"),4000)}
 function mergeInto(sv,lc){let ns=0,ne=0,nb=0,nv=0;sv.seq=sv.seq||{};sv.stock=sv.stock||{};sv.sales=sv.sales||[];sv.exp=sv.exp||[];sv.buys=sv.buys||[];sv.mv=sv.mv||[];
-if(!confirm("Data di server sudah berubah, dan perangkat ini punya data baru yang belum terkirim.\n\nGabungkan? Transaksi, pengeluaran, dan pembelian perangkat ini akan ditambahkan ke data server. Perubahan lain di perangkat ini (mis. edit produk atau pengaturan) akan diganti data server."))throw new Error("Dibatalkan");
+if(!confirm("Data di server sudah berubah, dan perangkat ini punya data baru yang belum terkirim.\n\nGabungkan? Transaksi, pengeluaran, dan pembelian perangkat ini akan ditambahkan ke data server. Absensi, karyawan, dan pembayaran gaji karyawan juga digabung. Perubahan lain di perangkat ini (mis. edit produk atau pengaturan) akan diganti data server."))throw new Error("Dibatalkan");
 const use=(x,g)=>x.items.forEach(i=>(i.u||((lc.products.find(p=>p.id==i.pid)||{}).recipe||[]).map(r=>({i:r.i,q:r.q}))).forEach(r=>{const k=x.br+"|"+r.i;sv.stock[k]=(sv.stock[k]||0)+g*r.q*i.qty}));
 const tb=new Set([...(sv.tomb||[]),...(lc.tomb||[])]);sv.tomb=[...tb];sv.sales=sv.sales.filter(x=>!tb.has(x.id));sv.exp=sv.exp.filter(x=>!tb.has(x.id));
 Object.keys(lc.seq||{}).forEach(k=>sv.seq[k]=Math.max(sv.seq[k]||0,lc.seq[k]));
@@ -901,13 +908,30 @@ const eid=new Map(sv.exp.map(e=>[e.id,e]));(lc.exp||[]).forEach(e=>{const o=eid.
 const bk=b=>[b.at,b.br,b.i,b.n,b.t].join("|"),bs=new Set(sv.buys.map(bk));(lc.buys||[]).forEach(b=>{if(!bs.has(bk(b))){sv.buys.push(b);const k=b.br+"|"+b.i;sv.stock[k]=(sv.stock[k]||0)+b.n;nb++}});
 const mk=m=>[m.at,m.br,m.i,m.d,m.why].join("|"),ms=new Set(sv.mv.map(mk));(lc.mv||[]).forEach(m=>{if(!ms.has(mk(m))&&/^(Penjualan|Pembatalan|Penerimaan)/.test(m.why))sv.mv.push(m)});
 sv.mv.sort((a,b)=>a.at<b.at?-1:a.at>b.at?1:0);
-return`${ns} transaksi, ${ne} pengeluaran, ${nb} pembelian, ${nv} pembatalan`}
+let ng=0;{const g=lc.gaji;if(g){const sg=sv.gaji=sv.gaji||{};sg.emp=sg.emp||[];sg.att=sg.att||{};sg.kpaid=sg.kpaid||{};
+const ei=new Set(sg.emp.map(e=>e.id));(g.emp||[]).forEach(e=>{if(!ei.has(e.id)){sg.emp.push(e);ei.add(e.id);ng++}});
+Object.keys(g.kpaid||{}).forEach(k=>{if(!(k in sg.kpaid)){sg.kpaid[k]=g.kpaid[k];ng++}});
+Object.keys(g.att||{}).forEach(k=>{const p=k.split("|");if(!(k in sg.att)&&ei.has(p[0])&&!sg.kpaid[p[0]+"|"+kWs(p[1])]){sg.att[k]=1;ng++}})}}
+return`${ns} transaksi, ${ne} pengeluaran, ${nb} pembelian, ${nv} pembatalan, ${ng} data gaji karyawan`}
+/* hitung data yang ada di a tetapi belum ada di b (a = lebih baru, b = acuan) */
+function zDiff(a,b){a=a||{};b=b||{};const nw=k=>{const q=new Set((b[k]||[]).map(y=>y.id));return(a[k]||[]).filter(y=>!q.has(y.id)).length},d={};
+const bs=new Map((b.sales||[]).map(x=>[x.id,x.st])),be=new Map((b.exp||[]).map(x=>[x.id,x.st]));
+d.sales=nw("sales");d.void=(a.sales||[]).filter(x=>x.st=="VOID"&&bs.get(x.id)=="OK").length;
+d.exp=nw("exp");d.expv=(a.exp||[]).filter(x=>x.st=="VOID"&&be.get(x.id)=="OK").length;
+const bk=x=>[x.at,x.br,x.i,x.n,x.t].join("|"),bb=new Set((b.buys||[]).map(bk));d.buys=(a.buys||[]).filter(x=>!bb.has(bk(x))).length;
+const ga=a.gaji||{},gb=b.gaji||{};d.kar=(ga.emp||[]).filter(e=>!(gb.emp||[]).some(x=>x.id==e.id)).length;
+d.abs=Object.keys(ga.att||{}).filter(k=>!(k in(gb.att||{}))).length;d.bayar=Object.keys(ga.kpaid||{}).filter(k=>!(k in(gb.kpaid||{}))).length;
+const rest=x=>{const o={...x};["sales","exp","buys","mv","stock","seq","tomb","log"].forEach(k=>delete o[k]);if(o.gaji){o.gaji={...o.gaji};["emp","att","kpaid"].forEach(k=>delete o.gaji[k])}return JSON.stringify(o)};
+d.lain=rest(a)!=rest(b);return d}
+function zTxt(d){d=d||{};const L=[[d.sales,"transaksi"],[d.void,"pembatalan transaksi"],[d.exp,"pengeluaran"],[d.expv,"pembatalan pengeluaran"],[d.buys,"pembelian stok"],[d.kar,"karyawan"],[d.abs,"absensi karyawan"],[d.bayar,"pembayaran gaji karyawan"]].filter(x=>x[0]>0).map(x=>x[0]+" "+x[1]);
+if(d.lain)L.push("perubahan produk/pengaturan");return L.length?L.join(", "):"tidak ada data baru"}
 async function doUpdate(){const b=$("#ftb");if(!b||b.dataset.busy)return;
 if(!window.cloudSync)return toast("Sinkronisasi belum aktif (Firebase belum termuat). Periksa koneksi internet.");
 if(navigator.onLine===false)return toast("Tidak ada koneksi internet");
 b.dataset.busy="1";b.classList.add("spin");b.classList.remove("ok");$("#ftl").textContent="Memperbarui…";
 try{const r=await window.cloudSync(mergeInto);lastUpd=new Date().toLocaleTimeString("id-ID",{timeZone:"Asia/Jakarta",hour:"2-digit",minute:"2-digit"});$("#fts").textContent="Diperbarui "+lastUpd+" WIB";
-toast(r.k=="same"?"Data sudah terbaru ✓":r.k=="sent"?"Data perangkat ini terkirim ke server ✓":r.k=="pulled"?"Data terbaru dari server diterima ✓":"Data digabung & dikirim ✓ ("+r.msg+")");
+const ttl=r.k=="same"?"Data sudah terbaru ✓":r.k=="sent"?"Data perangkat ini terkirim ke server ✓":r.k=="pulled"?"Data terbaru dari server diterima ✓":"Data digabung dan dikirim ✓";
+modal(`<h3>${ttl}</h3><p class="mut" style="margin:4px 0 10px">Update ${lastUpd} WIB: data diambil dari server dan dikirim ke server dalam satu proses.</p><div class="card" style="margin-bottom:8px"><b>⬆ Terkirim ke server</b><div style="margin-top:4px">${esc(zTxt(r.sent))}</div></div><div class="card" style="margin-bottom:8px"><b>⬇ Diterima dari server</b><div style="margin-top:4px">${esc(zTxt(r.recv))}</div></div>${r.k=="merged"?`<p class="mut" style="margin-bottom:8px">Data dua sisi digabung supaya tidak bertabrakan (${esc(r.msg)}). Bila ada data yang sama di dua perangkat, data server yang dipakai.</p>`:""}<button class="btn" onclick="closeM()">Tutup</button>`);
 b.classList.add("ok");setTimeout(()=>b.classList.remove("ok"),1800);render()}
 catch(e){console.error(e);toast("Gagal memperbarui: "+(e.message||e))}
 finally{b.classList.remove("spin");$("#ftl").textContent="Update";delete b.dataset.busy}}
@@ -1328,9 +1352,10 @@ window.cloudSync=async(mergeFn)=>{
   const snap=await getDocsFromServer(col),ds=snap.docs.map(x=>x.data()).sort((a,b)=>a.i-b.i);
   if(ds.length&&(ds.length!==ds[0].n||ds.some(x=>x.v!==ds[0].v)))throw new Error("Server sedang menyimpan dari perangkat lain, coba lagi sebentar");
   const sj=ds.map(x=>x.d).join(""),dirty=!!window.dirtyL;clearTimeout(timer);
-  if(!sj||sj===lastJson){if(dirty){await push();return{k:"sent"}}return{k:"same"}}
-  if(!dirty){adopt(JSON.parse(sj),sj,ds.length);return{k:"pulled"}}
-  const sv=JSON.parse(sj),msg=mergeFn(sv,S);adopt(sv,sj,ds.length);await push();return{k:"merged",msg}};
+  const base=lastJson?JSON.parse(lastJson):null;
+  if(!sj||sj===lastJson){if(dirty){const sent=zDiff(S,base);await push();return{k:"sent",sent}}return{k:"same"}}
+  if(!dirty){const nv=JSON.parse(sj),recv=zDiff(nv,S);adopt(nv,sj,ds.length);return{k:"pulled",recv}}
+  const sv=JSON.parse(sj),recv=zDiff(sv,base),sent=zDiff(S,base),msg=mergeFn(sv,S);adopt(sv,sj,ds.length);await push();return{k:"merged",msg,sent,recv}};
 onSnapshot(col,snap=>{
   if(snap.metadata.hasPendingWrites)return;
   const ds=snap.docs.map(x=>x.data()).sort((a,b)=>a.i-b.i);
