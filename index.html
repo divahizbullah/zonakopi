@@ -271,6 +271,24 @@ body.cust main{padding:0!important;margin:0!important}
 .cu[data-c=sm] .cucp{padding:7px 14px}.cu[data-c=sm] .cuoh{padding:10px 14px}.cu[data-c=sm] .cuot{padding:8px 14px 12px}
 .cu[data-c=sm] .cub{padding:8px;gap:8px}.cu[data-c=sm] .cuid,.cu[data-c=sm] .cupd{padding:14px;gap:6px}
 .cu[data-c=sm] .cuid svg{width:60px;height:60px}.cu[data-c=sm] .cuck{width:64px;height:64px}
+.cu.sel .cuc{cursor:pointer;-webkit-tap-highlight-color:transparent}.cu.sel .cuc:active{transform:scale(.985)}
+.cu.sel .cup span{cursor:pointer;transition:transform .1s,background .15s}.cu.sel .cup span:hover{background:color-mix(in srgb,var(--k) 22%,#fff)}.cu.sel .cup span:active{transform:scale(.95)}
+.cuplus{position:absolute;right:8px;bottom:8px;width:2.1em;height:2.1em;border-radius:50%;background:var(--k);color:#fff;display:grid;place-items:center;font-weight:800;font-size:1.1em;box-shadow:0 4px 12px rgba(0,0,0,.25);pointer-events:none}
+.cuspn{display:inline-flex;align-items:center;gap:2px;background:var(--c);border-radius:99px;padding:3px;margin-top:6px}
+.cuspn button{width:2.3em;height:2.3em;border:0;border-radius:99px;background:#fff;color:var(--d);font:inherit;font-weight:800;cursor:pointer;box-shadow:0 1px 3px rgba(11,58,117,.15)}
+.cuspn span{min-width:2em;text-align:center;font-weight:800}
+.cuadd{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.cuadd button{border:1.5px solid var(--s);background:#fff;color:var(--d);border-radius:99px;padding:.4em .9em;font:inherit;font-size:.78em;font-weight:700;cursor:pointer}
+.cuadd button.on{background:var(--d);border-color:var(--d);color:#fff}
+.cusend{width:100%;margin-top:10px;border:0;border-radius:18px;padding:.9em;font:inherit;font-size:1.1em;font-weight:800;color:#fff;background:linear-gradient(110deg,#1f9d55,#2fb36a);cursor:pointer;box-shadow:0 8px 20px rgba(31,157,85,.35)}
+.cusend:active{transform:scale(.98)}
+.cuclr{display:block;margin:6px auto 0;background:none;border:0;color:var(--m);font:inherit;font-weight:700;cursor:pointer;padding:6px 10px}
+.cunote{font-size:.78em;opacity:.65;text-align:center;margin-top:6px;line-height:1.35}
+.cuinb{position:fixed;left:10px;right:10px;margin:0 auto;top:calc(var(--hh,0px) + 10px);z-index:35;width:min(560px,calc(100% - 20px));background:#fff;border:2px solid #1f9d55;border-radius:18px;box-shadow:0 12px 40px rgba(11,58,117,.35);padding:14px 16px;animation:cudn .3s}
+@keyframes cudn{from{opacity:0;translate:0 -14px}}
+.cuinb .r{display:flex;gap:8px;margin-top:10px}.cuinb .r .btn{flex:1}.cuinb ul{margin:6px 0 0 18px;font-size:.9rem}
+.cumode{display:grid;gap:8px;margin:0 0 12px}.cumode label{display:flex;gap:10px;align-items:flex-start;border:1.5px solid var(--s);border-radius:12px;padding:10px 12px;cursor:pointer;background:#fff}
+.cumode label:has(input:checked){border-color:var(--a);background:color-mix(in srgb,var(--a) 8%,#fff)}.cumode input{width:auto;margin-top:3px}
 @media(prefers-reduced-motion:reduce){.cu *{animation:none!important;transition:none!important}}
 </style></head><body>
 <div id="app"><aside id="nav"></aside><main id="main"></main></div>
@@ -376,7 +394,7 @@ if(view!="kasir"&&(!cur||!ACC[cur.role].includes(view)))view="kasir";
 document.body.classList.toggle("pub",!authed);document.body.classList.toggle("simple",simple());if(simple())document.body.classList.remove("navopen");
 $("#nav").innerHTML='<span class="x" onclick="tnav()">✕</span><div style="margin-bottom:12px">'+brandH()+'</div>'+(authed?'<div style="margin-bottom:10px;font-size:.85rem">'+esc(cur.name)+'<br>'+ROLEN[cur.role]+'</div>'+navH():`<button class="${view=="kasir"?"on":""}" onclick="go('kasir')">Kasir</button><button onclick="document.body.classList.remove('navopen');loginM('riwayat')">Login</button>`)+brNav();
 const top=`<div class="top">${simple()?"":'<button class="btn s hb" onclick="tnav()" aria-label="Menu">☰</button>'}${brandH()}<select class="brh" aria-label="Cabang" onchange="br=this.value;cart=[];render()">${brOpts()}</select>${shopBar()}${userBtn()}</div>`;
-$("#main").innerHTML=top+({kasir:vKasir,riwayat:vRiwayat,produk:vProduk,stok:vStok,keluar:vKeluar,laporan:vLaporan,gaji:vGaji,kasusaha:vKasUsaha,ringkasan:vRingkasan,promo:vPromo,event:vEvent,online:vOnline,pengguna:vUser,set:vSet,printer:vPrnMenu,tampilan:vTampilan})[view]();hhSet();liveSend();if($("#cuov")){$("#cuov").innerHTML=custHTML(true);custUpd()}}
+$("#main").innerHTML=top+({kasir:vKasir,riwayat:vRiwayat,produk:vProduk,stok:vStok,keluar:vKeluar,laporan:vLaporan,gaji:vGaji,kasusaha:vKasUsaha,ringkasan:vRingkasan,promo:vPromo,event:vEvent,online:vOnline,pengguna:vUser,set:vSet,printer:vPrnMenu,tampilan:vTampilan})[view]();hhSet();liveSend();cuInShow();if($("#cuov")){$("#cuov").innerHTML=custHTML(true);custUpd()}}
 function hhSet(){const t=document.querySelector("#main .top");document.documentElement.style.setProperty("--hh",(t?t.offsetHeight:0)+"px")}addEventListener("resize",()=>hhSet());
 /* ===== LOGIN & PERAN ===== */
 const ALL=["kasir","riwayat","produk","promo","event","online","stok","keluar","ringkasan","laporan","gaji","kasusaha","pengguna","set","printer","tampilan"];
@@ -1484,7 +1502,10 @@ function custLive(b,d){
 window.custLive=custLive;
 const CHK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>';
 const cuChips=()=>`<button class="cucp ${CU.cat?"":"on"}" onclick="cuCat('')">Semua</button>`+cats().map(c=>`<button class="cucp ${CU.cat==c?"on":""}" data-c="${esc(c)}" onclick="cuCat(this.dataset.c)">${esc(c)}</button>`).join("");
-const cuCard=p=>{const hasL=Number.isFinite(pL(p));return`<div class="cuc" data-id="${esc(p.id)}" style="--k:${kcol(p.cat)}"><div class="cui"><span class="cuph">${CUP}</span>${p.photo?`<img loading="lazy" src="${phUrl(p.photo,600)}" alt="${esc(p.name)}" onerror="this.remove()">`:""}<i class="cubd"></i></div><div class="cun">${esc(p.name)}</div><div class="cup"><span><small>Reguler</small><b>${rp(pR(p))}</b></span>${hasL?`<span><small>Large</small><b>${rp(pL(p))}</b></span>`:""}</div></div>`};
+const cuMode=()=>S.cuMode=="select"?"select":"view";
+const cuCard=p=>{const sel=cuMode()=="select",hasL=Number.isFinite(pL(p)),id=esc(p.id);
+  const chip=(sz,l,pr)=>`<span ${sel?`onclick="event.stopPropagation();cuAdd('${id}','${sz}')"`:""}><small>${l}</small><b>${rp(pr)}</b></span>`;
+  return`<div class="cuc" data-id="${id}" ${sel?`onclick="cuAdd('${id}','R')"`:""} style="--k:${kcol(p.cat)}"><div class="cui"><span class="cuph">${CUP}</span>${p.photo?`<img loading="lazy" src="${phUrl(p.photo,600)}" alt="${esc(p.name)}" onerror="this.remove()">`:""}<i class="cubd"></i>${sel?'<i class="cuplus">+</i>':""}</div><div class="cun">${esc(p.name)}</div><div class="cup">${chip("R","Reguler",pR(p))}${hasL?chip("L","Large",pL(p)):""}</div></div>`};
 function cuGrid(){const L=S.products.filter(p=>p.active&&(!CU.cat||p.cat==CU.cat));if(!L.length)return'<p class="cuemp">Belum ada menu.</p>';
   const by={};L.forEach(p=>(by[p.cat]=by[p.cat]||[]).push(p));
   return Object.keys(by).map(c=>`<div class="cucat" style="--k:${kcol(c)}"><h3>${esc(c)}</h3><span>${by[c].length} menu</span></div><div class="cug2">${by[c].map(cuCard).join("")}</div>`).join("")}
@@ -1492,21 +1513,24 @@ function cuCat(c){CU.cat=c;$("#cuCats").innerHTML=cuChips();$("#cuGrid").innerHT
 function custHTML(prev){const U=S.ui||{};if(CU.cat&&!cats().includes(CU.cat))CU.cat="";
   return`<div ${cuAttr()}><header class="cuh">${brandH()}<div class="cuhm"><b>${esc(bn(br))}</b><span id="cuClk"></span></div></header>${evOn()?`<div class="cuev">🎉 ${esc((S.event&&S.event.name)||"Event")} · harga spesial berlaku</div>`:""}
 <div class="cub"><section class="cum"><nav class="cucs" id="cuCats">${cuChips()}</nav><div class="cug" id="cuGrid">${cuGrid()}</div></section>
-<aside class="cuo"><div class="cuoh"><b>Pesanan Anda</b><span id="cuCnt"></span></div><div id="cuOrd"></div></aside></div>
+<aside class="cuo"><div class="cuoh"><b id="cuTtl">Pesanan Anda</b><span id="cuCnt"></span></div><div id="cuOrd"></div></aside></div>
 <div class="cuStat" id="cuSt"></div><div class="cuctl"><button onclick="cuGear()" aria-label="Pengaturan tampilan" title="Pengaturan tampilan">⚙</button><button onclick="cuFs()" aria-label="Layar penuh" title="Layar penuh">⛶</button><button onclick="cuOut()" aria-label="${prev?"Tutup":"Keluar"}" title="${prev?"Tutup":"Keluar"}">${prev?"✕":"⎋"}</button></div></div>`}
 function cuIdle(){const U=S.ui||{};return`<div class="cuid">${CUP}<h2>Selamat datang di ${esc(U.name||"ZONA")}</h2><p>Pesanan Anda akan tampil di sini<br>saat kasir mulai mencatat.</p>${U.tag?`<small style="opacity:.55;font-weight:700;letter-spacing:.08em">${esc(U.tag)}</small>`:""}</div>`}
 function cuOrder(d,it){return`<div class="cuol">${it.map(i=>`<div class="cuoi"><span class="cuq">${cuN(i.q)}×</span><div class="cuin"><b>${esc(i.n)}</b>${(i.o||[]).length?`<small>${esc((i.o||[]).join(" · "))}</small>`:""}<small>${rp(cuN(i.p))} / item</small></div><b class="cuip">${rp(cuN(i.p)*cuN(i.q))}</b></div>`).join("")}</div>
 <div class="cuot"><div class="cur"><span>Subtotal</span><b>${rp(cuN(d.sub))}</b></div>${cuN(d.disc)>0?`<div class="cur ds"><span>${esc(d.promo||"Diskon")}</span><b>−${rp(cuN(d.disc))}</b></div>`:""}<div class="cutt"><span>Total bayar</span><b>${rp(cuN(d.total))}</b></div></div>`}
 function cuPaid(d){return`<div class="cupd"><div class="cuck">${CHK}</div><h2>Terima kasih!</h2><p>Pembayaran berhasil${d.pay?" · "+esc(String(d.pay).replace("+"," + ")):""}</p><div class="cupt"><span>Total</span><b>${rp(cuN(d.total))}</b></div>${cuN(d.chg)>0?`<div class="cupt"><span>Kembalian</span><b>${rp(cuN(d.chg))}</b></div>`:""}<small style="opacity:.6;font-weight:700">Selamat menikmati 😊</small></div>`}
-function custUpd(){const o=$("#cuOrd");if(!o)return;const d=LIVE[br]||{st:"idle"},it=(d.st=="order"||d.st=="paid")&&Array.isArray(d.items)?d.items:[];
-  const q={};it.forEach(i=>{q[i.id]=(q[i.id]||0)+cuN(i.q)});
+function custUpd(){const o=$("#cuOrd");if(!o)return;const sel=cuMode()=="select",d=LIVE[br]||{st:"idle"},drafting=sel&&(CD.l.length>0||CD.sent);
+  const mode=d.st=="paid"?"paid":drafting?"draft":(d.st=="order"&&Array.isArray(d.items)&&d.items.length)?"order":"idle";
+  const q={};let cnt=0;
+  if(mode=="draft")CD.l.forEach(l=>{q[l.pid]=(q[l.pid]||0)+l.qty;cnt+=l.qty});
+  else if(mode!="idle")(d.items||[]).forEach(i=>{q[i.id]=(q[i.id]||0)+cuN(i.q);cnt+=cuN(i.q)});
   document.querySelectorAll(".cuc").forEach(e=>{const n=q[e.dataset.id]||0;e.classList.toggle("on",n>0);const b=e.querySelector(".cubd");if(b)b.textContent=n?"×"+n:""});
-  const cnt=it.reduce((a,i)=>a+cuN(i.q),0),h=$(".cuoh");
-  $("#cuCnt").textContent=d.st=="order"&&cnt?cnt+" item":"";
+  const h=$(".cuoh"),t=$("#cuTtl");if(t)t.textContent=mode=="draft"?(CD.sent?"Pesanan Terkirim":"Pilihan Anda"):"Pesanan Anda";
+  $("#cuCnt").textContent=(mode=="order"||mode=="draft")&&cnt?cnt+" item":"";
   const old=h.querySelector(".cuqn");if(old)old.remove();
-  if((d.st=="order"||d.st=="paid")&&d.qn){const e=document.createElement("span");e.className="cuqn";e.textContent="No. "+d.qn;h.appendChild(e)}
+  if((mode=="order"||mode=="paid")&&d.qn){const e=document.createElement("span");e.className="cuqn";e.textContent="No. "+d.qn;h.appendChild(e)}
   const keep=o.querySelector(".cuol"),sc=keep?keep.scrollTop:0;
-  o.innerHTML=d.st=="paid"?cuPaid(d):(d.st=="order"&&it.length?cuOrder(d,it):cuIdle());
+  o.innerHTML=mode=="paid"?cuPaid(d):mode=="draft"?cuDraft():mode=="order"?cuOrder(d,d.items):cuIdle();
   const nl=o.querySelector(".cuol");if(nl)nl.scrollTop=sc||nl.scrollHeight}
 const cuClk=()=>{const e=$("#cuClk");if(e)e.textContent=new Date().toLocaleString("id-ID",{timeZone:"Asia/Jakarta",weekday:"long",day:"numeric",month:"long",hour:"2-digit",minute:"2-digit"})+" WIB"};
 setInterval(cuClk,2e4);
@@ -1518,7 +1542,7 @@ function cuFs(){try{document.fullscreenElement?document.exitFullscreen():documen
 function cuOut(){const ov=$("#cuov");if(ov){ov.remove();return}if(confirm("Keluar dari display customer?"))lock()}
 function custPrev(){if($("#cuov"))return;const d=document.createElement("div");d.id="cuov";d.className="cuov";d.innerHTML=custHTML(true);document.body.appendChild(d);custUpd();cuClk()}
 function custCard(){if(!cur||(cur.role!="owner"&&cur.role!="manager"))return"";const u=S.users.filter(x=>x.role=="customer");
-  return`<div class="card" style="margin-bottom:12px"><b>🖥 Display Customer</b><p class="mut" style="margin:6px 0 10px">Login dengan akun berperan <b>Display Customer</b> di layar/tablet pelanggan memakai link yang sama. Perangkat itu hanya menampilkan daftar menu dan pesanan yang sedang dicatat kasir di cabangnya, secara langsung.${u.length?`<br>Akun aktif: ${u.map(x=>`<b>${esc(x.username)}</b> (${esc(bn(x.br))})`).join(", ")}`:""}</p><button class="btn" onclick="custPrev()">Lihat tampilan</button></div>`}
+  return`<div class="card" style="margin-bottom:12px"><b>🖥 Display Customer</b><p class="mut" style="margin:6px 0 10px">Login dengan akun berperan <b>Display Customer</b> di layar/tablet pelanggan memakai link yang sama. Perangkat itu hanya menampilkan daftar menu dan pesanan yang sedang dicatat kasir di cabangnya, secara langsung.${u.length?`<br>Akun aktif: ${u.map(x=>`<b>${esc(x.username)}</b> (${esc(bn(x.br))})`).join(", ")}`:""}</p><div class="cumode"><label><input type="radio" name="cumode" ${cuMode()=="view"?"checked":""} onchange="cuSetMode('view')"><span><b>Customer hanya melihat</b><br><span class="mut">Layar hanya menampilkan menu dan pesanan yang dicatat kasir.</span></span></label><label><input type="radio" name="cumode" ${cuMode()=="select"?"checked":""} onchange="cuSetMode('select')"><span><b>Customer bisa memilih barang</b><br><span class="mut">Customer memilih menu di layar (ukuran dan tambahan) lalu menekan Kirim ke Kasir. Kasir memuatnya ke keranjang dengan satu ketukan.</span></span></label></div><button class="btn" onclick="custPrev()">Lihat tampilan</button></div>`}
 const cuClamp=(lo,hi,v)=>Math.min(hi,Math.max(lo,v));
 function cuDev(){const w=innerWidth,h=innerHeight,port=h>w,n=w>=1000?6:w>=700?4:3;
   if(w<600)return{k:"HP",lay:"stack",n:2,pw:0,fs:.92,oh:42,c:"sm"};
@@ -1536,8 +1560,8 @@ function cuCfg(){let o={};try{o=JSON.parse(localStorage.getItem("zona_cu")||"{}"
   cw=+o.w>0?cuClamp(90,260,+o.w):auto,ar=["4/3","1/1","16/9","none"].includes(o.ar)?o.ar:"4/3";
   return{...d,cw,ar,pct,pwpx,auto:!(+o.w>0||+o.pw>0||o.ar)}}
 const cuStyle=c=>{c=c||cuCfg();return`--cw:${c.cw}px;--ar:${c.ar=="none"?"4/3":c.ar};--pwpx:${c.pwpx}px;--fs:${c.fs};--oh:${c.oh}`};
-const cuAttr=()=>{const c=cuCfg();return`class="cu${c.ar=="none"?" nof":""}" style="${cuStyle(c)}" data-lay="${c.lay}" data-c="${c.c}"`};
-function cuApply(){const c=cuCfg();document.querySelectorAll(".cu").forEach(e=>{e.style.cssText=cuStyle(c);e.dataset.lay=c.lay;e.dataset.c=c.c;e.classList.toggle("nof",c.ar=="none")})}
+const cuAttr=()=>{const c=cuCfg();return`class="cu${c.ar=="none"?" nof":""}${cuMode()=="select"?" sel":""}" style="${cuStyle(c)}" data-lay="${c.lay}" data-c="${c.c}"`};
+function cuApply(){const c=cuCfg();document.querySelectorAll(".cu").forEach(e=>{e.style.cssText=cuStyle(c);e.dataset.lay=c.lay;e.dataset.c=c.c;e.classList.toggle("nof",c.ar=="none");e.classList.toggle("sel",cuMode()=="select")})}
 function cuSet(k,v){let l={};try{l=JSON.parse(localStorage.getItem("zona_cu")||"{}")}catch{}l[k]=v;localStorage.setItem("zona_cu",JSON.stringify(l));cuApply();const c=cuCfg(),e=$("#cuWv"),f=$("#cuPv"),m=$("#cuMd");if(e)e.textContent=c.cw+" px";if(f)f.textContent=c.pct+"%";if(m)m.textContent="Manual · "+c.k}
 function cuSetH(){const c=cuCfg();
   return`<b>Pengaturan tampilan</b><div id="cuMd" style="font-size:.8rem;opacity:.7;font-weight:700;margin-top:-6px">${c.auto?"Otomatis":"Manual"} · ${esc(c.k)}</div><label><span>Ukuran kartu menu <em id="cuWv" style="font-style:normal;opacity:.7">${c.cw} px</em></span><input type="range" min="90" max="260" step="5" value="${c.cw}" oninput="cuSet('w',+this.value)"></label>
@@ -1548,6 +1572,43 @@ function cuGear(){const o=$("#cuSetP");if(o){o.remove();return}const cu=document
 function cuReset(){localStorage.removeItem("zona_cu");cuApply();const o=$("#cuSetP");if(o)o.innerHTML=cuSetH()}
 let cuRT;function cuRel(){clearTimeout(cuRT);cuRT=setTimeout(()=>{if(document.querySelector(".cu")){cuApply();const p=$("#cuSetP");if(p)p.innerHTML=cuSetH()}},120)}
 addEventListener("resize",cuRel);addEventListener("orientationchange",cuRel);
+const CD={l:[],sent:false,note:""},CIN={};
+const cuPrice=l=>{const p=prod(l.pid);if(!p)return 0;const base=l.sz=="L"&&Number.isFinite(pL(p))?pL(p):pR(p);return base+(p.addons||[]).filter(a=>l.ad.includes(a.id)).reduce((t,a)=>t+cuN(a.price),0)};
+function cuDLine(ed){return(l,i)=>{const p=prod(l.pid);if(!p)return"";const ads=p.addons||[],on=ads.filter(a=>l.ad.includes(a.id)).map(a=>a.name);
+  return`<div class="cuoi"><span class="cuq">${l.qty}×</span><div class="cuin"><b>${esc(p.name)}</b><small>${esc([l.sz=="L"?"Large":"Reguler",...on].join(" · "))}</small>${ed?`<div class="cuspn"><button onclick="cuQty(${i},-1)" aria-label="Kurangi">−</button><span>${l.qty}</span><button onclick="cuQty(${i},1)" aria-label="Tambah">+</button></div>${ads.length?`<div class="cuadd">${ads.map(a=>`<button class="${l.ad.includes(a.id)?"on":""}" onclick="cuTg(${i},'${esc(a.id)}')">${l.ad.includes(a.id)?"✓ ":""}${esc(a.name)} +${rp(cuN(a.price))}</button>`).join("")}</div>`:""}`:""}</div><b class="cuip">${rp(cuPrice(l)*l.qty)}</b></div>`}}
+function cuDraft(){const tot=CD.l.reduce((a,l)=>a+cuPrice(l)*l.qty,0);
+  if(CD.sent)return`<div class="cuol">${CD.l.map(cuDLine(false)).join("")}</div><div class="cuot"><div class="cur"><span>Subtotal</span><b>${rp(tot)}</b></div><div class="cupt" style="margin-top:8px;justify-content:center;background:#e3f6ea;color:#067647">✓ Terkirim ke kasir · menunggu konfirmasi</div><button class="cuclr" onclick="cuCancel()">Batalkan pesanan</button></div>`;
+  return`<div class="cuol">${CD.l.map(cuDLine(true)).join("")}</div><div class="cuot"><div class="cur"><span>Subtotal</span><b>${rp(tot)}</b></div><div class="cunote">${CD.note?esc(CD.note):"Promo dan total akhir dihitung oleh kasir."}</div><button class="cusend" onclick="cuSend()">Kirim ke Kasir</button><button class="cuclr" onclick="cuClear()">Kosongkan</button></div>`}
+function cuAdd(id,sz){if(cuMode()!="select"||CD.sent)return;const p=prod(id);if(!p||!p.active)return;sz=sz=="L"&&Number.isFinite(pL(p))?"L":"R";
+  const ex=CD.l.find(l=>l.pid==id&&l.sz==sz&&!l.ad.length);ex?ex.qty++:CD.l.push({pid:id,qty:1,sz,ad:[]});CD.note="";custUpd()}
+function cuQty(i,d){const l=CD.l[i];if(!l||CD.sent)return;l.qty+=d;if(l.qty<1)CD.l.splice(i,1);custUpd()}
+function cuTg(i,a){const l=CD.l[i];if(!l||CD.sent)return;l.ad.includes(a)?l.ad.splice(l.ad.indexOf(a),1):l.ad.push(a);custUpd()}
+function cuClear(){CD.l=[];CD.note="";custUpd()}
+function cuSend(){if(!CD.l.length||CD.sent)return;
+  const items=CD.l.map(l=>{const p=prod(l.pid);return{id:l.pid,sz:l.sz,q:l.qty,ad:[...l.ad],n:p?p.name:l.pid,o:[...(l.sz=="L"?["Large"]:[]),...((p&&p.addons)||[]).filter(a=>l.ad.includes(a.id)).map(a=>a.name)],p:cuPrice(l)}});
+  if(!window.custPush||!window.custPush(br,{st:"sent",items,total:items.reduce((a,i)=>a+i.p*i.q,0)})){CD.note="Belum tersambung ke server. Coba lagi sebentar.";custUpd();return}
+  CD.sent=true;CD.note="";custUpd()}
+function cuCancel(){window.custPush&&window.custPush(br,{st:"cancel"});CD.sent=false;CD.l=[];CD.note="";custUpd()}
+function cuBeep(){try{const a=new(window.AudioContext||window.webkitAudioContext)(),o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);o.frequency.value=880;g.gain.setValueAtTime(.15,a.currentTime);g.gain.exponentialRampToValueAtTime(.001,a.currentTime+.4);o.start();o.stop(a.currentTime+.4)}catch{}}
+function custMsg(b,d){if(!d)return;const isCu=authed&&cur&&cur.role=="customer";
+  if(isCu){if(b!=br||Date.now()-cuN(d.at)>6e4)return;
+    if(d.st=="taken"){CD.l=[];CD.sent=false;CD.note="";custUpd()}
+    else if(d.st=="rejected"){CD.sent=false;CD.note="Kasir belum bisa memproses pesanan ini. Silakan hubungi kasir.";custUpd()}
+    return}
+  if(d.st=="sent"){if(Date.now()-cuN(d.at)>72e5||(CIN[b]&&CIN[b].at===d.at)||!Array.isArray(d.items))return;CIN[b]=d;cuBeep()}else delete CIN[b];
+  cuInShow()}
+window.custMsg=custMsg;
+function cuInShow(){let e=$("#cuIn");const d=CIN[br],isCu=authed&&cur&&cur.role=="customer";
+  if(!d||isCu||view!="kasir"||$("#cuov")){if(e)e.remove();return}
+  const n=d.items.reduce((a,i)=>a+cuN(i.q),0);
+  if(!e){e=document.createElement("div");e.id="cuIn";e.className="cuinb np";document.body.appendChild(e)}
+  e.innerHTML=`<b>🛎 Pesanan dari customer</b> <span class="mut">· ${n} item · ${rp(cuN(d.total))}</span><ul>${d.items.map(i=>`<li>${cuN(i.q)}× ${esc(i.n)}${(i.o||[]).length?` <span class="mut">(${esc(i.o.join(", "))})</span>`:""}</li>`).join("")}</ul><div class="r"><button class="btn" onclick="cuInTake()">Muat ke keranjang</button><button class="btn s" onclick="cuInNo()">Tolak</button></div>`}
+function cuInTake(){const d=CIN[br];if(!d||view!="kasir"||!$("#cl"))return;let n=0;
+  d.items.forEach(i=>{const p=prod(i.id);if(!p||!p.active)return;const sz=i.sz=="L"&&Number.isFinite(p.priceL)?"L":"R",ad=(i.ad||[]).filter(a=>(p.addons||[]).some(x=>x.id==a)).sort(),qt=Math.max(1,Math.min(99,Math.round(cuN(i.q))));
+    const ex=cart.find(l=>l.pid==p.id&&l.sz==sz&&[...l.ad].sort().join()==ad.join());ex?ex.qty+=qt:cart.push({pid:p.id,qty:qt,sz,ad});n+=qt});
+  delete CIN[br];window.custPush&&window.custPush(br,{st:"taken"});refC();cuInShow();toast(n?"Pesanan customer dimuat ke keranjang ("+n+" item)":"Tidak ada menu yang valid")}
+function cuInNo(){if(!CIN[br])return;delete CIN[br];window.custPush&&window.custPush(br,{st:"rejected"});cuInShow()}
+function cuSetMode(v){if(!cur||(cur.role!="owner"&&cur.role!="manager"))return;S.cuMode=v=="select"?"select":"view";logA("atur-display",S.cuMode);save();toast(S.cuMode=="select"?"Customer bisa memilih barang":"Customer hanya melihat");cuApply();if($("#cuov")){$("#cuov").innerHTML=custHTML(true);custUpd()}}
 async function ensureCu(){S.cuSeed=1;if(S.users.some(u=>u.role=="customer"))return save();
   let un="customer";if(S.users.some(u=>u.username==un))un="customer1";
   const salt=uid()+uid();S.users.push({id:uid(),username:un,name:"Display Customer",role:"customer",br:S.branches[0].id,salt,h:await hash("customer123",salt)});
@@ -1593,13 +1654,14 @@ window.cloudSync=async(mergeFn)=>{
   if(!dirty){const nv=JSON.parse(sj),recv=zDiff(nv,S);adopt(nv,sj,ds.length);return{k:"pulled",recv}}
   const sv=JSON.parse(sj),recv=zDiff(sv,base),sent=zDiff(S,base),msg=mergeFn(sv,S);adopt(sv,sj,ds.length);await push();return{k:"merged",msg,sent,recv}};
 window.livePush=(b,o)=>{if(!ready){st("☁ Display: belum tersambung ke server",1);return}setDoc(doc(col,"live_"+encodeURIComponent(b)),{...o,at:Date.now(),by:CID}).then(()=>st("☁ Display terkirim")).catch(e=>{console.error(e);st("☁ Display gagal: "+(e.code||e.message),1)})};
+window.custPush=(b,o)=>{if(!ready)return false;setDoc(doc(col,"cust_"+encodeURIComponent(b)),{...o,at:Date.now(),by:CID}).catch(e=>{console.error(e);window.cuStat&&window.cuStat("● Gagal kirim: "+(e.code||e.message),1)});return true};
 let lw=null,lwb="";
 window.liveWatch=b=>{if(lwb===b)return;lwb=b;if(lw)lw();lw=onSnapshot(doc(col,"live_"+encodeURIComponent(b)),sn=>{window.cuStat&&window.cuStat("● Terhubung · "+new Date().toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit",second:"2-digit"}));if(sn.exists()&&window.custLive)window.custLive(b,sn.data())},e=>{console.error(e);window.cuStat&&window.cuStat("● Gagal terhubung: "+(e.code||e.message),1)})};
 onSnapshot(col,snap=>{
   if(document.body.classList.contains("cust"))window.liveWatch(br);
   const chg=snap.docChanges();
-  chg.forEach(c=>{if(c.type!="removed"&&c.doc.id.startsWith("live_")&&window.custLive){try{window.custLive(decodeURIComponent(c.doc.id.slice(5)),c.doc.data())}catch(e){console.error(e)}}});
-  if(chg.length&&chg.every(c=>c.doc.id.startsWith("live_")))return;
+  chg.forEach(c=>{if(c.type=="removed")return;const id=c.doc.id;try{if(id.startsWith("live_")&&window.custLive)window.custLive(decodeURIComponent(id.slice(5)),c.doc.data());else if(id.startsWith("cust_")&&window.custMsg)window.custMsg(decodeURIComponent(id.slice(5)),c.doc.data())}catch(e){console.error(e)}});
+  if(chg.length&&chg.every(c=>/^(live|cust)_/.test(c.doc.id)))return;
   if(snap.metadata.hasPendingWrites)return;
   const ds=snap.docs.filter(x=>/^c\d{4}$/.test(x.id)).map(x=>x.data()).sort((a,b)=>a.i-b.i);
   if(!ds.length){if(!ready){ready=true;push()}return}
