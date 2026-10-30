@@ -195,6 +195,70 @@ body:not(.simple) .top .brh{display:none}body.simple .top .brh{min-width:0;flex:
 .nbr{display:block;position:sticky;bottom:0;background:var(--d);border-top:1px solid rgba(255,255,255,.18);margin-top:14px;padding:10px 0 4px}
 .nbr label{display:block;font-size:.78rem;opacity:.8}.nbr select{width:100%;margin-top:4px}
 }
+
+/* ===== DISPLAY CUSTOMER ===== */
+body.cust{background:var(--d);overflow:hidden}
+body.cust #nav,body.cust #ov,body.cust .ftr,body.cust .np{display:none!important}
+body.cust main{padding:0!important;margin:0!important}
+.cu{--r:22px;position:relative;display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidden;color:var(--d);background:radial-gradient(1200px 600px at 85% -10%,color-mix(in srgb,var(--a) 22%,transparent),transparent 60%),radial-gradient(900px 500px at -10% 110%,color-mix(in srgb,var(--m) 18%,transparent),transparent 60%),var(--c)}
+.cuov{position:fixed;inset:0;z-index:70}
+.cuh{flex:none;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px clamp(14px,2.4vw,32px);background:linear-gradient(110deg,var(--d),var(--m) 70%,var(--a));color:#fff;box-shadow:0 6px 24px rgba(11,58,117,.25)}
+.cuh .brand b{font-size:clamp(1.1rem,2vw,1.7rem);letter-spacing:.18em}.cuh .lg{height:clamp(40px,5vw,60px)}.cuh .brand small{font-size:.8rem}
+.cuhm{text-align:right;line-height:1.3}.cuhm b{display:block;font-size:clamp(.95rem,1.5vw,1.25rem)}.cuhm span{opacity:.85;font-size:.85rem;font-variant-numeric:tabular-nums}
+.cuev{flex:none;text-align:center;padding:7px 12px;font-weight:800;font-size:.9rem;color:#fff;background:linear-gradient(90deg,#d1495b,#c47a2c);letter-spacing:.03em}
+.cub{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) clamp(330px,33vw,470px);gap:clamp(12px,1.6vw,22px);padding:clamp(12px,1.6vw,22px)}
+.cum{min-width:0;min-height:0;display:flex;flex-direction:column}
+.cucs{flex:none;display:flex;gap:8px;overflow-x:auto;padding:2px 2px 12px;scrollbar-width:none}.cucs::-webkit-scrollbar{display:none}
+.cucp{flex:none;border:0;cursor:pointer;font:inherit;font-weight:700;padding:10px 20px;border-radius:99px;background:#fff;color:var(--m);box-shadow:0 1px 4px rgba(11,58,117,.12);transition:.15s}
+.cucp.on{background:var(--d);color:#fff;box-shadow:0 6px 16px rgba(11,58,117,.3)}
+.cug{flex:1;min-height:0;overflow-y:auto;padding:2px 4px 24px 2px;scrollbar-width:thin}
+.cucat{display:flex;align-items:baseline;gap:10px;margin:16px 0 10px}.cucat:first-child{margin-top:2px}
+.cucat h3{font-size:1.15rem;display:flex;align-items:center;gap:8px}.cucat h3:before{content:"";width:10px;height:22px;border-radius:5px;background:var(--k)}.cucat span{font-size:.8rem;opacity:.55;font-weight:600}
+.cug2{display:grid;grid-template-columns:repeat(auto-fill,minmax(clamp(150px,15vw,210px),1fr));gap:14px}
+.cuc{position:relative;display:flex;flex-direction:column;background:#fff;border-radius:var(--r);padding:10px;box-shadow:0 2px 10px rgba(11,58,117,.1);border:2px solid transparent;transition:transform .2s,box-shadow .2s,border-color .2s}
+.cuc.on{border-color:var(--k);box-shadow:0 10px 28px color-mix(in srgb,var(--k) 35%,transparent);transform:translateY(-3px)}
+.cui{position:relative;aspect-ratio:1/1;border-radius:calc(var(--r) - 8px);overflow:hidden;display:grid;place-items:center;color:var(--k);background:linear-gradient(145deg,color-mix(in srgb,var(--k) 18%,#fff),color-mix(in srgb,var(--k) 6%,#fff))}
+.cui img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.cuph{display:grid;place-items:center;width:100%;height:100%}.cuph svg{width:42%;height:auto;opacity:.8}
+.cubd{position:absolute;top:8px;right:8px;min-width:34px;height:34px;padding:0 10px;border-radius:99px;background:var(--k);color:#fff;font-weight:800;display:none;place-items:center;box-shadow:0 4px 12px rgba(0,0,0,.25)}
+.cuc.on .cubd{display:grid;animation:cupop .3s}
+@keyframes cupop{0%{transform:scale(.4)}70%{transform:scale(1.2)}100%{transform:scale(1)}}
+.cun{font-weight:800;line-height:1.25;margin:10px 4px 8px;font-size:clamp(.92rem,1.15vw,1.08rem);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.cup{margin-top:auto;display:flex;gap:6px;flex-wrap:wrap}
+.cup span{flex:1;min-width:0;background:color-mix(in srgb,var(--k) 10%,#fff);border-radius:12px;padding:6px 10px;display:flex;flex-direction:column;line-height:1.2}
+.cup small{font-size:.7rem;font-weight:700;color:var(--k);text-transform:uppercase;letter-spacing:.06em}
+.cup b{font-size:clamp(.88rem,1.05vw,1.02rem);font-variant-numeric:tabular-nums;white-space:nowrap}
+.cuemp{padding:40px;text-align:center;opacity:.6}
+.cuo{min-height:0;display:flex;flex-direction:column;background:#fff;border-radius:28px;box-shadow:0 12px 40px rgba(11,58,117,.18);overflow:hidden}
+.cuoh{flex:none;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:18px 22px;background:linear-gradient(110deg,var(--d),var(--m));color:#fff}
+.cuoh b{font-size:1.25rem;letter-spacing:.02em}.cuoh span{font-weight:700;opacity:.9;font-size:.9rem}
+.cuoh span.cuqn{background:#fff;color:var(--d);padding:3px 12px;border-radius:99px;opacity:1}
+#cuOrd{flex:1;min-height:0;display:flex;flex-direction:column}
+.cuol{flex:1;min-height:0;overflow-y:auto;padding:8px 18px}
+.cuoi{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:start;padding:13px 0;border-bottom:1px dashed var(--s);animation:cuin .3s}
+@keyframes cuin{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:none}}
+.cuq{min-width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:var(--c);color:var(--m);font-weight:800;font-size:1.05rem}
+.cuin b{display:block;line-height:1.25}.cuin small{display:block;opacity:.65;font-size:.78rem;line-height:1.35}
+.cuip{font-variant-numeric:tabular-nums;white-space:nowrap}
+.cuot{flex:none;padding:14px 22px 20px;background:linear-gradient(180deg,#fff,var(--c));border-top:1px solid var(--s)}
+.cur{display:flex;justify-content:space-between;gap:10px;padding:3px 0;font-weight:600}.cur.ds{color:#067647}
+.cutt{margin-top:10px;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 18px;border-radius:18px;color:#fff;background:linear-gradient(110deg,var(--d),var(--a));box-shadow:0 8px 20px color-mix(in srgb,var(--a) 40%,transparent)}
+.cutt span{font-weight:700}.cutt b{font-size:clamp(1.4rem,2.4vw,2rem);font-variant-numeric:tabular-nums}
+.cuid,.cupd{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:10px;padding:28px}
+.cuid svg{width:96px;height:96px;color:var(--a);animation:cufl 3s ease-in-out infinite}
+@keyframes cufl{50%{transform:translateY(-8px)}}
+.cuid h2,.cupd h2{font-size:1.5rem}.cuid p,.cupd p{opacity:.7;line-height:1.45}
+.cuck{width:96px;height:96px;border-radius:50%;display:grid;place-items:center;background:#e3f6ea;color:#067647;animation:cupop .5s}.cuck svg{width:52px;height:52px}
+.cupt{width:100%;display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-radius:14px;background:var(--c);font-weight:700}.cupt b{font-size:1.2rem;font-variant-numeric:tabular-nums}
+.cuctl{position:absolute;right:10px;bottom:8px;display:flex;gap:6px;opacity:.3;transition:opacity .2s;z-index:2}.cuctl:hover{opacity:1}
+.cuctl button{width:34px;height:34px;border-radius:10px;border:0;background:rgba(11,58,117,.14);color:var(--d);cursor:pointer;font-size:1rem}
+@media(max-width:900px),(max-aspect-ratio:1/1){
+.cub{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) auto;gap:10px;padding:10px}
+.cuo{max-height:46vh;border-radius:22px}.cuoh{padding:12px 16px}.cuot{padding:10px 16px 14px}
+.cug2{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+.cuh{padding:10px 14px}
+}
+@media(prefers-reduced-motion:reduce){.cu *{animation:none!important;transition:none!important}}
 </style></head><body>
 <div id="app"><aside id="nav"></aside><main id="main"></main></div>
 <div id="modal"><div id="mb"></div></div>
@@ -215,7 +279,7 @@ const bdOf=(at,b)=>jk(new Date(new Date(at).getTime()-cutH(b)*36e5));
 const bd=s=>s.day||jk(s.at);
 const simple=()=>!authed||(!!cur&&cur.role=="kasir"&&ACC.kasir.length<2);
 const allB=()=>!!rf.all&&!brLock(cur);
-const brLock=u=>!!u&&(u.role=="kepala"||u.role=="kasir");
+const brLock=u=>!!u&&(u.role=="kepala"||u.role=="kasir"||u.role=="customer");
 const tdy=b=>bdOf(Date.now(),b||br);
 /* ===== MODE EVENT (harga jual khusus) ===== */
 const evOn=()=>{const e=S.event;return !!(e&&e.modes&&e.modes[br])};
@@ -294,19 +358,19 @@ return`<button class="grp ${act?"gon":""}" onclick="gh('${n.g}')">${n.g}<span st
 function gh(g){gopen=gopen==g?"":g;render()}
 const brOpts=()=>opt(S.branches.filter(b=>!cur||!brLock(cur)||b.id==cur.br),b=>`<option value="${b.id}" ${b.id==br?"selected":""}>${esc(b.name)}</option>`);
 const brNav=()=>`<div class="nbr"><label>Cabang<select aria-label="Pilih cabang" onchange="document.body.classList.remove('navopen');br=this.value;cart=[];render()">${brOpts()}</select></label></div>`;
-function render(){applyAcc();applyUi();if(shopGuard())return;
+function render(){applyAcc();applyUi();const isCu=!!(authed&&cur&&cur.role=="customer");document.body.classList.toggle("cust",isCu);if(isCu)return custRender();if(authed&&cur&&cur.role=="owner"&&!S.cuSeed)ensureCu();if(shopGuard())return;
 if(view!="kasir"&&(!cur||!ACC[cur.role].includes(view)))view="kasir";
 document.body.classList.toggle("pub",!authed);document.body.classList.toggle("simple",simple());if(simple())document.body.classList.remove("navopen");
 $("#nav").innerHTML='<span class="x" onclick="tnav()">✕</span><div style="margin-bottom:12px">'+brandH()+'</div>'+(authed?'<div style="margin-bottom:10px;font-size:.85rem">'+esc(cur.name)+'<br>'+ROLEN[cur.role]+'</div>'+navH():`<button class="${view=="kasir"?"on":""}" onclick="go('kasir')">Kasir</button><button onclick="document.body.classList.remove('navopen');loginM('riwayat')">Login</button>`)+brNav();
 const top=`<div class="top">${simple()?"":'<button class="btn s hb" onclick="tnav()" aria-label="Menu">☰</button>'}${brandH()}<select class="brh" aria-label="Cabang" onchange="br=this.value;cart=[];render()">${brOpts()}</select>${shopBar()}${userBtn()}</div>`;
-$("#main").innerHTML=top+({kasir:vKasir,riwayat:vRiwayat,produk:vProduk,stok:vStok,keluar:vKeluar,laporan:vLaporan,gaji:vGaji,kasusaha:vKasUsaha,ringkasan:vRingkasan,promo:vPromo,event:vEvent,online:vOnline,pengguna:vUser,set:vSet,printer:vPrnMenu,tampilan:vTampilan})[view]();hhSet()}
+$("#main").innerHTML=top+({kasir:vKasir,riwayat:vRiwayat,produk:vProduk,stok:vStok,keluar:vKeluar,laporan:vLaporan,gaji:vGaji,kasusaha:vKasUsaha,ringkasan:vRingkasan,promo:vPromo,event:vEvent,online:vOnline,pengguna:vUser,set:vSet,printer:vPrnMenu,tampilan:vTampilan})[view]();hhSet();liveSend();if($("#cuov")){$("#cuov").innerHTML=custHTML(true);custUpd()}}
 function hhSet(){const t=document.querySelector("#main .top");document.documentElement.style.setProperty("--hh",(t?t.offsetHeight:0)+"px")}addEventListener("resize",()=>hhSet());
 /* ===== LOGIN & PERAN ===== */
 const ALL=["kasir","riwayat","produk","promo","event","online","stok","keluar","ringkasan","laporan","gaji","kasusaha","pengguna","set","printer","tampilan"];
-const ACC={owner:ALL,manager:ALL.filter(v=>v!="gaji"&&v!="kasusaha"&&v!="tampilan"),kepala:["kasir","produk","promo","keluar","printer"],kasir:["kasir"]};
+const ACC={owner:ALL,manager:ALL.filter(v=>v!="gaji"&&v!="kasusaha"&&v!="tampilan"),kepala:["kasir","produk","promo","keluar","printer"],kasir:["kasir"],customer:[]};
 const ACCDEF={...ACC},VLBL={kasir:"Kasir",riwayat:"Riwayat",produk:"Produk & Resep",promo:"Promo",event:"Event",online:"Harga Online",stok:"Stok",keluar:"Pengeluaran",ringkasan:"Ringkasan",laporan:"Laporan",gaji:"Penggajian",kasusaha:"Sisa Kas Usaha",pengguna:"Pengguna",set:"Pengaturan",printer:"Printer & Struk",tampilan:"Pengaturan Aplikasi"};
 function applyAcc(){["owner","manager","kepala","kasir"].forEach(r=>{const a=S.acc&&S.acc[r];let l=Array.isArray(a)&&a.length?a:ACCDEF[r];if(r=="kepala"||r=="kasir")l=l.filter(v=>v!="pengguna");if(r=="owner")l=[...l,"online","gaji","kasusaha","pengguna","set","printer","tampilan"];if(S.acc&&S.acc.v!=2){if(r=="manager")l=[...l,"printer"];if(r=="kepala")l=[...l,"printer"]}ACC[r]=ALL.filter(v=>v=="kasir"||l.includes(v))})}
-const ROLEN={owner:"Owner",manager:"Manager",kepala:"Kepala outlet",kasir:"Kasir"};
+const ROLEN={owner:"Owner",manager:"Manager",kepala:"Kepala outlet",kasir:"Kasir",customer:"Display Customer"};
 async function hash(p,salt){if(crypto.subtle){const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(salt+p));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("")}let h=5381;for(const c of salt+p)h=(h*33^c.charCodeAt(0))>>>0;return"f"+h}
 const userBtn=()=>`<span class="np" style="margin-left:auto"><button class="btn ${authed?"":"s"} acb" onclick="acctM()" aria-label="${authed?"Akun":"Login"}" title="${authed?esc(cur.name)+" · "+ROLEN[cur.role]:"Login"}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg></button></span>`;
 function acctM(){if(!authed||!cur)return loginM("riwayat");modal(`<div style="text-align:center">${brandH()}</div><h3 style="margin-top:10px;text-align:center">${esc(cur.name)}</h3><p class="mut" style="text-align:center">${ROLEN[cur.role]}${brLock(cur)?" · "+esc(bn(cur.br)):""}</p>${shopOn(br)||shopBtn(1)?`<p class="mo mut" style="text-align:center;margin-top:6px">${esc(bn(br))}: <b>${shopTxt()}</b></p>`:""}<div class="fm" style="flex-direction:column;align-items:stretch;margin-top:10px">${shopBtn(1)?`<div class="mo">${shopBtn(1)}</div>`:""}<button class="btn s" onclick="closeM();loginM('riwayat')">${cur.role=="kasir"?"Login Manager / Owner":"Ganti akun"}</button><button class="btn r" onclick="closeM();lock()">Keluar</button></div>`)}
@@ -344,7 +408,7 @@ async function doLogin(v){applyAcc();const u=S.users.find(x=>x.username==V("lu")
 const FK="zona_fail",F=JSON.parse(localStorage.getItem(FK)||"{}");if(F.until&&Date.now()<F.until)return alert("Terlalu banyak percobaan salah. Coba lagi dalam "+Math.ceil((F.until-Date.now())/6e4)+" menit.");
 if(!u||await hash(V("lp"),u.salt)!==u.h){F.n=(F.n||0)+1;if(F.n>=5){F.until=Date.now()+3e5;F.n=0}localStorage.setItem(FK,JSON.stringify(F));return alert("Username atau password salah")}
 localStorage.removeItem(FK);
-cur=u;authed=true;keepSess(u.id,u.role=="kasir"?true:($("#lr")?$("#lr").checked:true));localStorage.setItem("zona_lastuser",u.username);if(brLock(u))br=u.br;if(v!="kasir"&&u.role!="kasir")cart=[];localStorage.setItem("zona_lt",Date.now());if(u.role=="kasir"&&modeOf(u.br)=="auto")openShop(u.br);logA("login");save();idleReset();closeM();if(innerWidth>800)document.body.classList.add("navopen");view=ACC[u.role].includes(v)?v:(ACC[u.role][1]||"kasir");render()}
+cur=u;authed=true;keepSess(u.id,(u.role=="kasir"||u.role=="customer")?true:($("#lr")?$("#lr").checked:true));localStorage.setItem("zona_lastuser",u.username);if(brLock(u))br=u.br;if(v!="kasir"&&u.role!="kasir")cart=[];localStorage.setItem("zona_lt",Date.now());if(u.role=="kasir"&&modeOf(u.br)=="auto")openShop(u.br);if(u.role!="customer"){logA("login");save()}idleReset();closeM();if(innerWidth>800)document.body.classList.add("navopen");view=ACC[u.role].includes(v)?v:(ACC[u.role][1]||"kasir");render()}
 function lock(){document.body.classList.remove("navopen");cur=null;authed=false;sessionStorage.removeItem("zona_uid");localStorage.removeItem("zona_uid");view="kasir";cart=[];render()}
 async function chpw(){const o=V("pw0"),n=V("pw1");if(await hash(o,cur.salt)!==cur.h)return alert("Password lama salah");if(n.length<6)return alert("Minimal 6 karakter");cur.salt=uid()+uid();cur.h=await hash(n,cur.salt);save();alert("Password diubah");render()}
 /* ===== PENGGUNA ===== */
@@ -352,17 +416,17 @@ function accCard(){if(cur.role!="owner")return"";const R=[["owner","Owner"],["ma
 return`<div class="card" style="margin-bottom:12px"><b>Hak akses per peran</b><p class="mut" style="margin:6px 0">Centang menu yang boleh dibuka tiap peran, lalu simpan. Layar Kasir selalu ada untuk semua peran, Owner selalu punya Pengguna dan Pengaturan, dan menu Pengguna tidak bisa diberikan ke Kepala outlet maupun Kasir. Kepala outlet dan Kasir hanya melihat data cabangnya sendiri. Perubahan berlaku saat halaman di perangkat mereka diperbarui atau dibuka ulang.</p><div class="tw"><table><tr><th>Menu</th>${R.map(r=>`<th style="text-align:center">${r[1]}</th>`).join("")}</tr>${ALL.map(v=>`<tr><td>${VLBL[v]}</td>${R.map(r=>{const lim=r[0]=="kepala"||r[0]=="kasir",fixed=v=="kasir"||(r[0]=="owner"&&(v=="gaji"||v=="kasusaha"||v=="pengguna"||v=="set"||v=="printer"||v=="tampilan"))||(lim&&v=="pengguna");return`<td style="text-align:center"><input type="checkbox" data-acc="${r[0]}|${v}" ${(ACC[r[0]]||[]).includes(v)?"checked":""} ${fixed?"disabled":""}></td>`}).join("")}</tr>`).join("")}</table></div><div class="fm" style="margin-top:8px"><button class="btn" onclick="accSave()">Simpan hak akses</button><button class="btn s" onclick="accReset()">Kembalikan default</button></div></div>`}
 function accSave(){if(cur.role!="owner")return;const A={owner:[],manager:[],kepala:[],kasir:[],v:2};document.querySelectorAll("[data-acc]").forEach(c=>{if(c.checked){const[r,v]=c.dataset.acc.split("|");A[r].push(v)}});S.acc=A;applyAcc();logA("atur-akses","peran",["owner","manager","kepala","kasir"].map(r=>r+":"+ACC[r].length).join(" "));save();toast("Hak akses disimpan");render()}
 function accReset(){if(cur.role!="owner"||!confirm("Kembalikan hak akses semua peran ke pengaturan awal?"))return;delete S.acc;applyAcc();logA("atur-akses","peran","default");save();render()}
-function vUser(){const own=cur.role=="owner";return`${accCard()}<div class="card fm"><input id="u1" placeholder="Username" autocapitalize="none"><input id="u2" placeholder="Nama">${pwf("u3","Password (min 6)","new-password")}<select id="u4"><option value="kasir">Kasir (hanya checkout)</option><option value="kepala">Kepala outlet</option><option value="manager">Manager</option>${own?'<option value="owner">Owner</option>':""}</select><select id="u5">${opt(S.branches,b=>`<option value="${b.id}">${esc(b.name)}</option>`)}</select><button class="btn" onclick="uadd()">Tambah</button></div>
+function vUser(){const own=cur.role=="owner";return`${custCard()}${accCard()}<div class="card fm"><input id="u1" placeholder="Username" autocapitalize="none"><input id="u2" placeholder="Nama">${pwf("u3","Password (min 6)","new-password")}<select id="u4"><option value="kasir">Kasir (hanya checkout)</option><option value="customer">Display Customer (layar pelanggan)</option><option value="kepala">Kepala outlet</option><option value="manager">Manager</option>${own?'<option value="owner">Owner</option>':""}</select><select id="u5">${opt(S.branches,b=>`<option value="${b.id}">${esc(b.name)}</option>`)}</select><button class="btn" onclick="uadd()">Tambah</button></div>
 <p class="mut">Cabang dipakai untuk Kasir dan Kepala outlet. Owner & Manager: akses semua menu. Kepala outlet: hanya tambah produk baru, buat promo, dan input pengeluaran harian cabangnya.</p>
 <div class="tw"><table><tr><th>Username</th><th>Nama</th><th>Peran</th><th>Cabang</th><th></th></tr>${opt(S.users,u=>`<tr><td>${esc(u.username)}</td><td>${esc(u.name)}</td><td>${ROLEN[u.role]}</td><td>${brLock(u)?esc(bn(u.br)):"Semua"}</td><td>${u.role=="owner"&&!own?"":`<button class="btn s" onclick="uedit('${u.id}')">Edit</button> <button class="btn s" onclick="upw('${u.id}')">Reset password</button> ${u.id!=cur.id?`<button class="btn r" onclick="udel('${u.id}')">Hapus</button>`:""}`}</td></tr>`)}</table></div>`}
-async function uadd(){const un=V("u1").trim().toLowerCase(),pw=V("u3"),role=V("u4");if(!/^[a-z0-9._-]{3,20}$/.test(un))return alert("Username 3-20 karakter (huruf kecil, angka, . _ -)");if(S.users.some(x=>x.username==un))return alert("Username sudah dipakai");if(pw.length<6)return alert("Password minimal 6 karakter");if(role=="owner"&&cur.role!="owner")return;const salt=uid()+uid();S.users.push({id:uid(),username:un,name:V("u2").trim()||un,role,br:(role=="kepala"||role=="kasir")?V("u5"):"",salt,h:await hash(pw,salt)});save();render()}
+async function uadd(){const un=V("u1").trim().toLowerCase(),pw=V("u3"),role=V("u4");if(!/^[a-z0-9._-]{3,20}$/.test(un))return alert("Username 3-20 karakter (huruf kecil, angka, . _ -)");if(S.users.some(x=>x.username==un))return alert("Username sudah dipakai");if(pw.length<6)return alert("Password minimal 6 karakter");if(role=="owner"&&cur.role!="owner")return;const salt=uid()+uid();S.users.push({id:uid(),username:un,name:V("u2").trim()||un,role,br:(role=="kepala"||role=="kasir"||role=="customer")?V("u5"):"",salt,h:await hash(pw,salt)});save();render()}
 function uedit(id){const u=S.users.find(x=>x.id==id);if(!u||(u.role=="owner"&&cur.role!="owner"))return;const self=u.id==cur.id;
-modal(`<h3>Edit pengguna</h3><div class="fm" style="flex-direction:column;align-items:stretch;gap:8px;margin-top:8px"><label class="mut">Username<input id="eu1" value="${esc(u.username)}" autocapitalize="none" style="width:100%"></label><label class="mut">Nama<input id="eu2" value="${esc(u.name||"")}" style="width:100%"></label><label class="mut">Peran${self?" (tidak bisa mengubah peran akun sendiri)":""}<select id="eu4" style="width:100%" ${self?"disabled":""}>${[["kasir","Kasir (hanya checkout)"],["kepala","Kepala outlet"],["manager","Manager"],...(cur.role=="owner"?[["owner","Owner"]]:[])].map(r=>`<option value="${r[0]}" ${u.role==r[0]?"selected":""}>${r[1]}</option>`).join("")}</select></label><label class="mut">Cabang (untuk Kasir &amp; Kepala outlet)<select id="eu5" style="width:100%">${opt(S.branches,b=>`<option value="${b.id}" ${u.br==b.id?"selected":""}>${esc(b.name)}</option>`)}</select></label>${pwf("eu3","Password baru (kosongkan jika tidak diubah)","new-password")}<div><button class="btn" onclick="usave('${u.id}')">Simpan</button> <button class="btn s" onclick="closeM()">Batal</button></div></div>`)}
+modal(`<h3>Edit pengguna</h3><div class="fm" style="flex-direction:column;align-items:stretch;gap:8px;margin-top:8px"><label class="mut">Username<input id="eu1" value="${esc(u.username)}" autocapitalize="none" style="width:100%"></label><label class="mut">Nama<input id="eu2" value="${esc(u.name||"")}" style="width:100%"></label><label class="mut">Peran${self?" (tidak bisa mengubah peran akun sendiri)":""}<select id="eu4" style="width:100%" ${self?"disabled":""}>${[["kasir","Kasir (hanya checkout)"],["customer","Display Customer (layar pelanggan)"],["kepala","Kepala outlet"],["manager","Manager"],...(cur.role=="owner"?[["owner","Owner"]]:[])].map(r=>`<option value="${r[0]}" ${u.role==r[0]?"selected":""}>${r[1]}</option>`).join("")}</select></label><label class="mut">Cabang (untuk Kasir &amp; Kepala outlet)<select id="eu5" style="width:100%">${opt(S.branches,b=>`<option value="${b.id}" ${u.br==b.id?"selected":""}>${esc(b.name)}</option>`)}</select></label>${pwf("eu3","Password baru (kosongkan jika tidak diubah)","new-password")}<div><button class="btn" onclick="usave('${u.id}')">Simpan</button> <button class="btn s" onclick="closeM()">Batal</button></div></div>`)}
 async function usave(id){const u=S.users.find(x=>x.id==id);if(!u||(u.role=="owner"&&cur.role!="owner"))return;const un=V("eu1").trim().toLowerCase(),role=u.id==cur.id?u.role:V("eu4"),pw=V("eu3");
 if(!/^[a-z0-9._-]{3,20}$/.test(un))return alert("Username 3-20 karakter (huruf kecil, angka, . _ -)");if(S.users.some(x=>x.id!=id&&x.username==un))return alert("Username sudah dipakai");
 if(role=="owner"&&cur.role!="owner")return;if(u.role=="owner"&&role!="owner"&&S.users.filter(x=>x.role=="owner").length<2)return alert("Tidak bisa mengubah peran owner terakhir");
 if(pw&&pw.length<6)return alert("Password minimal 6 karakter");
-const old=u.username+"/"+u.role+"/"+(u.br||"-");u.username=un;u.name=V("eu2").trim()||un;u.role=role;u.br=(role=="kepala"||role=="kasir")?V("eu5"):"";
+const old=u.username+"/"+u.role+"/"+(u.br||"-");u.username=un;u.name=V("eu2").trim()||un;u.role=role;u.br=(role=="kepala"||role=="kasir"||role=="customer")?V("eu5"):"";
 if(pw){u.salt=uid()+uid();u.h=await hash(pw,u.salt)}
 logA("edit-pengguna",un,old+" → "+un+"/"+role+"/"+(u.br||"-")+(pw?" +password":""));save();closeM();toast("Data pengguna diperbarui");render()}
 async function upw(id){const u=S.users.find(x=>x.id==id),p=prompt("Password baru untuk "+u.username+" (min 6 karakter)");if(!p)return;if(p.length<6)return alert("Minimal 6 karakter");u.salt=uid()+uid();u.h=await hash(p,u.salt);save();alert("Password diubah")}
@@ -439,7 +503,7 @@ function qty(i,d){cart[i].qty+=d;if(cart[i].qty<1)cart.splice(i,1);refC()}
 function tg(i,o){const a=cart[i].ad;a.includes(o)?a.splice(a.indexOf(o),1):a.push(o);refC()}
 function setCash(n){const c=$("#cash"),t=tot();c.dataset.exact=n==null?"1":"";c.value=n==null?t:n;$("#kb").textContent=rp(Math.max(0,+c.value-t))}
 function refC(){const gd=$("#grid");if(gd)gd.innerHTML=grid();$("#cl").innerHTML=lines();$("#tt").textContent=rp(tot());$("#dsc").innerHTML=dscH();const c=$("#cash");if(c){if(c.dataset.exact)c.value=tot();$("#kb").textContent=rp(Math.max(0,(+c.value||0)-tot()))}
-const n=cart.reduce((a,l)=>a+l.qty,0);$("#mn").textContent=n;$("#mt").textContent=rp(tot());$("#cn").textContent=n+" item";$("#pb").textContent="Pembayaran · "+rp(tot());if($("#sp2"))spUp();if($("#qn"))$("#qn").textContent=rp(payM=="SPLIT"?spAmt():tot());$(".mbar").classList.toggle("empty",!n)}
+const n=cart.reduce((a,l)=>a+l.qty,0);$("#mn").textContent=n;$("#mt").textContent=rp(tot());$("#cn").textContent=n+" item";$("#pb").textContent="Pembayaran · "+rp(tot());if($("#sp2"))spUp();if($("#qn"))$("#qn").textContent=rp(payM=="SPLIT"?spAmt():tot());$(".mbar").classList.toggle("empty",!n);liveSend()}
 function doPay(){
 if(!cart.length)return alert("Keranjang kosong");
 if(!authed||!cur){toast("Login kasir dulu untuk menyelesaikan pembayaran");loginM("kasir");return}
@@ -455,7 +519,7 @@ const day=tdy(br),d=day.replaceAll("-",""),k=br+d,qn=String($("#qno")?V("qno"):q
 const items=cart.map(l=>{const p=prod(l.pid);return{pid:p.id,name:p.name,qty:l.qty,price:unit(l),hpp:Math.round(lhpp(l)),o:[...(l.sz=="L"&&Number.isFinite(p.priceL)?["Large"]:[]),...adl(l).map(a=>a.name)],u:lrec(l).map(r=>({i:r.i,q:r.q}))}});
 const s={id:uid(),no:`ZC-${br.toUpperCase()}-${d}-${String(S.seq[k]).padStart(4,"0")}`,br,day,by:cur.username,nm:cur.name||cur.username,dev:DEV,ev:evOn()?(S.event.name||"Event"):"",at:new Date().toISOString(),items,sub:sb,disc:bp.d,promo:bp.p?bp.p.name:"",total,hpp:items.reduce((a,i)=>a+i.hpp*i.qty,0),pay:sp?"CASH+"+spM:payM,bank:(payM=="TRANSFER"||(sp&&spM=="TRANSFER"))?bankLbl():"",cash,change:cash-(sp?due:total),...(qn?{qn}:{}),...(sp?{parts:[{m:"CASH",amt:due},{m:spM,amt:spn}]}:{}),st:"OK"};
 for(const i in use){S.stock[br+"|"+i]=stk(br,i)-use[i];S.mv.push({at:s.at,br,i,d:-use[i],why:"Penjualan "+s.no})}
-S.sales.push(s);if(/^\d{1,9}$/.test(qn)){S.qn=S.qn||{};S.qn[br+day]=+qn}qno=null;cart=[];vcode="";spV=0;spC=0;if(olc()){payM="CASH";olT=""}save();render();receipt(s.id);rcAuto(s.id);kAuto(s.id)}
+S.sales.push(s);if(/^\d{1,9}$/.test(qn)){S.qn=S.qn||{};S.qn[br+day]=+qn}qno=null;cart=[];vcode="";spV=0;spC=0;if(olc()){payM="CASH";olT=""}save();liveSend("paid",s);render();receipt(s.id);rcAuto(s.id);kAuto(s.id)}
 /* ===== RIWAYAT ===== */
 function riwList(){const R=rng(),sc=b=>allB()||b==br,k=rq.trim().toLowerCase();
 return S.sales.filter(s=>{const d=bd(s);return sc(s.br)&&d>=R.from&&d<=R.to&&(!k||s.no.toLowerCase().includes(k))}).slice().reverse()}
@@ -1378,13 +1442,79 @@ function rst(){if(confirm("Hapus SEMUA data?")&&confirm("Yakin? Tindakan ini tid
 async function init(){fixS();if(!S.users.length){const salt=uid()+uid();S.users.push({id:"u-admin",username:"admin",name:"Administrator",role:"owner",br:"",salt,h:await hash("admin123",salt)});save()}
 S.branches.forEach(b=>{b.name=b.name.replace(/ZONA Coffee/i,"ZONA")});save();if(document.head){const l=document.createElement("link");l.rel="icon";l.href=LOGO;document.head.appendChild(l)}
 const id=localStorage.getItem("zona_uid")||sessionStorage.getItem("zona_uid");cur=S.users.find(u=>u.id==id)||null;authed=!!cur;if(cur&&innerWidth>800)document.body.classList.add("navopen");if(brLock(cur))br=cur.br;
-render();idleReset();if(location.hash=="#admin"&&!authed)loginM("riwayat")}
+render();idleReset();if(location.hash=="#admin"&&!authed)loginM("riwayat");else if((location.hash=="#display"||location.hash=="#customer")&&!authed)loginM("kasir")}
+/* ===== DISPLAY CUSTOMER + PESANAN LIVE ===== */
+const LIVE={},CU={cat:"",seen:{},tm:0};
+const cuN=x=>Number.isFinite(+x)?+x:0;
+let liveOn="",liveJ="",liveT=0;
+function liveSend(kind,s){try{
+  if(authed&&cur&&cur.role=="customer")return;
+  let P=null;
+  if(kind=="paid"&&s){P={st:"paid",no:s.no,qn:s.qn||"",items:s.items.map(i=>({id:i.pid,n:i.name,o:i.o||[],q:i.qty,p:i.price})),sub:s.sub,disc:s.disc,promo:s.promo||"",total:s.total,pay:s.pay,chg:s.change}}
+  else if(cart.length){const SB=sub(),T=tot();let qn="";try{qn=String(qnVal()||"")}catch{}
+    P={st:"order",qn,items:cart.map(l=>{const p=prod(l.pid),sz=l.sz=="L"&&Number.isFinite(p.priceL)?"L":"R";return{id:p.id,n:p.name,o:[...(sz=="L"?["Large"]:[]),...adl(l).map(a=>a.name)],q:l.qty,p:unit(l)}}),sub:SB,disc:SB-T,promo:olN()!==null?"Promo "+olc().n:((best(SB).p||{}).name||""),total:T}}
+  else if(liveOn)P={st:"idle"};
+  else return;
+  const tgt=P.st=="idle"?liveOn:br,key=tgt+"|"+JSON.stringify(P);
+  if(key===liveJ)return;liveJ=key;liveOn=P.st=="order"?tgt:"";
+  CU.seen[tgt]=1;custLive(tgt,{...P,at:Date.now()});
+  clearTimeout(liveT);
+  if(P.st=="order")liveT=setTimeout(()=>window.livePush&&window.livePush(tgt,P),250);
+  else window.livePush&&window.livePush(tgt,P);
+}catch(e){console.error("liveSend",e)}}
+function custLive(b,d){
+  const first=!CU.seen[b];CU.seen[b]=1;
+  if(!d||(d.st=="paid"&&first)||(d.st=="order"&&Date.now()-cuN(d.at)>432e5))d={st:"idle"};
+  LIVE[b]=d;
+  if(d.st=="paid"){clearTimeout(CU.tm);const at=d.at;CU.tm=setTimeout(()=>{if(LIVE[b]&&LIVE[b].at===at){LIVE[b]={st:"idle"};custUpd()}},12000)}
+  custUpd()}
+window.custLive=custLive;
+const CHK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>';
+const cuChips=()=>`<button class="cucp ${CU.cat?"":"on"}" onclick="cuCat('')">Semua</button>`+cats().map(c=>`<button class="cucp ${CU.cat==c?"on":""}" data-c="${esc(c)}" onclick="cuCat(this.dataset.c)">${esc(c)}</button>`).join("");
+const cuCard=p=>{const hasL=Number.isFinite(pL(p));return`<div class="cuc" data-id="${esc(p.id)}" style="--k:${kcol(p.cat)}"><div class="cui"><span class="cuph">${CUP}</span>${p.photo?`<img loading="lazy" src="${phUrl(p.photo,600)}" alt="${esc(p.name)}" onerror="this.remove()">`:""}<i class="cubd"></i></div><div class="cun">${esc(p.name)}</div><div class="cup"><span><small>Reguler</small><b>${rp(pR(p))}</b></span>${hasL?`<span><small>Large</small><b>${rp(pL(p))}</b></span>`:""}</div></div>`};
+function cuGrid(){const L=S.products.filter(p=>p.active&&(!CU.cat||p.cat==CU.cat));if(!L.length)return'<p class="cuemp">Belum ada menu.</p>';
+  const by={};L.forEach(p=>(by[p.cat]=by[p.cat]||[]).push(p));
+  return Object.keys(by).map(c=>`<div class="cucat" style="--k:${kcol(c)}"><h3>${esc(c)}</h3><span>${by[c].length} menu</span></div><div class="cug2">${by[c].map(cuCard).join("")}</div>`).join("")}
+function cuCat(c){CU.cat=c;$("#cuCats").innerHTML=cuChips();$("#cuGrid").innerHTML=cuGrid();$("#cuGrid").scrollTop=0;custUpd()}
+function custHTML(prev){const U=S.ui||{};if(CU.cat&&!cats().includes(CU.cat))CU.cat="";
+  return`<div class="cu"><header class="cuh">${brandH()}<div class="cuhm"><b>${esc(bn(br))}</b><span id="cuClk"></span></div></header>${evOn()?`<div class="cuev">🎉 ${esc((S.event&&S.event.name)||"Event")} · harga spesial berlaku</div>`:""}
+<div class="cub"><section class="cum"><nav class="cucs" id="cuCats">${cuChips()}</nav><div class="cug" id="cuGrid">${cuGrid()}</div></section>
+<aside class="cuo"><div class="cuoh"><b>Pesanan Anda</b><span id="cuCnt"></span></div><div id="cuOrd"></div></aside></div>
+<div class="cuctl"><button onclick="cuFs()" aria-label="Layar penuh" title="Layar penuh">⛶</button><button onclick="cuOut()" aria-label="${prev?"Tutup":"Keluar"}" title="${prev?"Tutup":"Keluar"}">${prev?"✕":"⎋"}</button></div></div>`}
+function cuIdle(){const U=S.ui||{};return`<div class="cuid">${CUP}<h2>Selamat datang di ${esc(U.name||"ZONA")}</h2><p>Pesanan Anda akan tampil di sini<br>saat kasir mulai mencatat.</p>${U.tag?`<small style="opacity:.55;font-weight:700;letter-spacing:.08em">${esc(U.tag)}</small>`:""}</div>`}
+function cuOrder(d,it){return`<div class="cuol">${it.map(i=>`<div class="cuoi"><span class="cuq">${cuN(i.q)}×</span><div class="cuin"><b>${esc(i.n)}</b>${(i.o||[]).length?`<small>${esc((i.o||[]).join(" · "))}</small>`:""}<small>${rp(cuN(i.p))} / item</small></div><b class="cuip">${rp(cuN(i.p)*cuN(i.q))}</b></div>`).join("")}</div>
+<div class="cuot"><div class="cur"><span>Subtotal</span><b>${rp(cuN(d.sub))}</b></div>${cuN(d.disc)>0?`<div class="cur ds"><span>${esc(d.promo||"Diskon")}</span><b>−${rp(cuN(d.disc))}</b></div>`:""}<div class="cutt"><span>Total bayar</span><b>${rp(cuN(d.total))}</b></div></div>`}
+function cuPaid(d){return`<div class="cupd"><div class="cuck">${CHK}</div><h2>Terima kasih!</h2><p>Pembayaran berhasil${d.pay?" · "+esc(String(d.pay).replace("+"," + ")):""}</p><div class="cupt"><span>Total</span><b>${rp(cuN(d.total))}</b></div>${cuN(d.chg)>0?`<div class="cupt"><span>Kembalian</span><b>${rp(cuN(d.chg))}</b></div>`:""}<small style="opacity:.6;font-weight:700">Selamat menikmati 😊</small></div>`}
+function custUpd(){const o=$("#cuOrd");if(!o)return;const d=LIVE[br]||{st:"idle"},it=(d.st=="order"||d.st=="paid")&&Array.isArray(d.items)?d.items:[];
+  const q={};it.forEach(i=>{q[i.id]=(q[i.id]||0)+cuN(i.q)});
+  document.querySelectorAll(".cuc").forEach(e=>{const n=q[e.dataset.id]||0;e.classList.toggle("on",n>0);const b=e.querySelector(".cubd");if(b)b.textContent=n?"×"+n:""});
+  const cnt=it.reduce((a,i)=>a+cuN(i.q),0),h=$(".cuoh");
+  $("#cuCnt").textContent=d.st=="order"&&cnt?cnt+" item":"";
+  const old=h.querySelector(".cuqn");if(old)old.remove();
+  if((d.st=="order"||d.st=="paid")&&d.qn){const e=document.createElement("span");e.className="cuqn";e.textContent="No. "+d.qn;h.appendChild(e)}
+  const keep=o.querySelector(".cuol"),sc=keep?keep.scrollTop:0;
+  o.innerHTML=d.st=="paid"?cuPaid(d):(d.st=="order"&&it.length?cuOrder(d,it):cuIdle());
+  const nl=o.querySelector(".cuol");if(nl)nl.scrollTop=sc||nl.scrollHeight}
+const cuClk=()=>{const e=$("#cuClk");if(e)e.textContent=new Date().toLocaleString("id-ID",{timeZone:"Asia/Jakarta",weekday:"long",day:"numeric",month:"long",hour:"2-digit",minute:"2-digit"})+" WIB"};
+setInterval(cuClk,2e4);
+let cuWL=null;async function cuWake(){try{if(navigator.wakeLock&&!cuWL){cuWL=await navigator.wakeLock.request("screen");cuWL.addEventListener("release",()=>{cuWL=null})}}catch{}}
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState=="visible"&&document.body.classList.contains("cust"))cuWake()});
+function custRender(){document.body.classList.remove("navopen","simple","pub");$("#nav").innerHTML="";$("#main").innerHTML=custHTML(false);custUpd();cuClk();cuWake()}
+function cuFs(){try{document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen()}catch{}}
+function cuOut(){const ov=$("#cuov");if(ov){ov.remove();return}if(confirm("Keluar dari display customer?"))lock()}
+function custPrev(){if($("#cuov"))return;const d=document.createElement("div");d.id="cuov";d.className="cuov";d.innerHTML=custHTML(true);document.body.appendChild(d);custUpd();cuClk()}
+function custCard(){if(!cur||(cur.role!="owner"&&cur.role!="manager"))return"";const u=S.users.filter(x=>x.role=="customer");
+  return`<div class="card" style="margin-bottom:12px"><b>🖥 Display Customer</b><p class="mut" style="margin:6px 0 10px">Login dengan akun berperan <b>Display Customer</b> di layar/tablet pelanggan memakai link yang sama. Perangkat itu hanya menampilkan daftar menu dan pesanan yang sedang dicatat kasir di cabangnya, secara langsung.${u.length?`<br>Akun aktif: ${u.map(x=>`<b>${esc(x.username)}</b> (${esc(bn(x.br))})`).join(", ")}`:""}</p><button class="btn" onclick="custPrev()">Lihat tampilan</button></div>`}
+async function ensureCu(){S.cuSeed=1;if(S.users.some(u=>u.role=="customer"))return save();
+  let un="customer";if(S.users.some(u=>u.username==un))un="customer1";
+  const salt=uid()+uid();S.users.push({id:uid(),username:un,name:"Display Customer",role:"customer",br:S.branches[0].id,salt,h:await hash("customer123",salt)});
+  logA("buat-akun-customer",un);save();if(view=="pengguna")render()}
 init();
 </script>
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import{getAnalytics,isSupported}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js";
-import{getFirestore,collection,doc,onSnapshot,writeBatch,getDocsFromServer}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import{getFirestore,collection,doc,onSnapshot,writeBatch,getDocsFromServer,setDoc}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 const firebaseConfig={apiKey:"AIzaSyBOjKUzM39tYdHfBVnZ8aNN6n5I4nAQ8P8",authDomain:"zona-c04ee.firebaseapp.com",projectId:"zona-c04ee",storageBucket:"zona-c04ee.firebasestorage.app",messagingSenderId:"862629272585",appId:"1:862629272585:web:1c82c88eadf732a3de2cd8",measurementId:"G-REQRPPQ03Q"};
 const app=initializeApp(firebaseConfig);
 isSupported().then(ok=>{if(ok)getAnalytics(app)}).catch(()=>{});
@@ -1412,16 +1542,20 @@ function adopt(o,json,n){lastJson=json;nOld=n;S=o;S.promos=S.promos||[];S.users=
   if(authed){cur=S.users.find(u=>u.id==cur.id)||null;if(!cur){lock();return}if(brLock(cur))br=cur.br}}
 window.cloudSync=async(mergeFn)=>{
   if(!ready)throw new Error("Belum tersambung ke server");
-  const snap=await getDocsFromServer(col),ds=snap.docs.map(x=>x.data()).sort((a,b)=>a.i-b.i);
+  const snap=await getDocsFromServer(col),ds=snap.docs.filter(x=>/^c\d{4}$/.test(x.id)).map(x=>x.data()).sort((a,b)=>a.i-b.i);
   if(ds.length&&(ds.length!==ds[0].n||ds.some(x=>x.v!==ds[0].v)))throw new Error("Server sedang menyimpan dari perangkat lain, coba lagi sebentar");
   const sj=ds.map(x=>x.d).join(""),dirty=!!window.dirtyL;clearTimeout(timer);
   const base=lastJson?JSON.parse(lastJson):null;
   if(!sj||sj===lastJson){if(dirty){const sent=zDiff(S,base);await push();return{k:"sent",sent}}return{k:"same"}}
   if(!dirty){const nv=JSON.parse(sj),recv=zDiff(nv,S);adopt(nv,sj,ds.length);return{k:"pulled",recv}}
   const sv=JSON.parse(sj),recv=zDiff(sv,base),sent=zDiff(S,base),msg=mergeFn(sv,S);adopt(sv,sj,ds.length);await push();return{k:"merged",msg,sent,recv}};
+window.livePush=(b,o)=>{if(!ready)return;setDoc(doc(col,"live_"+encodeURIComponent(b)),{...o,at:Date.now(),by:CID}).catch(e=>console.error(e))};
 onSnapshot(col,snap=>{
+  const chg=snap.docChanges();
+  chg.forEach(c=>{if(c.type!="removed"&&c.doc.id.startsWith("live_")&&window.custLive){try{window.custLive(decodeURIComponent(c.doc.id.slice(5)),c.doc.data())}catch(e){console.error(e)}}});
+  if(chg.length&&chg.every(c=>c.doc.id.startsWith("live_")))return;
   if(snap.metadata.hasPendingWrites)return;
-  const ds=snap.docs.map(x=>x.data()).sort((a,b)=>a.i-b.i);
+  const ds=snap.docs.filter(x=>/^c\d{4}$/.test(x.id)).map(x=>x.data()).sort((a,b)=>a.i-b.i);
   if(!ds.length){if(!ready){ready=true;push()}return}
   if(ds.length!==ds[0].n||ds.some(x=>x.v!==ds[0].v))return;
   nOld=ds.length;
