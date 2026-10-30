@@ -206,7 +206,7 @@ body.cust main{padding:0!important;margin:0!important}
 .cuh .brand b{font-size:clamp(1.1rem,2vw,1.7rem);letter-spacing:.18em}.cuh .lg{height:clamp(40px,5vw,60px)}.cuh .brand small{font-size:.8rem}
 .cuhm{text-align:right;line-height:1.3}.cuhm b{display:block;font-size:clamp(.95rem,1.5vw,1.25rem)}.cuhm span{opacity:.85;font-size:.85rem;font-variant-numeric:tabular-nums}
 .cuev{flex:none;text-align:center;padding:7px 12px;font-weight:800;font-size:.9rem;color:#fff;background:linear-gradient(90deg,#d1495b,#c47a2c);letter-spacing:.03em}
-.cub{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) clamp(330px,33vw,470px);gap:clamp(12px,1.6vw,22px);padding:clamp(12px,1.6vw,22px)}
+.cub{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) clamp(300px,var(--pw,33vw),520px);gap:clamp(12px,1.6vw,22px);padding:clamp(12px,1.6vw,22px)}
 .cum{min-width:0;min-height:0;display:flex;flex-direction:column}
 .cucs{flex:none;display:flex;gap:8px;overflow-x:auto;padding:2px 2px 12px;scrollbar-width:none}.cucs::-webkit-scrollbar{display:none}
 .cucp{flex:none;border:0;cursor:pointer;font:inherit;font-weight:700;padding:10px 20px;border-radius:99px;background:#fff;color:var(--m);box-shadow:0 1px 4px rgba(11,58,117,.12);transition:.15s}
@@ -214,20 +214,20 @@ body.cust main{padding:0!important;margin:0!important}
 .cug{flex:1;min-height:0;overflow-y:auto;padding:2px 4px 24px 2px;scrollbar-width:thin}
 .cucat{display:flex;align-items:baseline;gap:10px;margin:16px 0 10px}.cucat:first-child{margin-top:2px}
 .cucat h3{font-size:1.15rem;display:flex;align-items:center;gap:8px}.cucat h3:before{content:"";width:10px;height:22px;border-radius:5px;background:var(--k)}.cucat span{font-size:.8rem;opacity:.55;font-weight:600}
-.cug2{display:grid;grid-template-columns:repeat(auto-fill,minmax(clamp(150px,15vw,210px),1fr));gap:14px}
+.cug2{display:grid;grid-template-columns:repeat(auto-fill,minmax(var(--cw,130px),1fr));gap:12px}
 .cuc{position:relative;display:flex;flex-direction:column;background:#fff;border-radius:var(--r);padding:10px;box-shadow:0 2px 10px rgba(11,58,117,.1);border:2px solid transparent;transition:transform .2s,box-shadow .2s,border-color .2s}
 .cuc.on{border-color:var(--k);box-shadow:0 10px 28px color-mix(in srgb,var(--k) 35%,transparent);transform:translateY(-3px)}
-.cui{position:relative;aspect-ratio:1/1;border-radius:calc(var(--r) - 8px);overflow:hidden;display:grid;place-items:center;color:var(--k);background:linear-gradient(145deg,color-mix(in srgb,var(--k) 18%,#fff),color-mix(in srgb,var(--k) 6%,#fff))}
+.cui{position:relative;aspect-ratio:var(--ar,4/3);border-radius:calc(var(--r) - 8px);overflow:hidden;display:grid;place-items:center;color:var(--k);background:linear-gradient(145deg,color-mix(in srgb,var(--k) 18%,#fff),color-mix(in srgb,var(--k) 6%,#fff))}
 .cui img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .cuph{display:grid;place-items:center;width:100%;height:100%}.cuph svg{width:42%;height:auto;opacity:.8}
 .cubd{position:absolute;top:8px;right:8px;min-width:34px;height:34px;padding:0 10px;border-radius:99px;background:var(--k);color:#fff;font-weight:800;display:none;place-items:center;box-shadow:0 4px 12px rgba(0,0,0,.25)}
 .cuc.on .cubd{display:grid;animation:cupop .3s}
 @keyframes cupop{0%{transform:scale(.4)}70%{transform:scale(1.2)}100%{transform:scale(1)}}
-.cun{font-weight:800;line-height:1.25;margin:10px 4px 8px;font-size:clamp(.92rem,1.15vw,1.08rem);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.cun{font-weight:800;line-height:1.25;margin:8px 4px 6px;font-size:clamp(.82rem,1vw,1rem);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .cup{margin-top:auto;display:flex;gap:6px;flex-wrap:wrap}
 .cup span{flex:1;min-width:0;background:color-mix(in srgb,var(--k) 10%,#fff);border-radius:12px;padding:6px 10px;display:flex;flex-direction:column;line-height:1.2}
 .cup small{font-size:.7rem;font-weight:700;color:var(--k);text-transform:uppercase;letter-spacing:.06em}
-.cup b{font-size:clamp(.88rem,1.05vw,1.02rem);font-variant-numeric:tabular-nums;white-space:nowrap}
+.cup b{font-size:clamp(.8rem,.95vw,.95rem);font-variant-numeric:tabular-nums;white-space:nowrap}
 .cuemp{padding:40px;text-align:center;opacity:.6}
 .cuo{min-height:0;display:flex;flex-direction:column;background:#fff;border-radius:28px;box-shadow:0 12px 40px rgba(11,58,117,.18);overflow:hidden}
 .cuoh{flex:none;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:18px 22px;background:linear-gradient(110deg,var(--d),var(--m));color:#fff}
@@ -250,12 +250,18 @@ body.cust main{padding:0!important;margin:0!important}
 .cuid h2,.cupd h2{font-size:1.5rem}.cuid p,.cupd p{opacity:.7;line-height:1.45}
 .cuck{width:96px;height:96px;border-radius:50%;display:grid;place-items:center;background:#e3f6ea;color:#067647;animation:cupop .5s}.cuck svg{width:52px;height:52px}
 .cupt{width:100%;display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-radius:14px;background:var(--c);font-weight:700}.cupt b{font-size:1.2rem;font-variant-numeric:tabular-nums}
+.cu.nof .cui{display:none}.cu.nof .cuc{padding:12px 10px}
+.cuset{position:absolute;right:10px;bottom:52px;width:min(300px,calc(100% - 20px));background:#fff;color:var(--d);border-radius:18px;padding:16px;box-shadow:0 12px 40px rgba(11,58,117,.3);z-index:8;display:flex;flex-direction:column;gap:12px}
+.cuset b{font-size:1.05rem}.cuset label{display:flex;flex-direction:column;gap:4px;font-size:.82rem;font-weight:700}.cuset label span{display:flex;justify-content:space-between}
+.cuset input[type=range]{width:100%;padding:0;accent-color:var(--m)}.cuset select{width:100%}
+.cuset .r{display:flex;gap:8px;flex-wrap:wrap}.cuset .r .btn{flex:1;padding:8px 10px;font-size:.82rem}
+.cust{position:absolute;left:12px;bottom:6px;font-size:.7rem;font-weight:700;opacity:.55;z-index:2}.cust.bad{color:#b42318;opacity:1}
 .cuctl{position:absolute;right:10px;bottom:8px;display:flex;gap:6px;opacity:.3;transition:opacity .2s;z-index:2}.cuctl:hover{opacity:1}
 .cuctl button{width:34px;height:34px;border-radius:10px;border:0;background:rgba(11,58,117,.14);color:var(--d);cursor:pointer;font-size:1rem}
 @media(max-width:900px),(max-aspect-ratio:1/1){
 .cub{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) auto;gap:10px;padding:10px}
 .cuo{max-height:46vh;border-radius:22px}.cuoh{padding:12px 16px}.cuot{padding:10px 16px 14px}
-.cug2{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+.cug2{gap:10px}
 .cuh{padding:10px 14px}
 }
 @media(prefers-reduced-motion:reduce){.cu *{animation:none!important;transition:none!important}}
@@ -1477,10 +1483,10 @@ function cuGrid(){const L=S.products.filter(p=>p.active&&(!CU.cat||p.cat==CU.cat
   return Object.keys(by).map(c=>`<div class="cucat" style="--k:${kcol(c)}"><h3>${esc(c)}</h3><span>${by[c].length} menu</span></div><div class="cug2">${by[c].map(cuCard).join("")}</div>`).join("")}
 function cuCat(c){CU.cat=c;$("#cuCats").innerHTML=cuChips();$("#cuGrid").innerHTML=cuGrid();$("#cuGrid").scrollTop=0;custUpd()}
 function custHTML(prev){const U=S.ui||{};if(CU.cat&&!cats().includes(CU.cat))CU.cat="";
-  return`<div class="cu"><header class="cuh">${brandH()}<div class="cuhm"><b>${esc(bn(br))}</b><span id="cuClk"></span></div></header>${evOn()?`<div class="cuev">🎉 ${esc((S.event&&S.event.name)||"Event")} · harga spesial berlaku</div>`:""}
+  return`<div class="cu${cuCfg().ar=="none"?" nof":""}" style="${cuStyle()}"><header class="cuh">${brandH()}<div class="cuhm"><b>${esc(bn(br))}</b><span id="cuClk"></span></div></header>${evOn()?`<div class="cuev">🎉 ${esc((S.event&&S.event.name)||"Event")} · harga spesial berlaku</div>`:""}
 <div class="cub"><section class="cum"><nav class="cucs" id="cuCats">${cuChips()}</nav><div class="cug" id="cuGrid">${cuGrid()}</div></section>
 <aside class="cuo"><div class="cuoh"><b>Pesanan Anda</b><span id="cuCnt"></span></div><div id="cuOrd"></div></aside></div>
-<div class="cuctl"><button onclick="cuFs()" aria-label="Layar penuh" title="Layar penuh">⛶</button><button onclick="cuOut()" aria-label="${prev?"Tutup":"Keluar"}" title="${prev?"Tutup":"Keluar"}">${prev?"✕":"⎋"}</button></div></div>`}
+<div class="cust" id="cuSt"></div><div class="cuctl"><button onclick="cuGear()" aria-label="Pengaturan tampilan" title="Pengaturan tampilan">⚙</button><button onclick="cuFs()" aria-label="Layar penuh" title="Layar penuh">⛶</button><button onclick="cuOut()" aria-label="${prev?"Tutup":"Keluar"}" title="${prev?"Tutup":"Keluar"}">${prev?"✕":"⎋"}</button></div></div>`}
 function cuIdle(){const U=S.ui||{};return`<div class="cuid">${CUP}<h2>Selamat datang di ${esc(U.name||"ZONA")}</h2><p>Pesanan Anda akan tampil di sini<br>saat kasir mulai mencatat.</p>${U.tag?`<small style="opacity:.55;font-weight:700;letter-spacing:.08em">${esc(U.tag)}</small>`:""}</div>`}
 function cuOrder(d,it){return`<div class="cuol">${it.map(i=>`<div class="cuoi"><span class="cuq">${cuN(i.q)}×</span><div class="cuin"><b>${esc(i.n)}</b>${(i.o||[]).length?`<small>${esc((i.o||[]).join(" · "))}</small>`:""}<small>${rp(cuN(i.p))} / item</small></div><b class="cuip">${rp(cuN(i.p)*cuN(i.q))}</b></div>`).join("")}</div>
 <div class="cuot"><div class="cur"><span>Subtotal</span><b>${rp(cuN(d.sub))}</b></div>${cuN(d.disc)>0?`<div class="cur ds"><span>${esc(d.promo||"Diskon")}</span><b>−${rp(cuN(d.disc))}</b></div>`:""}<div class="cutt"><span>Total bayar</span><b>${rp(cuN(d.total))}</b></div></div>`}
@@ -1499,12 +1505,27 @@ const cuClk=()=>{const e=$("#cuClk");if(e)e.textContent=new Date().toLocaleStrin
 setInterval(cuClk,2e4);
 let cuWL=null;async function cuWake(){try{if(navigator.wakeLock&&!cuWL){cuWL=await navigator.wakeLock.request("screen");cuWL.addEventListener("release",()=>{cuWL=null})}}catch{}}
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState=="visible"&&document.body.classList.contains("cust"))cuWake()});
-function custRender(){document.body.classList.remove("navopen","simple","pub");$("#nav").innerHTML="";$("#main").innerHTML=custHTML(false);custUpd();cuClk();cuWake()}
+window.cuStat=(t,bad)=>{const e=$("#cuSt");if(e){e.textContent=t;e.classList.toggle("bad",!!bad)}};
+function custRender(){document.body.classList.remove("navopen","simple","pub");$("#nav").innerHTML="";$("#main").innerHTML=custHTML(false);custUpd();cuClk();cuWake();if(window.liveWatch)window.liveWatch(br)}
 function cuFs(){try{document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen()}catch{}}
 function cuOut(){const ov=$("#cuov");if(ov){ov.remove();return}if(confirm("Keluar dari display customer?"))lock()}
 function custPrev(){if($("#cuov"))return;const d=document.createElement("div");d.id="cuov";d.className="cuov";d.innerHTML=custHTML(true);document.body.appendChild(d);custUpd();cuClk()}
 function custCard(){if(!cur||(cur.role!="owner"&&cur.role!="manager"))return"";const u=S.users.filter(x=>x.role=="customer");
   return`<div class="card" style="margin-bottom:12px"><b>🖥 Display Customer</b><p class="mut" style="margin:6px 0 10px">Login dengan akun berperan <b>Display Customer</b> di layar/tablet pelanggan memakai link yang sama. Perangkat itu hanya menampilkan daftar menu dan pesanan yang sedang dicatat kasir di cabangnya, secara langsung.${u.length?`<br>Akun aktif: ${u.map(x=>`<b>${esc(x.username)}</b> (${esc(bn(x.br))})`).join(", ")}`:""}</p><button class="btn" onclick="custPrev()">Lihat tampilan</button></div>`}
+const CUD={w:130,ar:"4/3",pw:33};
+function cuCfg(){let l={};try{l=JSON.parse(localStorage.getItem("zona_cu")||"{}")}catch{}const c={...CUD,...(S.cuSet||{}),...l};
+  c.w=Math.min(260,Math.max(90,+c.w||CUD.w));c.pw=Math.min(45,Math.max(24,+c.pw||CUD.pw));if(!["4/3","1/1","16/9","none"].includes(c.ar))c.ar=CUD.ar;return c}
+const cuStyle=()=>{const c=cuCfg();return`--cw:${c.w}px;--ar:${c.ar=="none"?"4/3":c.ar};--pw:${c.pw}vw`};
+function cuApply(){const c=cuCfg();document.querySelectorAll(".cu").forEach(e=>{e.style.cssText=cuStyle();e.classList.toggle("nof",c.ar=="none")})}
+function cuSet(k,v){let l={};try{l=JSON.parse(localStorage.getItem("zona_cu")||"{}")}catch{}l[k]=v;localStorage.setItem("zona_cu",JSON.stringify(l));cuApply();const e=$("#cuWv"),f=$("#cuPv");if(e)e.textContent=cuCfg().w+" px";if(f)f.textContent=cuCfg().pw+"%"}
+function cuSetH(){const c=cuCfg(),adm=authed&&cur&&(cur.role=="owner"||cur.role=="manager");
+  return`<b>Pengaturan tampilan</b><label><span>Ukuran kartu menu <em id="cuWv" style="font-style:normal;opacity:.7">${c.w} px</em></span><input type="range" min="90" max="260" step="10" value="${c.w}" oninput="cuSet('w',+this.value)"></label>
+<label>Foto menu<select onchange="cuSet('ar',this.value)">${[["4/3","Sedang (4:3)"],["16/9","Pendek (16:9)"],["1/1","Persegi (besar)"],["none","Tanpa foto"]].map(o=>`<option value="${o[0]}" ${c.ar==o[0]?"selected":""}>${o[1]}</option>`).join("")}</select></label>
+<label><span>Lebar panel pesanan <em id="cuPv" style="font-style:normal;opacity:.7">${c.pw}%</em></span><input type="range" min="24" max="45" step="1" value="${c.pw}" oninput="cuSet('pw',+this.value)"></label>
+<div class="r"><button class="btn s" onclick="cuReset()">Reset</button>${adm?'<button class="btn" onclick="cuSaveDef()">Jadikan default semua layar</button>':""}<button class="btn s" onclick="cuGear()">Tutup</button></div>`}
+function cuGear(){const o=$("#cuSetP");if(o){o.remove();return}const cu=document.querySelector(".cu");if(!cu)return;const d=document.createElement("div");d.id="cuSetP";d.className="cuset";d.innerHTML=cuSetH();cu.appendChild(d)}
+function cuReset(){localStorage.removeItem("zona_cu");cuApply();const o=$("#cuSetP");if(o)o.innerHTML=cuSetH()}
+function cuSaveDef(){if(!cur||(cur.role!="owner"&&cur.role!="manager"))return;S.cuSet=cuCfg();localStorage.removeItem("zona_cu");save();cuApply();toast("Disimpan sebagai default semua layar customer")}
 async function ensureCu(){S.cuSeed=1;if(S.users.some(u=>u.role=="customer"))return save();
   let un="customer";if(S.users.some(u=>u.username==un))un="customer1";
   const salt=uid()+uid();S.users.push({id:uid(),username:un,name:"Display Customer",role:"customer",br:S.branches[0].id,salt,h:await hash("customer123",salt)});
@@ -1549,8 +1570,11 @@ window.cloudSync=async(mergeFn)=>{
   if(!sj||sj===lastJson){if(dirty){const sent=zDiff(S,base);await push();return{k:"sent",sent}}return{k:"same"}}
   if(!dirty){const nv=JSON.parse(sj),recv=zDiff(nv,S);adopt(nv,sj,ds.length);return{k:"pulled",recv}}
   const sv=JSON.parse(sj),recv=zDiff(sv,base),sent=zDiff(S,base),msg=mergeFn(sv,S);adopt(sv,sj,ds.length);await push();return{k:"merged",msg,sent,recv}};
-window.livePush=(b,o)=>{if(!ready)return;setDoc(doc(col,"live_"+encodeURIComponent(b)),{...o,at:Date.now(),by:CID}).catch(e=>console.error(e))};
+window.livePush=(b,o)=>{if(!ready){st("☁ Display: belum tersambung ke server",1);return}setDoc(doc(col,"live_"+encodeURIComponent(b)),{...o,at:Date.now(),by:CID}).then(()=>st("☁ Display terkirim")).catch(e=>{console.error(e);st("☁ Display gagal: "+(e.code||e.message),1)})};
+let lw=null,lwb="";
+window.liveWatch=b=>{if(lwb===b)return;lwb=b;if(lw)lw();lw=onSnapshot(doc(col,"live_"+encodeURIComponent(b)),sn=>{window.cuStat&&window.cuStat("● Terhubung · "+new Date().toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit",second:"2-digit"}));if(sn.exists()&&window.custLive)window.custLive(b,sn.data())},e=>{console.error(e);window.cuStat&&window.cuStat("● Gagal terhubung: "+(e.code||e.message),1)})};
 onSnapshot(col,snap=>{
+  if(document.body.classList.contains("cust"))window.liveWatch(br);
   const chg=snap.docChanges();
   chg.forEach(c=>{if(c.type!="removed"&&c.doc.id.startsWith("live_")&&window.custLive){try{window.custLive(decodeURIComponent(c.doc.id.slice(5)),c.doc.data())}catch(e){console.error(e)}}});
   if(chg.length&&chg.every(c=>c.doc.id.startsWith("live_")))return;
