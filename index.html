@@ -216,6 +216,7 @@ body.cust main{padding:0!important;margin:0!important}
 .cucat h3{font-size:1.15em;display:flex;align-items:center;gap:8px}.cucat h3:before{content:"";width:10px;height:22px;border-radius:5px;background:var(--k)}.cucat span{font-size:.8em;opacity:.55;font-weight:600}
 .cug2{display:grid;grid-template-columns:repeat(auto-fill,minmax(var(--cw,130px),1fr));gap:12px}
 .cuc{position:relative;display:flex;flex-direction:column;background:#fff;border-radius:var(--r);padding:10px;box-shadow:0 2px 10px rgba(11,58,117,.1);border:2px solid transparent;transition:transform .2s,box-shadow .2s,border-color .2s}
+.cuc{container-type:inline-size;container-name:cuc}
 .cuc.on{border-color:var(--k);box-shadow:0 10px 28px color-mix(in srgb,var(--k) 35%,transparent);transform:translateY(-3px)}
 .cui{position:relative;aspect-ratio:var(--ar,4/3);border-radius:calc(var(--r) - 8px);overflow:hidden;display:grid;place-items:center;color:var(--k);background:linear-gradient(145deg,color-mix(in srgb,var(--k) 18%,#fff),color-mix(in srgb,var(--k) 6%,#fff))}
 .cui img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
@@ -255,10 +256,11 @@ body.cust main{padding:0!important;margin:0!important}
 .cuset b{font-size:1.05em}.cuset label{display:flex;flex-direction:column;gap:4px;font-size:.82em;font-weight:700}.cuset label span{display:flex;justify-content:space-between}
 .cuset input[type=range]{width:100%;padding:0;accent-color:var(--m)}.cuset select{width:100%}
 .cuset .r{display:flex;gap:8px;flex-wrap:wrap}.cuset .r .btn{flex:1;padding:8px 10px;font-size:.82em}
-.cust{position:absolute;left:12px;bottom:6px;font-size:.7em;font-weight:700;opacity:.55;z-index:2}.cust.bad{color:#b42318;opacity:1}
+.cuStat{position:absolute;left:12px;bottom:6px;font-size:.7em;font-weight:700;opacity:.6;z-index:2}.cuStat.bad{color:#b42318;opacity:1}
 .cuctl{position:absolute;right:10px;bottom:8px;display:flex;gap:6px;opacity:.3;transition:opacity .2s;z-index:2}.cuctl:hover{opacity:1}
 .cuctl button{width:34px;height:34px;border-radius:10px;border:0;background:rgba(11,58,117,.14);color:var(--d);cursor:pointer;font-size:1em}
 .cu{font-size:calc(1rem*var(--fs,1))}
+@container cuc (max-width:215px){.cup{flex-direction:column;flex-wrap:nowrap;gap:4px}.cup span{flex:none;width:100%;flex-direction:row;justify-content:space-between;align-items:center;gap:6px;padding:5px 9px}.cup small{font-size:.62em}.cup b{font-size:.88em}}
 .cu[data-lay=stack] .cub{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) auto;gap:10px;padding:10px}
 .cu[data-lay=stack] .cuo{max-height:calc(var(--oh,40)*1vh);border-radius:22px}
 .cu[data-lay=stack] .cuoh{padding:12px 16px}.cu[data-lay=stack] .cuot{padding:10px 16px 14px}
@@ -1491,7 +1493,7 @@ function custHTML(prev){const U=S.ui||{};if(CU.cat&&!cats().includes(CU.cat))CU.
   return`<div ${cuAttr()}><header class="cuh">${brandH()}<div class="cuhm"><b>${esc(bn(br))}</b><span id="cuClk"></span></div></header>${evOn()?`<div class="cuev">🎉 ${esc((S.event&&S.event.name)||"Event")} · harga spesial berlaku</div>`:""}
 <div class="cub"><section class="cum"><nav class="cucs" id="cuCats">${cuChips()}</nav><div class="cug" id="cuGrid">${cuGrid()}</div></section>
 <aside class="cuo"><div class="cuoh"><b>Pesanan Anda</b><span id="cuCnt"></span></div><div id="cuOrd"></div></aside></div>
-<div class="cust" id="cuSt"></div><div class="cuctl"><button onclick="cuGear()" aria-label="Pengaturan tampilan" title="Pengaturan tampilan">⚙</button><button onclick="cuFs()" aria-label="Layar penuh" title="Layar penuh">⛶</button><button onclick="cuOut()" aria-label="${prev?"Tutup":"Keluar"}" title="${prev?"Tutup":"Keluar"}">${prev?"✕":"⎋"}</button></div></div>`}
+<div class="cuStat" id="cuSt"></div><div class="cuctl"><button onclick="cuGear()" aria-label="Pengaturan tampilan" title="Pengaturan tampilan">⚙</button><button onclick="cuFs()" aria-label="Layar penuh" title="Layar penuh">⛶</button><button onclick="cuOut()" aria-label="${prev?"Tutup":"Keluar"}" title="${prev?"Tutup":"Keluar"}">${prev?"✕":"⎋"}</button></div></div>`}
 function cuIdle(){const U=S.ui||{};return`<div class="cuid">${CUP}<h2>Selamat datang di ${esc(U.name||"ZONA")}</h2><p>Pesanan Anda akan tampil di sini<br>saat kasir mulai mencatat.</p>${U.tag?`<small style="opacity:.55;font-weight:700;letter-spacing:.08em">${esc(U.tag)}</small>`:""}</div>`}
 function cuOrder(d,it){return`<div class="cuol">${it.map(i=>`<div class="cuoi"><span class="cuq">${cuN(i.q)}×</span><div class="cuin"><b>${esc(i.n)}</b>${(i.o||[]).length?`<small>${esc((i.o||[]).join(" · "))}</small>`:""}<small>${rp(cuN(i.p))} / item</small></div><b class="cuip">${rp(cuN(i.p)*cuN(i.q))}</b></div>`).join("")}</div>
 <div class="cuot"><div class="cur"><span>Subtotal</span><b>${rp(cuN(d.sub))}</b></div>${cuN(d.disc)>0?`<div class="cur ds"><span>${esc(d.promo||"Diskon")}</span><b>−${rp(cuN(d.disc))}</b></div>`:""}<div class="cutt"><span>Total bayar</span><b>${rp(cuN(d.total))}</b></div></div>`}
@@ -1518,7 +1520,7 @@ function custPrev(){if($("#cuov"))return;const d=document.createElement("div");d
 function custCard(){if(!cur||(cur.role!="owner"&&cur.role!="manager"))return"";const u=S.users.filter(x=>x.role=="customer");
   return`<div class="card" style="margin-bottom:12px"><b>🖥 Display Customer</b><p class="mut" style="margin:6px 0 10px">Login dengan akun berperan <b>Display Customer</b> di layar/tablet pelanggan memakai link yang sama. Perangkat itu hanya menampilkan daftar menu dan pesanan yang sedang dicatat kasir di cabangnya, secara langsung.${u.length?`<br>Akun aktif: ${u.map(x=>`<b>${esc(x.username)}</b> (${esc(bn(x.br))})`).join(", ")}`:""}</p><button class="btn" onclick="custPrev()">Lihat tampilan</button></div>`}
 const cuClamp=(lo,hi,v)=>Math.min(hi,Math.max(lo,v));
-function cuDev(){const w=innerWidth,h=innerHeight,port=h>w,n=w>=950?6:w>=700?5:4;
+function cuDev(){const w=innerWidth,h=innerHeight,port=h>w,n=w>=1000?6:w>=700?4:3;
   if(w<600)return{k:"HP",lay:"stack",n:2,pw:0,fs:.92,oh:42,c:"sm"};
   if(h<520)return{k:"HP mendatar",lay:"side",n:4,pw:38,fs:.88,oh:42,c:"sm"};
   if(port&&w<1100)return{k:"Tablet tegak",lay:"stack",n,pw:0,fs:w>=800?1:.95,oh:w>=800?36:38,c:""};
