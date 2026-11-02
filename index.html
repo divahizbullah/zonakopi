@@ -389,7 +389,7 @@ const ch=n.c.filter(c=>c[0]=="__out"||(okv(c[0])&&!hd(c[0])));if(!ch.length)retu
 const open=gopen==n.g,act=(grpOf(view)||{}).g==n.g;
 return`<button class="grp ${act?"gon":""}" onclick="gh('${n.g}')">${n.g}<span style="float:right">${open?"▾":"▸"}</span></button>`+(open?ch.map(c=>c[0]=="__out"?`<button class="sub" onclick="lock()">${c[1]}</button>`:`<button class="sub ${view==c[0]?"on":""}" onclick="go('${c[0]}')">${c[1]}</button>`).join(""):"")}).join("")}
 function gh(g){gopen=gopen==g?"":g;render()}
-const brHide=()=>authed&&!!cur&&brLock(cur);
+const brHide=()=>!authed||!cur||brLock(cur);
 const brOpts=()=>opt(S.branches.filter(b=>!cur||!brLock(cur)||b.id==cur.br),b=>`<option value="${b.id}" ${b.id==br?"selected":""}>${esc(b.name)}</option>`);
 const brNav=()=>brHide()?"":`<div class="nbr"><label>Cabang<select aria-label="Pilih cabang" onchange="document.body.classList.remove('navopen');br=this.value;cart=[];render()">${brOpts()}</select></label></div>`;
 function render(){applyAcc();applyUi();const isCu=!!(authed&&cur&&cur.role=="customer");document.body.classList.toggle("cust",isCu);if(isCu)return custRender();if(authed&&cur&&cur.role=="owner"&&!S.cuSeed)ensureCu();if(shopGuard())return;
