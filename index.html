@@ -127,6 +127,7 @@ main{padding:10px 10px 104px}.pos{grid-template-columns:1fr}.pg{grid-template-co
 .gcs{display:flex;align-items:center;justify-content:flex-end;gap:6px;margin:0 0 8px}
 .gcb{width:32px;height:32px;border-radius:10px;border:1.5px solid var(--m);background:#fff;color:var(--m);font:inherit;font-weight:800;cursor:pointer}
 .gcb.on{background:var(--m);color:#fff}
+.catrow{display:flex;align-items:flex-start;gap:8px;margin-bottom:6px}.catrow .chipsr{flex:1;min-width:0;margin-bottom:0}.gcc{flex:none;width:auto;min-width:54px;height:38px;padding:0 10px;border-radius:99px;display:inline-flex;align-items:center;justify-content:center;gap:5px}
 /* ===== footer statis di dasar layar ===== */
 :root{--fh:42px;--hh:0px}
 .ftr{position:fixed;left:0;right:0;bottom:0;height:var(--fh);z-index:3;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#fff;border-top:1px solid var(--s);color:var(--m);font-weight:800;line-height:1.2;text-align:center;transition:left .2s}
@@ -494,8 +495,9 @@ BAG='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="current
 SRCH='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>';
 let cat="";
 let GC=+localStorage.getItem("zona_gc")||(innerWidth>1100?5:innerWidth>800?4:3);
-const gcBtns=()=>[3,4,5,6].map(n=>`<button class="gcb ${GC==n?"on":""}" onclick="setGC(${n})" aria-label="${n} kolom per baris">${n}</button>`).join("");
-function setGC(n){GC=n;localStorage.setItem("zona_gc",n);$("#grid").style.setProperty("--gc",n);$("#gcs").innerHTML='<span class="mut">Kolom</span>'+gcBtns()}
+const GCI='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>',gcIn=()=>GCI+"<span>"+GC+"</span>";
+function cycGC(){setGC(GC>=6?3:GC+1)}
+function setGC(n){GC=n;localStorage.setItem("zona_gc",n);$("#grid").style.setProperty("--gc",n);$("#gcs").innerHTML=gcIn()}
 const cats=()=>[...new Set(S.products.filter(p=>p.active).map(p=>p.cat))];
 const kcol=c=>["#1d5fb4","#c47a2c","#2a9d8f","#7b5ea7","#d1495b","#4c8c2b"][Math.max(0,[...new Set(S.products.map(p=>p.cat))].indexOf(c))%6];
 const chips=()=>`<button class="cc ${cat?"":"on"}" onclick="setCat('')">Semua</button>`+cats().map(c=>`<button class="cc ${cat==c?"on":""}" data-c="${esc(c)}" onclick="setCat(this.dataset.c)">${esc(c)}</button>`).join("");
@@ -510,7 +512,7 @@ function lines(){return cart.length?opt(cart,(l,i)=>{const p=prod(l.pid),sz=l.sz
 return`<div class="cl"><div class="clt"><div><b><span class="szt ${sz}">${sz}</span>${esc(p.name)}</b><div class="mut sm">${esc([sz=="L"?"Large":"Reguler",...adl(l).map(a=>a.name)].join(", "))}</div></div><b>${rp(unit(l)*l.qty)}</b></div>
 <div class="clb"><div class="stp"><button onclick="qty(${i},-1)" aria-label="Kurangi">−</button><span>${l.qty}</span><button onclick="qty(${i},1)" aria-label="Tambah">+</button></div>${opt(p.addons||[],a=>`<label class="ch ${l.ad.includes(a.id)?"on":""}"><input type="checkbox" ${l.ad.includes(a.id)?"checked":""} onchange="tg(${i},'${a.id}')">${l.ad.includes(a.id)?"✓ ":""}${esc(a.name)} +${rp(a.price)}</label>`)}<button class="rm" onclick="qty(${i},-999)" aria-label="Hapus">✕</button></div></div>`}):'<div class="emp"><b>Belum ada pesanan</b><div class="sm">Ketuk R atau L pada produk untuk menambahkannya.</div></div>'}
 function vKasir(){if(cat&&!cats().includes(cat))cat="";const n=cart.reduce((a,l)=>a+l.qty,0);
-return`<div class="pos"><section>${modeBar()}<div class="srch">${SRCH}<input placeholder="Cari produk" aria-label="Cari produk" value="${esc(q)}" oninput="q=this.value;$('#grid').innerHTML=grid()"></div><div class="chipsr" id="chips">${chips()}</div><div class="gcs" id="gcs"><span class="mut">Kolom</span>${gcBtns()}</div><div class="pg" id="grid" style="--gc:${GC}">${grid()}</div></section>
+return`<div class="pos"><section>${modeBar()}<div class="srch">${SRCH}<input placeholder="Cari produk" aria-label="Cari produk" value="${esc(q)}" oninput="q=this.value;$('#grid').innerHTML=grid()"></div><div class="catrow"><div class="chipsr" id="chips">${chips()}</div><button class="gcb gcc" id="gcs" onclick="cycGC()" aria-label="Ubah jumlah kolom produk per baris" title="Jumlah kolom produk per baris">${gcIn()}</button></div><div class="pg" id="grid" style="--gc:${GC}">${grid()}</div></section>
 <aside class="cartp"><div class="cph"><div><b class="cpt">Pesanan</b><span class="mut" id="cn">${n} item</span></div><div><button class="lnk" onclick="clr()">Kosongkan</button><button class="btn s mclose" onclick="cartClose()">Tutup ✕</button></div></div>
 <div class="cbody"><div id="cl">${lines()}</div>
 ${qnH()}<div class="vch"><input id="vc" placeholder="Kode voucher" value="${esc(vcode)}"><button class="btn s" onclick="vcode=V('vc').trim();refC();if(vcode&&!best(sub()).p)alert('Voucher tidak berlaku (kode salah, belum memenuhi syarat, atau promo otomatis lebih besar)')">Pakai</button></div><div id="dsc">${dscH()}</div>
