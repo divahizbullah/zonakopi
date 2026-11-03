@@ -637,7 +637,7 @@ ${AD.list.map((a,k)=>`<div class="card" style="margin:8px 0;border:1px solid var
 <div class="fm"><button class="btn s" onclick="AD.list.push({id:uid(),name:'',price:0,recipe:[]});adraw()">+ Add-on baru</button></div><div class="fm"><button class="btn" onclick="asave()">Simpan</button><button class="btn s" onclick="closeM()">Batal</button></div>`)}
 function asave(){for(const a of AD.list){if(!a.name.trim())return alert("Nama add-on wajib diisi");if(!(a.price>=0))return alert("Harga add-on tidak valid");if(a.recipe.some(r=>!(r.q>0)))return alert("Jumlah item di add-on \""+a.name+"\" harus lebih dari 0")}
 prod(AD.pid).addons=AD.list.map(a=>({id:a.id,name:a.name.trim(),price:Math.round(a.price)||0,recipe:a.recipe.map(r=>({i:r.i,q:r.q}))}));AD=null;save();closeM();render()}
-function fixS(){S.ui=S.ui||{};S.msgs=S.msgs||[];S.ol=S.ol||{};S.ol.go=S.ol.go||{};S.ol.sf=S.ol.sf||{};S.event=S.event||{name:"",prices:{}};S.event.modes=S.event.modes||{};S.log=S.log||[];S.shop=S.shop||{};S.pay=S.pay||{qris:"",banks:[]};S.tomb=S.tomb||[];S.pay.banks=S.pay.banks||[];const L=(S.opts||[]).find(o=>o.id=="l"),E=(S.opts||[]).find(o=>o.id=="e");
+function fixS(){S.ui=S.ui||{};S.msgs=S.msgs||[];S.ol=S.ol||{};S.ol.go=S.ol.go||{};S.ol.sf=S.ol.sf||{};S.event=S.event||{name:"",prices:{}};S.event.modes=S.event.modes||{};S.log=S.log||[];S.shop=S.shop||{};S.pay=S.pay||{qris:"",banks:[]};S.tomb=S.tomb||[];S.inc=S.inc||[];S.pay.banks=S.pay.banks||[];const L=(S.opts||[]).find(o=>o.id=="l"),E=(S.opts||[]).find(o=>o.id=="e");
 S.products.forEach(p=>{if(p.addons)return;p.priceL=L?p.price+L.d:null;p.addons=E?[{id:"e",name:E.name,price:E.d,recipe:[]}]:[]})}
 /* ===== FOTO PRODUK -> Google Drive (database hanya simpan ID file, bukan gambar) ===== */
 const DRIVE_URL="https://script.google.com/macros/s/AKfycbyhR1o4oS1kBQxt4gtZz3i3zY6rWbRt06wYLwQWDsVgUTPCdpCoTgT1inpZ1s1pP-Aukg/exec";/* TEMPEL URL Web App Apps Script di sini (lihat panduan) */
@@ -807,8 +807,8 @@ jam=Array(24).fill(0);r.L.forEach(x=>jam[hrJ(x)]++);const a=jam.findIndex(x=>x),
 const jr=a<0?"":chBar(jam.slice(a,z+1).map((_,i)=>String(a+i).padStart(2,"0")),[{n:"Transaksi",v:jam.slice(a,z+1),c:CHC[2]}],{int:1,f:n=>String(Math.round(n)),tf:n=>n+" transaksi"});
 return`<div class="chg">${chCard("Tren penjualan "+serLbl(s.m),tr,1)}${chCard("Ke mana penjualan bersih pergi",chDonut([{l:"Belanja stok",v:r.buy,c:CHC[1]},{l:"Pengeluaran operasional",v:r.exo,c:CHC[3]},{l:"Laba bersih",v:Math.max(0,lo),c:CHC[4]}])+(lo<0?`<p class="warn" style="margin-top:6px">Rugi: ${rn(lo)}</p>`:""))}${chCard("Metode pembayaran",chDonut(Object.entries(r.pay).map(([l,v])=>({l,v}))))}${chCard("Produk terlaris (omzet)",chH(top))}${Object.keys(r.bb).length>1?chCard("Penjualan per cabang",chH(Object.entries(r.bb).map(([k,v])=>({l:bn(k),v})).sort((a,b)=>b.v-a.v))):""}${s.m!="jam"&&jr?chCard("Jam ramai (jumlah transaksi)",jr):""}</div>`}
 /* --- Laporan > Arus Keuangan --- */
-function chArus(L,mo,M,showMo){const A=showMo?M.map(k=>mo[k]):L,lb=showMo?M.map(mlb):L.map(x=>dlb(x.d));let c=0;const cum=A.map(x=>c+=x.om-x.ex),om=A.reduce((a,x)=>a+x.om,0),ex=A.reduce((a,x)=>a+x.ex,0);
-return`<div class="chg">${chCard("Penjualan bersih vs pengeluaran "+(showMo?"per bulan":"per hari"),chBar(lb,[{n:"Penjualan bersih",v:A.map(x=>x.om),c:CHC[0]},{n:"Pengeluaran",v:A.map(x=>x.ex),c:CHC[3]},{n:"Total",v:A.map(x=>x.om-x.ex),c:CHC[4],t:"line"}],{a:"Arus keuangan"}),1)}${chCard("Total kumulatif",chBar(lb,[{n:"Kumulatif",v:cum,c:CHC[1],t:"line"}]))}${chCard("Pemakaian penjualan bersih",chDonut([{l:"Pengeluaran",v:ex,c:CHC[3]},{l:"Sisa (total)",v:Math.max(0,om-ex),c:CHC[4]}])+(om-ex<0?`<p class="warn" style="margin-top:6px">Pengeluaran melebihi penjualan: ${rn(om-ex)}</p>`:""))}</div>`}
+function chArus(L,mo,M,showMo){const A=showMo?M.map(k=>mo[k]):L,lb=showMo?M.map(mlb):L.map(x=>dlb(x.d));let c=0;const cum=A.map(x=>c+=x.om+(x.inc||0)-x.ex),om=A.reduce((a,x)=>a+x.om+(x.inc||0),0),ex=A.reduce((a,x)=>a+x.ex,0);
+return`<div class="chg">${chCard("Pemasukan vs pengeluaran "+(showMo?"per bulan":"per hari"),chBar(lb,[{n:"Penjualan bersih",v:A.map(x=>x.om),c:CHC[0]},{n:"Pemasukan lain",v:A.map(x=>x.inc||0),c:CHC[2]},{n:"Pengeluaran",v:A.map(x=>x.ex),c:CHC[3]},{n:"Total",v:A.map(x=>x.om+(x.inc||0)-x.ex),c:CHC[4],t:"line"}],{a:"Arus keuangan"}),1)}${chCard("Total kumulatif",chBar(lb,[{n:"Kumulatif",v:cum,c:CHC[1],t:"line"}]))}${chCard("Pemakaian pemasukan",chDonut([{l:"Pengeluaran",v:ex,c:CHC[3]},{l:"Sisa (total)",v:Math.max(0,om-ex),c:CHC[4]}])+(om-ex<0?`<p class="warn" style="margin-top:6px">Pengeluaran melebihi pemasukan: ${rn(om-ex)}</p>`:""))}</div>`}
 /* --- Laporan > Penjualan --- */
 function chJual(){const s=chSer(),D=dayList().filter(x=>x.n>0),P={};D.forEach(x=>Object.entries(x.items).forEach(([k,i])=>{const t=P[k]||(P[k]={q:0,o:0,h:0});t.q+=i.q;t.o+=i.o;t.h+=i.h}));
 const E=Object.entries(P),byq=E.slice().sort((a,b)=>b[1].q-a[1].q).slice(0,8).map(([k,t])=>({l:k,v:t.q,t:t.q+" item"})),byl=E.slice().sort((a,b)=>(b[1].o-b[1].h)-(a[1].o-a[1].h)).slice(0,8).map(([k,t])=>({l:k,v:t.o-t.h,t:rp(t.o-t.h)}));
@@ -866,27 +866,36 @@ function vLaporan(){const T=[["arus","Arus Keuangan",vArus,"expArus()"],["jual",
 return`<div class="tabs">${opt(T,x=>`<button class="${x[0]==t[0]?"on":""}" onclick="rf.sub='${x[0]}';render()">${x[1]}</button>`)}</div>${fbar(t[3])}<div id="rep">${t[2]()}</div>`}
 /* data harian: dari riwayat transaksi (selain batal) + pengeluaran aktif */
 function dayList(){const R=rng(),sc=b=>allB()||b==br,m={};
-const g=d=>m[d]||(m[d]={d,n:0,om:0,h:0,ex:0,bu:0,disc:0,items:{}});
+const g=d=>m[d]||(m[d]={d,n:0,om:0,inc:0,h:0,ex:0,bu:0,disc:0,items:{}});
 S.sales.forEach(s=>{if(s.st!="OK"||!sc(s.br))return;const d=bd(s);if(d<R.from||d>R.to)return;const x=g(d);x.n++;x.om+=s.total;x.h+=s.hpp;x.disc+=s.disc||0;
 s.items.forEach(i=>{const t=x.items[i.name]||(x.items[i.name]={q:0,o:0,h:0});t.q+=i.qty;t.o+=i.price*i.qty;t.h+=i.hpp*i.qty})});
 S.exp.forEach(e=>{if(e.st!="OK"||!sc(e.br)||e.date<R.from||e.date>R.to)return;g(e.date).ex+=e.amt});
+(S.inc||[]).forEach(e=>{if(e.st!="OK"||!sc(e.br)||e.date<R.from||e.date>R.to)return;g(e.date).inc+=e.amt});
 S.buys.forEach(b=>{if(!sc(b.br))return;const d=bdOf(b.at,b.br);if(d<R.from||d>R.to)return;const x=g(d);x.ex+=b.t;x.bu+=b.t});
 const all=[];for(let t=Date.parse(R.from+"T00:00:00Z"),e=Date.parse(R.to+"T00:00:00Z");t<=e;t+=864e5)all.push(new Date(t).toISOString().slice(0,10));
 if(all.length<=62)all.forEach(d=>g(d));
 return Object.values(m).sort((a,b)=>b.d.localeCompare(a.d))}
 function vArus(){const L=dayList().sort((a,b)=>a.d.localeCompare(b.d)),c=(t,v)=>`<div class="card"><div class="mut">${t}</div><div class="big">${v}</div></div>`,
-T=L.reduce((a,x)=>({om:a.om+x.om,ex:a.ex+x.ex,bu:a.bu+x.bu}),{om:0,ex:0,bu:0}),mo={};
-L.forEach(x=>{const k=x.d.slice(0,7),m=mo[k]||(mo[k]={om:0,ex:0});m.om+=x.om;m.ex+=x.ex});
-if(rf.m=="tahun"){const y=rng().from.slice(0,4);for(let i=1;i<=12;i++){const k=y+"-"+String(i).padStart(2,"0");mo[k]=mo[k]||{om:0,ex:0}}}
+T=L.reduce((a,x)=>({om:a.om+x.om,inc:a.inc+x.inc,ex:a.ex+x.ex,bu:a.bu+x.bu}),{om:0,inc:0,ex:0,bu:0}),mo={};
+L.forEach(x=>{const k=x.d.slice(0,7),m=mo[k]||(mo[k]={om:0,inc:0,ex:0});m.om+=x.om;m.inc+=x.inc;m.ex+=x.ex});
+if(rf.m=="tahun"){const y=rng().from.slice(0,4);for(let i=1;i<=12;i++){const k=y+"-"+String(i).padStart(2,"0");mo[k]=mo[k]||{om:0,inc:0,ex:0}}}
 const M=Object.keys(mo).sort(),showMo=rf.m=="tahun"||(rf.m=="khusus"&&M.length>1),showDay=rf.m!="tahun";
-const hd=l=>`<tr><th>${l}</th><th>Penjualan bersih</th><th>Pengeluaran</th><th>Total</th></tr>`,
-row=(l,x,st)=>`<tr${st?` style="${st}"`:""}><td>${l}</td><td>${rp(x.om)}</td><td>${rp(x.ex)}</td><td><b>${rn(x.om-x.ex)}</b></td></tr>`,
+const hd=l=>`<tr><th>${l}</th><th>Penjualan bersih</th><th>Pemasukan lain</th><th>Pengeluaran</th><th>Total</th></tr>`,
+row=(l,x,st)=>`<tr${st?` style="${st}"`:""}><td>${l}</td><td>${rp(x.om)}</td><td>${rp(x.inc||0)}</td><td>${rp(x.ex)}</td><td><b>${rn(x.om+(x.inc||0)-x.ex)}</b></td></tr>`,
 tot=row("<b>Total</b>",T,"background:var(--c);font-weight:700");
-return`<div class="g">${c("Penjualan bersih",rp(T.om))}${c("Pengeluaran",rp(T.ex))}${c("Termasuk belanja stok",rp(T.bu))}${c("Total",rn(T.om-T.ex))}</div>
-<p class="mut" style="margin-bottom:12px">Penjualan bersih = penjualan setelah diskon promo, tanpa transaksi batal. Pengeluaran sudah termasuk belanja stok barang. Total = penjualan bersih − pengeluaran.</p>
+const R0=rng(),IR=(S.inc||[]).filter(e=>(allB()||e.br==br)&&e.date>=R0.from&&e.date<=R0.to).sort((a,b)=>a.date<b.date?1:a.date>b.date?-1:(a.at||"")<(b.at||"")?1:-1),
+incUI=`<div class="card" style="margin-bottom:12px"><b>Pemasukan lain harian</b> <span class="mut">(di luar transaksi kasir &middot; cabang ${esc(bn(br))})</span>
+<div class="fm np" style="margin:8px 0"><input id="i1" type="date" value="${tdy()}"><select id="i2">${opt(["Penjualan luar kasir","Setoran modal","Pinjaman","Titipan","Lainnya"],c=>`<option>${c}</option>`)}</select><input id="i3" placeholder="Keterangan" style="min-width:160px"><input id="i4" type="number" inputmode="numeric" min="1" placeholder="Nominal Rp" style="width:130px"><select id="i5"><option>Tunai</option><option>Transfer</option><option>QRIS</option></select><button class="btn" onclick="iadd()">Catat pemasukan</button></div>
+<div class="tw" style="max-height:40vh;overflow:auto"><table><tr><th>Tanggal</th>${allB()?"<th>Cabang</th>":""}<th>Kategori</th><th>Keterangan</th><th>Nominal</th><th>Status</th><th></th></tr>${opt(IR,e=>`<tr><td>${esc(e.date)}</td>${allB()?`<td>${esc(bn(e.br))}</td>`:""}<td>${esc(e.cat)}</td><td>${esc(e.desc||"")}${e.pm?" · "+esc(e.pm):""}</td><td>${rp(e.amt)}</td><td>${e.st=="OK"?"Aktif":'<span class="warn">Batal</span>'}</td><td>${e.st=="OK"?`<button class="btn r np" onclick="ivoid('${e.id}')">Batalkan</button>`:""}</td></tr>`)||`<tr><td colspan="${allB()?7:6}" class="mut">Belum ada pemasukan lain pada periode ini.</td></tr>`}</table></div></div>`;
+return`<div class="g">${c("Penjualan bersih",rp(T.om))}${c("Pemasukan lain",rp(T.inc))}${c("Pengeluaran",rp(T.ex))}${c("Termasuk belanja stok",rp(T.bu))}${c("Total",rn(T.om+T.inc-T.ex))}</div>
+<p class="mut" style="margin-bottom:12px">Penjualan bersih = penjualan setelah diskon promo, tanpa transaksi batal. Pengeluaran sudah termasuk belanja stok barang. Pemasukan lain = uang masuk di luar transaksi kasir yang dicatat manual di bawah. Total = penjualan bersih + pemasukan lain − pengeluaran.</p>
+${incUI}
 ${chArus(L,mo,M,showMo)}${showMo?`<b>Total per bulan</b><div class="tw" style="margin:6px 0 14px"><table>${hd("Bulan")}${opt(M,k=>row(fmo(k),mo[k]))}${tot}</table></div>`:""}
-${showDay?`<b>${rf.m=="hari"?"Hari ini":"Daftar harian"}</b><div class="tw" style="max-height:65vh;overflow:auto;margin-top:6px"><table>${hd("Tanggal")}${opt(L,x=>row(fd(x.d),x))||'<tr><td colspan="4" class="mut">Belum ada data pada periode ini.</td></tr>'}${L.length>1?tot:""}</table></div>`:""}`}
-function expArus(){csv("arus-keuangan.csv",[["Tanggal","Penjualan bersih","Pengeluaran","Total"],...dayList().sort((a,b)=>a.d.localeCompare(b.d)).map(x=>[x.d,x.om,x.ex,x.om-x.ex])])}
+${showDay?`<b>${rf.m=="hari"?"Hari ini":"Daftar harian"}</b><div class="tw" style="max-height:65vh;overflow:auto;margin-top:6px"><table>${hd("Tanggal")}${opt(L,x=>row(fd(x.d),x))||'<tr><td colspan="5" class="mut">Belum ada data pada periode ini.</td></tr>'}${L.length>1?tot:""}</table></div>`:""}`}
+function iadd(){const a=Math.round(+V("i4")),d=V("i1");if(!(a>0)||!/^\d{4}-\d{2}-\d{2}$/.test(d))return alert("Tanggal dan nominal wajib diisi");
+S.inc=S.inc||[];S.inc.push({id:uid(),br,date:d,cat:V("i2"),desc:V("i3").trim(),amt:a,pm:V("i5"),by:cur?cur.username:"-",at:new Date().toISOString(),st:"OK"});logA("pemasukan-lain",bn(br),a+" "+V("i3").trim());save();render()}
+function ivoid(id){const x=(S.inc||[]).find(e=>e.id==id);if(!x||!confirm("Batalkan pemasukan "+rp(x.amt)+" ini?"))return;x.st="VOID";logA("pemasukan-batal",bn(x.br),x.amt+"");save();render()}
+function expArus(){csv("arus-keuangan.csv",[["Tanggal","Penjualan bersih","Pemasukan lain","Pengeluaran","Total"],...dayList().sort((a,b)=>a.d.localeCompare(b.d)).map(x=>[x.d,x.om,x.inc||0,x.ex,x.om+(x.inc||0)-x.ex])])}
 function vJual(){const L=dayList().filter(x=>x.n>0),c=(t,v)=>`<div class="card"><div class="mut">${t}</div><div class="big">${v}</div></div>`,
 T=L.reduce((a,x)=>({n:a.n+x.n,q:a.q+Object.values(x.items).reduce((s,i)=>s+i.q,0),g:a.g+Object.values(x.items).reduce((s,i)=>s+i.o,0),d:a.d+x.disc,om:a.om+x.om}),{n:0,q:0,g:0,d:0,om:0});
 return`<div class="g">${c("Transaksi",T.n)}${c("Item terjual",T.q)}${c("Penjualan item (sebelum diskon)",rp(T.g))}${c("Diskon promo",rp(T.d))}${c("Penjualan bersih",rp(T.om))}</div>
@@ -1081,10 +1090,10 @@ function gkExp(){const D=gkData();csv("kas-usaha.csv",[["Total sisa kas usaha","
 /* ===== UPDATE / SINKRON MANUAL (footer) ===== */
 let lastUpd="";
 function toast(m){let t=$("#toast");if(!t){t=document.createElement("div");t.id="toast";t.className="np";document.body.appendChild(t)}t.textContent=m;t.classList.add("on");clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove("on"),4000)}
-function mergeInto(sv,lc,silent){let ns=0,ne=0,nb=0,nv=0;sv.seq=sv.seq||{};sv.stock=sv.stock||{};sv.sales=sv.sales||[];sv.exp=sv.exp||[];sv.buys=sv.buys||[];sv.mv=sv.mv||[];
+function mergeInto(sv,lc,silent){let ns=0,ne=0,nb=0,nv=0,ni=0;sv.seq=sv.seq||{};sv.stock=sv.stock||{};sv.sales=sv.sales||[];sv.exp=sv.exp||[];sv.buys=sv.buys||[];sv.mv=sv.mv||[];sv.inc=sv.inc||[];
 if(!silent&&!confirm("Data di server sudah berubah, dan perangkat ini punya data baru yang belum terkirim.\n\nGabungkan? Transaksi, pengeluaran, dan pembelian perangkat ini akan ditambahkan ke data server. Absensi, karyawan, dan pembayaran gaji karyawan juga digabung. Perubahan lain di perangkat ini (mis. edit produk atau pengaturan) akan diganti data server."))throw new Error("Dibatalkan");
 const use=(x,g)=>x.items.forEach(i=>(i.u||((lc.products.find(p=>p.id==i.pid)||{}).recipe||[]).map(r=>({i:r.i,q:r.q}))).forEach(r=>{const k=x.br+"|"+r.i;sv.stock[k]=(sv.stock[k]||0)+g*r.q*i.qty}));
-const tb=new Set([...(sv.tomb||[]),...(lc.tomb||[])]);sv.tomb=[...tb];sv.sales=sv.sales.filter(x=>!tb.has(x.id));sv.exp=sv.exp.filter(x=>!tb.has(x.id));{const bi=new Set(sv.branches.map(b=>b.id));(lc.branches||[]).forEach(b=>{if(!bi.has(b.id)&&!tb.has(b.id))sv.branches.push(b)});sv.branches=sv.branches.filter(b=>!tb.has(b.id));[["sales"],["exp"],["buys"],["mv"]].forEach(([k])=>{sv[k]=sv[k].filter(x=>!tb.has(x.br))})}const okb=x=>!tb.has(x.br);
+const tb=new Set([...(sv.tomb||[]),...(lc.tomb||[])]);sv.tomb=[...tb];sv.sales=sv.sales.filter(x=>!tb.has(x.id));sv.exp=sv.exp.filter(x=>!tb.has(x.id));{const bi=new Set(sv.branches.map(b=>b.id));(lc.branches||[]).forEach(b=>{if(!bi.has(b.id)&&!tb.has(b.id))sv.branches.push(b)});sv.branches=sv.branches.filter(b=>!tb.has(b.id));[["sales"],["exp"],["buys"],["mv"],["inc"]].forEach(([k])=>{sv[k]=sv[k].filter(x=>!tb.has(x.br))})}const okb=x=>!tb.has(x.br);
 Object.keys(lc.seq||{}).forEach(k=>sv.seq[k]=Math.max(sv.seq[k]||0,lc.seq[k]));
 const sid=new Map(sv.sales.map(x=>[x.id,x])),nos=new Set(sv.sales.map(x=>x.no));
 (lc.sales||[]).filter(okb).forEach(x=>{const o=sid.get(x.id);
@@ -1092,6 +1101,7 @@ if(!o){if(tb.has(x.id))return;if(nos.has(x.no)){const d=bd(x).replaceAll("-","")
 nos.add(x.no);if(x.st=="OK")use(x,-1);sv.sales.push(x);ns++}
 else if(x.st=="VOID"&&o.st=="OK"){o.st="VOID";o.voidAt=x.voidAt;use(o,1);nv++}});
 const eid=new Map(sv.exp.map(e=>[e.id,e]));(lc.exp||[]).filter(okb).forEach(e=>{const o=eid.get(e.id);if(!o){if(tb.has(e.id))return;sv.exp.push(e);ne++}else if(e.st=="VOID"&&o.st=="OK"){o.st="VOID";nv++}});
+{const iid=new Map(sv.inc.map(e=>[e.id,e]));(lc.inc||[]).filter(okb).forEach(e=>{const o=iid.get(e.id);if(!o){if(tb.has(e.id))return;sv.inc.push(e);ni++}else if(e.st=="VOID"&&o.st=="OK"){o.st="VOID";nv++}})}
 const bk=b=>[b.at,b.br,b.i,b.n,b.t].join("|"),bs=new Set(sv.buys.map(bk));(lc.buys||[]).filter(okb).forEach(b=>{if(!bs.has(bk(b))){sv.buys.push(b);const k=b.br+"|"+b.i;sv.stock[k]=(sv.stock[k]||0)+b.n;nb++}});
 const mk=m=>[m.at,m.br,m.i,m.d,m.why].join("|"),ms=new Set(sv.mv.map(mk));(lc.mv||[]).filter(okb).forEach(m=>{if(!ms.has(mk(m))&&/^(Penjualan|Pembatalan|Penerimaan)/.test(m.why))sv.mv.push(m)});
 sv.mv.sort((a,b)=>a.at<b.at?-1:a.at>b.at?1:0);
@@ -1100,18 +1110,18 @@ const ei=new Set(sg.emp.map(e=>e.id));(g.emp||[]).forEach(e=>{if(!ei.has(e.id)){
 Object.keys(g.kpaid||{}).forEach(k=>{if(!(k in sg.kpaid)){sg.kpaid[k]=g.kpaid[k];ng++}});
 Object.keys(g.att||{}).forEach(k=>{const p=k.split("|");if(!(k in sg.att)&&ei.has(p[0])&&!sg.kpaid[p[0]+"|"+kWs(p[1])]){sg.att[k]=1;ng++}})}}
 {sv.log=sv.log||[];const ks=new Set(sv.log.map(l=>l.at+l.by+l.act+l.ref));(lc.log||[]).forEach(l=>{if(!ks.has(l.at+l.by+l.act+l.ref))sv.log.push(l)});sv.log.sort((a,b)=>a.at<b.at?-1:1);if(sv.log.length>500)sv.log=sv.log.slice(-500)}
-return`${ns} transaksi, ${ne} pengeluaran, ${nb} pembelian, ${nv} pembatalan, ${ng} data gaji karyawan`}
+return`${ns} transaksi, ${ne} pengeluaran, ${ni} pemasukan lain, ${nb} pembelian, ${nv} pembatalan, ${ng} data gaji karyawan`}
 /* hitung data yang ada di a tetapi belum ada di b (a = lebih baru, b = acuan) */
 function zDiff(a,b){a=a||{};b=b||{};const nw=k=>{const q=new Set((b[k]||[]).map(y=>y.id));return(a[k]||[]).filter(y=>!q.has(y.id)).length},d={};
 const bs=new Map((b.sales||[]).map(x=>[x.id,x.st])),be=new Map((b.exp||[]).map(x=>[x.id,x.st]));
 d.sales=nw("sales");d.void=(a.sales||[]).filter(x=>x.st=="VOID"&&bs.get(x.id)=="OK").length;
-d.exp=nw("exp");d.expv=(a.exp||[]).filter(x=>x.st=="VOID"&&be.get(x.id)=="OK").length;
+d.exp=nw("exp");d.inc=nw("inc");{const bi=new Map((b.inc||[]).map(x=>[x.id,x.st]));d.incv=(a.inc||[]).filter(x=>x.st=="VOID"&&bi.get(x.id)=="OK").length}d.expv=(a.exp||[]).filter(x=>x.st=="VOID"&&be.get(x.id)=="OK").length;
 const bk=x=>[x.at,x.br,x.i,x.n,x.t].join("|"),bb=new Set((b.buys||[]).map(bk));d.buys=(a.buys||[]).filter(x=>!bb.has(bk(x))).length;
 const ga=a.gaji||{},gb=b.gaji||{};d.kar=(ga.emp||[]).filter(e=>!(gb.emp||[]).some(x=>x.id==e.id)).length;
 d.abs=Object.keys(ga.att||{}).filter(k=>!(k in(gb.att||{}))).length;d.bayar=Object.keys(ga.kpaid||{}).filter(k=>!(k in(gb.kpaid||{}))).length;
-const rest=x=>{const o={...x};["sales","exp","buys","mv","stock","seq","tomb","log"].forEach(k=>delete o[k]);if(o.gaji){o.gaji={...o.gaji};["emp","att","kpaid"].forEach(k=>delete o.gaji[k])}return JSON.stringify(o)};
+const rest=x=>{const o={...x};["sales","exp","inc","buys","mv","stock","seq","tomb","log"].forEach(k=>delete o[k]);if(o.gaji){o.gaji={...o.gaji};["emp","att","kpaid"].forEach(k=>delete o.gaji[k])}return JSON.stringify(o)};
 d.lain=rest(a)!=rest(b);return d}
-function zTxt(d){d=d||{};const L=[[d.sales,"transaksi"],[d.void,"pembatalan transaksi"],[d.exp,"pengeluaran"],[d.expv,"pembatalan pengeluaran"],[d.buys,"pembelian stok"],[d.kar,"karyawan"],[d.abs,"absensi karyawan"],[d.bayar,"pembayaran gaji karyawan"]].filter(x=>x[0]>0).map(x=>x[0]+" "+x[1]);
+function zTxt(d){d=d||{};const L=[[d.sales,"transaksi"],[d.void,"pembatalan transaksi"],[d.exp,"pengeluaran"],[d.inc,"pemasukan lain"],[d.incv,"pembatalan pemasukan lain"],[d.expv,"pembatalan pengeluaran"],[d.buys,"pembelian stok"],[d.kar,"karyawan"],[d.abs,"absensi karyawan"],[d.bayar,"pembayaran gaji karyawan"]].filter(x=>x[0]>0).map(x=>x[0]+" "+x[1]);
 if(d.lain)L.push("perubahan produk/pengaturan");return L.length?L.join(", "):"tidak ada data baru"}
 async function doUpdate(){const b=$("#ftb");if(!b||b.dataset.busy)return;
 if(!window.cloudSync)return toast("Sinkronisasi belum aktif (Firebase belum termuat). Periksa koneksi internet.");
@@ -1501,7 +1511,7 @@ if(ns.length||ne.length||nb.length){if(!confirm("Cabang \""+b.name+"\" punya "+n
 bak();const t=prompt("Ketik nama cabang untuk konfirmasi hapus:\n"+b.name);if(t===null||t.trim().toLowerCase()!=b.name.trim().toLowerCase())return alert("Nama tidak cocok, penghapusan dibatalkan.")}
 else if(!confirm("Hapus cabang \""+b.name+"\"?"))return;
 S.tomb=[...new Set([...(S.tomb||[]),id,...ns.map(x=>x.id),...ne.map(x=>x.id)])];
-S.sales=S.sales.filter(x=>x.br!=id);S.exp=S.exp.filter(x=>x.br!=id);S.buys=S.buys.filter(x=>x.br!=id);S.mv=S.mv.filter(x=>x.br!=id);
+S.sales=S.sales.filter(x=>x.br!=id);S.exp=S.exp.filter(x=>x.br!=id);S.buys=S.buys.filter(x=>x.br!=id);S.mv=S.mv.filter(x=>x.br!=id);S.inc=(S.inc||[]).filter(x=>x.br!=id);
 Object.keys(S.stock).forEach(k=>{if(k.startsWith(id+"|"))delete S.stock[k]});Object.keys(S.seq||{}).forEach(k=>{if(k.startsWith(id))delete S.seq[k]});Object.keys(S.qn||{}).forEach(k=>{if(k.startsWith(id))delete S.qn[k]});
 if(S.shop)delete S.shop[id];if(S.event&&S.event.modes)delete S.event.modes[id];S.promos=(S.promos||[]).filter(p=>p.br!=id);
 S.branches=S.branches.filter(x=>x.id!=id);if(br==id)br=S.branches[0].id;
@@ -1684,7 +1694,7 @@ const errTxt=e=>e&&e.code=="permission-denied"?"☁ Izin ditolak (cek Rules) · 
 function latest(docs){const all=docs.filter(x=>/^c\d{4}$/.test(x.id)).map(x=>x.data());nOld=Math.max(nOld,all.length);if(!all.length)return{ds:[],ok:true};
   const mv=Math.max(...all.map(x=>x.v)),ds=all.filter(x=>x.v===mv).sort((a,b)=>a.i-b.i);return{ds,ok:ds.length===ds[0].n&&ds.every((x,i)=>x.i===i)}}
 /* ada data lokal yang belum ada di server? (berdasarkan isi data, bukan flag) */
-const localOnly=(a,b)=>{const z=zDiff(a,b);return !!(z.sales||z.exp||z.buys||z.kar||z.abs||z.bayar||z.void||z.expv)};
+const localOnly=(a,b)=>{const z=zDiff(a,b);return !!(z.sales||z.exp||z.inc||z.incv||z.buys||z.kar||z.abs||z.bayar||z.void||z.expv)};
 function bak(){try{const l=localStorage.getItem(KEY);if(!l)return;const a=localStorage.getItem(KEY+"_lb1");if(a)localStorage.setItem(KEY+"_lb2",a);localStorage.setItem(KEY+"_lb1",l)}catch(e){}}
 async function push(){
   if(!ready)return;if(pushing){again=true;return}
