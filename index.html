@@ -355,8 +355,8 @@ products:[{id:"p1",name:"Zona Aren Original",cat:"Zona Aren",price:18000,active:
 {id:"p2",name:"Zona Creamy Original",cat:"Zona Creamy",price:17000,active:1,recipe:[{i:"susu",q:120},{i:"krimer",q:25},{i:"cup",q:1}]},
 {id:"p3",name:"Americano Ice",cat:"Zona Coffee",price:15000,active:1,recipe:[{i:"kopi",q:18},{i:"cup",q:1}]}],
 stock:st,sales:[],exp:[],buys:[],mv:[],seq:{}}}
-let S=JSON.parse(localStorage.getItem(KEY)||"null")||seed();
-const save=()=>{window.dirtyL=true;localStorage.setItem(KEY,JSON.stringify(S));window.cloudPush&&window.cloudPush()};
+let S=JSON.parse(localStorage.getItem(KEY)||"null")||seed();window.dirtyL=localStorage.getItem(KEY+"_dirty")=="1";
+const save=()=>{window.dirtyL=true;window.svq=(window.svq||0)+1;try{localStorage.setItem(KEY+"_dirty","1");localStorage.setItem(KEY,JSON.stringify(S))}catch(e){console.error(e);if(!window._qw){window._qw=1;alert("PERINGATAN: penyimpanan perangkat penuh, data baru bisa gagal tersimpan. Tekan Update di bawah lalu hubungi admin.")}}window.cloudPush&&window.cloudPush()};
 S.promos=S.promos||[];S.users=S.users||[];fixS();
 let cur=null,authed=false,br=S.branches[0].id,view="kasir",cart=[],payM="CASH",q="",rf={from:jk().slice(0,8)+"01",to:jk(),all:1,m:"hari",sub:"arus"};
 let rq="";
@@ -1073,8 +1073,8 @@ function gkExp(){const D=gkData();csv("kas-usaha.csv",[["Total sisa kas usaha","
 /* ===== UPDATE / SINKRON MANUAL (footer) ===== */
 let lastUpd="";
 function toast(m){let t=$("#toast");if(!t){t=document.createElement("div");t.id="toast";t.className="np";document.body.appendChild(t)}t.textContent=m;t.classList.add("on");clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove("on"),4000)}
-function mergeInto(sv,lc){let ns=0,ne=0,nb=0,nv=0;sv.seq=sv.seq||{};sv.stock=sv.stock||{};sv.sales=sv.sales||[];sv.exp=sv.exp||[];sv.buys=sv.buys||[];sv.mv=sv.mv||[];
-if(!confirm("Data di server sudah berubah, dan perangkat ini punya data baru yang belum terkirim.\n\nGabungkan? Transaksi, pengeluaran, dan pembelian perangkat ini akan ditambahkan ke data server. Absensi, karyawan, dan pembayaran gaji karyawan juga digabung. Perubahan lain di perangkat ini (mis. edit produk atau pengaturan) akan diganti data server."))throw new Error("Dibatalkan");
+function mergeInto(sv,lc,silent){let ns=0,ne=0,nb=0,nv=0;sv.seq=sv.seq||{};sv.stock=sv.stock||{};sv.sales=sv.sales||[];sv.exp=sv.exp||[];sv.buys=sv.buys||[];sv.mv=sv.mv||[];
+if(!silent&&!confirm("Data di server sudah berubah, dan perangkat ini punya data baru yang belum terkirim.\n\nGabungkan? Transaksi, pengeluaran, dan pembelian perangkat ini akan ditambahkan ke data server. Absensi, karyawan, dan pembayaran gaji karyawan juga digabung. Perubahan lain di perangkat ini (mis. edit produk atau pengaturan) akan diganti data server."))throw new Error("Dibatalkan");
 const use=(x,g)=>x.items.forEach(i=>(i.u||((lc.products.find(p=>p.id==i.pid)||{}).recipe||[]).map(r=>({i:r.i,q:r.q}))).forEach(r=>{const k=x.br+"|"+r.i;sv.stock[k]=(sv.stock[k]||0)+g*r.q*i.qty}));
 const tb=new Set([...(sv.tomb||[]),...(lc.tomb||[])]);sv.tomb=[...tb];sv.sales=sv.sales.filter(x=>!tb.has(x.id));sv.exp=sv.exp.filter(x=>!tb.has(x.id));
 Object.keys(lc.seq||{}).forEach(k=>sv.seq[k]=Math.max(sv.seq[k]||0,lc.seq[k]));
@@ -1091,6 +1091,7 @@ let ng=0;{const g=lc.gaji;if(g){const sg=sv.gaji=sv.gaji||{};sg.emp=sg.emp||[];s
 const ei=new Set(sg.emp.map(e=>e.id));(g.emp||[]).forEach(e=>{if(!ei.has(e.id)){sg.emp.push(e);ei.add(e.id);ng++}});
 Object.keys(g.kpaid||{}).forEach(k=>{if(!(k in sg.kpaid)){sg.kpaid[k]=g.kpaid[k];ng++}});
 Object.keys(g.att||{}).forEach(k=>{const p=k.split("|");if(!(k in sg.att)&&ei.has(p[0])&&!sg.kpaid[p[0]+"|"+kWs(p[1])]){sg.att[k]=1;ng++}})}}
+{sv.log=sv.log||[];const ks=new Set(sv.log.map(l=>l.at+l.by+l.act+l.ref));(lc.log||[]).forEach(l=>{if(!ks.has(l.at+l.by+l.act+l.ref))sv.log.push(l)});sv.log.sort((a,b)=>a.at<b.at?-1:1);if(sv.log.length>500)sv.log=sv.log.slice(-500)}
 return`${ns} transaksi, ${ne} pengeluaran, ${nb} pembelian, ${nv} pembatalan, ${ng} data gaji karyawan`}
 /* hitung data yang ada di a tetapi belum ada di b (a = lebih baru, b = acuan) */
 function zDiff(a,b){a=a||{};b=b||{};const nw=k=>{const q=new Set((b[k]||[]).map(y=>y.id));return(a[k]||[]).filter(y=>!q.has(y.id)).length},d={};
@@ -1644,7 +1645,7 @@ const firebaseConfig={apiKey:"AIzaSyBOjKUzM39tYdHfBVnZ8aNN6n5I4nAQ8P8",authDomai
 const app=initializeApp(firebaseConfig);
 isSupported().then(ok=>{if(ok)getAnalytics(app)}).catch(()=>{});
 const db=getFirestore(app),col=collection(db,"zona_mgmt"),CID=uid(),CH=300000;
-let ready=false,timer=null,lastJson="",nOld=0,retry=null;
+let ready=false,timer=null,lastJson="",nOld=0,retry=null,pushing=false,again=false;
 const bd=document.createElement("div");bd.className="np";
 bd.style.cssText="position:fixed;top:6px;right:8px;z-index:30;font:11px system-ui;padding:3px 9px;border-radius:99px;background:#fff;color:#0b3a75;box-shadow:0 1px 6px rgba(11,58,117,.25);pointer-events:none";
 document.body.appendChild(bd);
@@ -1652,54 +1653,71 @@ const st=(t,bad)=>{bd.textContent=t;bd.style.color=bad?"#b42318":"#0b3a75"};
 st("☁ Menyambung…");
 const busy=()=>$("#modal").classList.contains("on")||/INPUT|SELECT|TEXTAREA/.test(document.activeElement?.tagName||"");
 function safeRender(){clearTimeout(retry);if(busy())retry=setTimeout(safeRender,1500);else render()}
+const clearDirty=()=>{window.dirtyL=false;try{localStorage.removeItem(KEY+"_dirty")}catch(e){}};
+const errTxt=e=>e&&e.code=="permission-denied"?"☁ Izin ditolak (cek Rules) · data aman di perangkat":e&&e.code=="resource-exhausted"?"☁ Kuota Firebase habis · data aman di perangkat":"☁ Gagal simpan · data aman di perangkat, dicoba lagi otomatis";
+/* ambil versi terbaru yang lengkap; sisa potongan lama diabaikan (tidak memblokir sinkron) */
+function latest(docs){const all=docs.filter(x=>/^c\d{4}$/.test(x.id)).map(x=>x.data());nOld=Math.max(nOld,all.length);if(!all.length)return{ds:[],ok:true};
+  const mv=Math.max(...all.map(x=>x.v)),ds=all.filter(x=>x.v===mv).sort((a,b)=>a.i-b.i);return{ds,ok:ds.length===ds[0].n&&ds.every((x,i)=>x.i===i)}}
+/* ada data lokal yang belum ada di server? (berdasarkan isi data, bukan flag) */
+const localOnly=(a,b)=>{const z=zDiff(a,b);return !!(z.sales||z.exp||z.buys||z.kar||z.abs||z.bayar||z.void||z.expv)};
+function bak(){try{const l=localStorage.getItem(KEY);if(!l)return;const a=localStorage.getItem(KEY+"_lb1");if(a)localStorage.setItem(KEY+"_lb2",a);localStorage.setItem(KEY+"_lb1",l)}catch(e){}}
 async function push(){
-  const json=JSON.stringify(S);if(json===lastJson){window.dirtyL=false;st("☁ Tersinkron");return}
-  const parts=[];for(let i=0;i<json.length;i+=CH)parts.push(json.slice(i,i+CH));
+  if(!ready)return;if(pushing){again=true;return}
+  const json=JSON.stringify(S);if(json===lastJson){clearDirty();st("☁ Tersinkron");return}
+  pushing=true;const sq=window.svq||0,parts=[];for(let i=0;i<json.length;i+=CH)parts.push(json.slice(i,i+CH));
   const v=Date.now(),b=writeBatch(db);
   parts.forEach((d,i)=>b.set(doc(col,"c"+String(i).padStart(4,"0")),{i,n:parts.length,v,by:CID,d}));
   for(let i=parts.length;i<nOld;i++)b.delete(doc(col,"c"+String(i).padStart(4,"0")));
-  lastJson=json;nOld=parts.length;window.dirtyL=false;st("☁ Menyimpan…");
-  try{await b.commit();st("☁ Tersinkron")}catch(e){console.error(e);lastJson="";window.dirtyL=true;st("☁ Gagal simpan",1)}
+  st("☁ Menyimpan…");
+  try{await b.commit();lastJson=json;nOld=parts.length;if((window.svq||0)===sq)clearDirty();st("☁ Tersinkron")}
+  catch(e){console.error(e);window.dirtyL=true;st(errTxt(e),1)}
+  finally{pushing=false;if(again){again=false;window.cloudPush()}}
 }
-window.cloudPush=()=>{if(!ready)return;clearTimeout(timer);timer=setTimeout(push,700)};
-function adopt(o,json,n){lastJson=json;nOld=n;S=o;S.promos=S.promos||[];S.users=S.users||[];fixS();localStorage.setItem(KEY,JSON.stringify(S));
+window.cloudPush=()=>{if(!ready){st("☁ Belum tersambung · data disimpan di perangkat ini",1);return}clearTimeout(timer);timer=setTimeout(push,700)};
+function adopt(o,json,n,dirty){lastJson=json;nOld=Math.max(nOld,n);S=o;S.promos=S.promos||[];S.users=S.users||[];fixS();
+  try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}
+  if(dirty){window.dirtyL=true;try{localStorage.setItem(KEY+"_dirty","1")}catch(e){}}else clearDirty();
   if(!S.branches.some(x=>x.id==br))br=S.branches[0].id;
   if(authed){cur=S.users.find(u=>u.id==cur.id)||null;if(!cur){lock();return}if(brLock(cur))br=cur.br}}
-window.cloudSync=async(mergeFn)=>{
+/* terima data server TANPA menghapus data lokal yang belum terkirim: gabungkan dulu */
+function take(json,n){try{const sv=JSON.parse(json);
+  if(localOnly(S,sv)){bak();const msg=mergeInto(sv,S,true);adopt(sv,json,n,true);return{merged:true,msg}}
+  adopt(sv,json,n,false);return{merged:false}}catch(e){console.error(e);st("☁ Gagal menggabungkan · data lokal dipertahankan",1);return null}}
+window.cloudSync=async()=>{
   if(!ready)throw new Error("Belum tersambung ke server");
-  const snap=await getDocsFromServer(col),ds=snap.docs.filter(x=>/^c\d{4}$/.test(x.id)).map(x=>x.data()).sort((a,b)=>a.i-b.i);
-  if(ds.length&&(ds.length!==ds[0].n||ds.some(x=>x.v!==ds[0].v)))throw new Error("Server sedang menyimpan dari perangkat lain, coba lagi sebentar");
-  const sj=ds.map(x=>x.d).join(""),dirty=!!window.dirtyL;clearTimeout(timer);
-  const base=lastJson?JSON.parse(lastJson):null;
-  if(!sj||sj===lastJson){if(dirty){const sent=zDiff(S,base);await push();return{k:"sent",sent}}return{k:"same"}}
-  if(!dirty){const nv=JSON.parse(sj),recv=zDiff(nv,S);adopt(nv,sj,ds.length);return{k:"pulled",recv}}
-  const sv=JSON.parse(sj),recv=zDiff(sv,base),sent=zDiff(S,base),msg=mergeFn(sv,S);adopt(sv,sj,ds.length);await push();return{k:"merged",msg,sent,recv}};
+  const snap=await getDocsFromServer(col),{ds,ok}=latest(snap.docs);
+  if(ds.length&&!ok)throw new Error("Server sedang menyimpan dari perangkat lain, coba lagi sebentar");
+  const sj=ds.map(x=>x.d).join(""),base=lastJson?JSON.parse(lastJson):null;clearTimeout(timer);
+  if(!sj||sj===lastJson){if(window.dirtyL){const sent=zDiff(S,base);await push();return{k:"sent",sent}}return{k:"same"}}
+  const sv=JSON.parse(sj),recv=zDiff(sv,S),sent=zDiff(S,sv),lo=localOnly(S,sv),r=take(sj,ds.length);
+  if(!r)throw new Error("Gagal menggabungkan data, data perangkat ini tidak diubah");
+  if(!lo){return{k:"pulled",recv}}
+  await push();return{k:"merged",msg:r.msg,sent,recv}};
 window.livePush=(b,o)=>{if(!ready){st("☁ Display: belum tersambung ke server",1);return}setDoc(doc(col,"live_"+encodeURIComponent(b)),{...o,at:Date.now(),by:CID}).then(()=>st("☁ Display terkirim")).catch(e=>{console.error(e);st("☁ Display gagal: "+(e.code||e.message),1)})};
 window.custPush=(b,o)=>{if(!ready)return false;setDoc(doc(col,"cust_"+encodeURIComponent(b)),{...o,at:Date.now(),by:CID}).catch(e=>{console.error(e);window.cuStat&&window.cuStat("● Gagal kirim: "+(e.code||e.message),1)});return true};
 let lw=null,lwb="";
 window.liveWatch=b=>{if(lwb===b)return;lwb=b;if(lw)lw();lw=onSnapshot(doc(col,"live_"+encodeURIComponent(b)),sn=>{window.cuStat&&window.cuStat("● Terhubung · "+new Date().toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit",second:"2-digit"}));if(sn.exists()&&window.custLive)window.custLive(b,sn.data())},e=>{console.error(e);window.cuStat&&window.cuStat("● Gagal terhubung: "+(e.code||e.message),1)})};
-onSnapshot(col,snap=>{
+function onSnap(snap){
   if(document.body.classList.contains("cust"))window.liveWatch(br);
   const chg=snap.docChanges();
   chg.forEach(c=>{if(c.type=="removed")return;const id=c.doc.id;try{if(id.startsWith("live_")&&window.custLive)window.custLive(decodeURIComponent(id.slice(5)),c.doc.data());else if(id.startsWith("cust_")&&window.custMsg)window.custMsg(decodeURIComponent(id.slice(5)),c.doc.data())}catch(e){console.error(e)}});
   if(chg.length&&chg.every(c=>/^(live|cust)_/.test(c.doc.id)))return;
   if(snap.metadata.hasPendingWrites)return;
-  const ds=snap.docs.filter(x=>/^c\d{4}$/.test(x.id)).map(x=>x.data()).sort((a,b)=>a.i-b.i);
-  if(!ds.length){if(!ready){ready=true;push()}return}
-  if(ds.length!==ds[0].n||ds.some(x=>x.v!==ds[0].v))return;
-  nOld=ds.length;
+  const{ds,ok}=latest(snap.docs);
+  if(!ds.length){if(snap.metadata.fromCache)return;if(!ready){ready=true;push()}return}
+  if(!ok)return;
   if(ready&&ds[0].by===CID){st("☁ Tersinkron");return}
+  if(snap.metadata.fromCache&&!ready)return;
   const json=ds.map(x=>x.d).join("");
-  if(json===lastJson){ready=true;st("☁ Tersinkron");return}
-  try{
-    const d=JSON.parse(json),loc=localStorage.getItem(KEY);
-    if(!ready&&loc&&loc!==json&&!localStorage.getItem(KEY+"_localbackup"))localStorage.setItem(KEY+"_localbackup",loc);
-    lastJson=json;S=d;S.promos=S.promos||[];S.users=S.users||[];fixS();localStorage.setItem(KEY,json);
-    if(!S.branches.some(x=>x.id==br))br=S.branches[0].id;
-    if(authed){cur=S.users.find(u=>u.id==cur.id)||null;if(!cur){lock();ready=true;st("☁ Tersinkron");return}if(brLock(cur))br=cur.br}
-    ready=true;st("☁ Tersinkron");safeRender();
-  }catch(e){console.error(e);st("☁ Data cloud rusak",1)}
-},e=>{console.error(e);st(e.code=="permission-denied"?"☁ Izin ditolak (cek Rules)":"☁ Offline",1)});
-addEventListener("online",()=>st("☁ Menyambung…"));
+  if(json===lastJson){ready=true;if(window.dirtyL)window.cloudPush();else st("☁ Tersinkron");return}
+  const r=take(json,ds.length);if(!r)return;
+  ready=true;safeRender();
+  if(window.dirtyL)window.cloudPush();else st("☁ Tersinkron");
+  if(r.merged)toast("Data perangkat ini digabung dengan server: "+r.msg)}
+function listen(){onSnapshot(col,onSnap,e=>{console.error(e);st(e.code=="permission-denied"?"☁ Izin ditolak (cek Rules) · data aman di perangkat":"☁ Offline · data aman di perangkat",1);if(e.code!="permission-denied")setTimeout(listen,15000)})}
+listen();
+setInterval(()=>{if(ready&&window.dirtyL&&!pushing)push()},20000);
+addEventListener("online",()=>{st("☁ Menyambung…");if(ready&&window.dirtyL)push()});
+addEventListener("offline",()=>st("☁ Offline · data tersimpan di perangkat ini",1));
 </script>
 </body></html>
