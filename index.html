@@ -1008,11 +1008,11 @@ ${own?`<div class="fm np" style="margin:8px 0"><input id="ke1" placeholder="Nama
 function kWeek(n){kWk=kAdd(kWk||kWs(tdy()),n);render()}
 function kWeekSet(v){if(v){kWk=kWs(v);render()}}
 function kThSet(v){if(cur.role!="owner")return;const t=Math.round(+v);if(!(t>0)){alert("Target harus lebih dari 0 cup");return render()}kg().kth=t;logA("gaji-karyawan-target","gaji",t+"");save();render()}
-function kAtt(id,d,on){if(cur.role!="owner")return;const G=kg();if(G.kpaid[id+"|"+kWk])return render();if(on)G.att[id+"|"+d]=1;else delete G.att[id+"|"+d];save();render()}
+function kAtt(id,d,on){if(cur.role!="owner")return;const G=kg();if(G.kpaid[id+"|"+kWk])return render();if(on)G.att[id+"|"+d]=1;else delete G.att[id+"|"+d];(G.tt=G.tt||{})["a|"+id+"|"+d]=Date.now();save();render()}
 function kPay(id,v){if(cur.role!="owner")return;const G=kg(),e=G.emp.find(x=>x.id==id),W=kWeekD(),k=id+"|"+kWk;if(!e)return;
 if(v=="1"){const c=kCalc(e,W,kCups(W));if(!c.days){alert("Belum ada hari masuk yang dicentang minggu ini");return render()}
 G.kpaid[k]={date:tdy(),amt:c.tot,days:c.days,hi:c.hi,th:kEt(e),name:e.name,rate:e.rate,rateHi:kHi(e),meal:e.meal};kXset(e,kWk,W,c);logA("gaji-karyawan-bayar","gaji",e.name+" "+kWk+" "+c.tot)}
-else{if(G.kpaid[k]&&!confirm("Kembalikan ke Belum dibayar? Catatan pengeluaran gaji untuk "+e.name+" minggu ini akan dibatalkan."))return render();delete G.kpaid[k];kXvoid(id,kWk);logA("gaji-karyawan-batal","gaji",e.name+" "+kWk)}save();render()}
+else{if(G.kpaid[k]&&!confirm("Kembalikan ke Belum dibayar? Catatan pengeluaran gaji untuk "+e.name+" minggu ini akan dibatalkan."))return render();delete G.kpaid[k];kXvoid(id,kWk);logA("gaji-karyawan-batal","gaji",e.name+" "+kWk)}(G.tt=G.tt||{})["p|"+k]=Date.now();save();render()}
 function kEmpAdd(){if(cur.role!="owner")return;const n=V("ke1").trim(),r=Math.round(+V("ke2")),h=Math.round(+V("ke4")||0)||r,m=Math.round(+V("ke3")||0),t=Math.round(+V("ke5")||0)||kTh();
 if(!n)return alert("Isi nama karyawan");if(!(t>0))return alert("Target cup harus lebih dari 0");if(!(r>0))return alert("Bayaran di bawah target harus lebih dari 0");if(!(h>0))return alert("Bayaran target tercapai tidak valid");if(m<0)return alert("Uang makan tidak boleh minus");
 kg().emp.push({id:uid(),name:n,th:t,rate:r,hi:h,meal:m});logA("gaji-karyawan-tambah","gaji",n+" target "+t);save();render()}
@@ -1108,10 +1108,13 @@ const eid=new Map(sv.exp.map(e=>[e.id,e]));(lc.exp||[]).filter(okb).forEach(e=>{
 const bk=b=>[b.at,b.br,b.i,b.n,b.t].join("|"),bs=new Set(sv.buys.map(bk));(lc.buys||[]).filter(okb).forEach(b=>{if(!bs.has(bk(b))){sv.buys.push(b);const k=b.br+"|"+b.i;sv.stock[k]=(sv.stock[k]||0)+b.n;nb++}});
 const mk=m=>[m.at,m.br,m.i,m.d,m.why].join("|"),ms=new Set(sv.mv.map(mk));(lc.mv||[]).filter(okb).forEach(m=>{if(!ms.has(mk(m))&&/^(Penjualan|Pembatalan|Penerimaan)/.test(m.why))sv.mv.push(m)});
 sv.mv.sort((a,b)=>a.at<b.at?-1:a.at>b.at?1:0);
-let ng=0;{const g=lc.gaji;if(g){const sg=sv.gaji=sv.gaji||{};sg.emp=sg.emp||[];sg.att=sg.att||{};sg.kpaid=sg.kpaid||{};
+let ng=0;{const g=lc.gaji;if(g){const sg=sv.gaji=sv.gaji||{};sg.emp=sg.emp||[];sg.att=sg.att||{};sg.kpaid=sg.kpaid||{};sg.tt=sg.tt||{};const lt=g.tt||{};
 const ei=new Set(sg.emp.map(e=>e.id));(g.emp||[]).forEach(e=>{if(!ei.has(e.id)){sg.emp.push(e);ei.add(e.id);ng++}});
-Object.keys(g.kpaid||{}).forEach(k=>{if(!(k in sg.kpaid)){sg.kpaid[k]=g.kpaid[k];ng++}});
-Object.keys(g.att||{}).forEach(k=>{const p=k.split("|");if(!(k in sg.att)&&ei.has(p[0])&&!sg.kpaid[p[0]+"|"+kWs(p[1])]){sg.att[k]=1;ng++}})}}
+const dec=(pre,k,gv,sm,ok)=>{const T=pre+k,a=lt[T]||0,b=sg.tt[T]||0;if(a>b){if(k in gv)sm[k]=gv[k];else delete sm[k];sg.tt[T]=a;ng++;return}if(!a&&!b&&(k in gv)&&!(k in sm)&&ok()){sm[k]=gv[k];ng++}};
+const ks=(o,pre)=>new Set([...Object.keys(o||{}),...Object.keys(lt).filter(x=>x.startsWith(pre)).map(x=>x.slice(pre.length))]);
+ks(g.kpaid,"p|").forEach(k=>dec("p|",k,g.kpaid||{},sg.kpaid,()=>true));
+ks(g.att,"a|").forEach(k=>{const p=k.split("|");dec("a|",k,g.att||{},sg.att,()=>ei.has(p[0])&&!sg.kpaid[p[0]+"|"+kWs(p[1])])});
+sv.exp.forEach(x=>{if(x.kar){const pd=!!sg.kpaid[x.kar];if(pd&&x.st=="VOID")x.st="OK";else if(!pd&&x.st=="OK")x.st="VOID"}})}}
 {sv.log=sv.log||[];const ks=new Set(sv.log.map(l=>l.at+l.by+l.act+l.ref));(lc.log||[]).forEach(l=>{if(!ks.has(l.at+l.by+l.act+l.ref))sv.log.push(l)});sv.log.sort((a,b)=>a.at<b.at?-1:1);if(sv.log.length>500)sv.log=sv.log.slice(-500)}
 return`${ns} transaksi, ${ne} pengeluaran, ${ni} pemasukan lain, ${nb} pembelian, ${nv} pembatalan, ${ng} data gaji karyawan`}
 /* PERUBAHAN TERAKHIR MENANG: tiap bagian data (produk, harga, pengguna, pengaturan, dst.) memakai versi dari perangkat yang mengubahnya paling akhir.
@@ -1130,7 +1133,7 @@ d.exp=nw("exp");d.inc=nw("inc");{const bi=new Map((b.inc||[]).map(x=>[x.id,x.st]
 const bk=x=>[x.at,x.br,x.i,x.n,x.t].join("|"),bb=new Set((b.buys||[]).map(bk));d.buys=(a.buys||[]).filter(x=>!bb.has(bk(x))).length;
 const ga=a.gaji||{},gb=b.gaji||{};d.kar=(ga.emp||[]).filter(e=>!(gb.emp||[]).some(x=>x.id==e.id)).length;
 d.abs=Object.keys(ga.att||{}).filter(k=>!(k in(gb.att||{}))).length;d.bayar=Object.keys(ga.kpaid||{}).filter(k=>!(k in(gb.kpaid||{}))).length;
-const rest=x=>{const o={...x};["sales","exp","inc","buys","mv","stock","seq","tomb","log","_m"].forEach(k=>delete o[k]);if(o.gaji){o.gaji={...o.gaji};["emp","att","kpaid"].forEach(k=>delete o.gaji[k])}return JSON.stringify(o)};
+const rest=x=>{const o={...x};["sales","exp","inc","buys","mv","stock","seq","tomb","log","_m"].forEach(k=>delete o[k]);if(o.gaji){o.gaji={...o.gaji};["emp","att","kpaid","tt"].forEach(k=>delete o.gaji[k])}return JSON.stringify(o)};
 d.lain=rest(a)!=rest(b);return d}
 function zTxt(d){d=d||{};const L=[[d.sales,"transaksi"],[d.void,"pembatalan transaksi"],[d.exp,"pengeluaran"],[d.inc,"pemasukan lain"],[d.incv,"pembatalan pemasukan lain"],[d.expv,"pembatalan pengeluaran"],[d.buys,"pembelian stok"],[d.kar,"karyawan"],[d.abs,"absensi karyawan"],[d.bayar,"pembayaran gaji karyawan"]].filter(x=>x[0]>0).map(x=>x[0]+" "+x[1]);
 if(d.lain)L.push("perubahan produk/pengaturan");return L.length?L.join(", "):"tidak ada data baru"}
