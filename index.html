@@ -356,8 +356,11 @@ products:[{id:"p1",name:"Zona Aren Original",cat:"Zona Aren",price:18000,active:
 {id:"p3",name:"Americano Ice",cat:"Zona Coffee",price:15000,active:1,recipe:[{i:"kopi",q:18},{i:"cup",q:1}]}],
 stock:st,sales:[],exp:[],buys:[],mv:[],seq:{}}}
 let S=JSON.parse(localStorage.getItem(KEY)||"null")||seed();window.dirtyL=localStorage.getItem(KEY+"_dirty")=="1";
-const save=()=>{window.dirtyL=true;window.svq=(window.svq||0)+1;try{localStorage.setItem(KEY+"_dirty","1");localStorage.setItem(KEY,JSON.stringify(S))}catch(e){console.error(e);if(!window._qw){window._qw=1;alert("PERINGATAN: penyimpanan perangkat penuh, data baru bisa gagal tersimpan. Tekan Update di bawah lalu hubungi admin.")}}window.cloudPush&&window.cloudPush()};
-S.promos=S.promos||[];S.users=S.users||[];fixS();
+const SKIPK=new Set(["_m","sales","exp","inc","buys","mv","tomb","log","gaji","seq","stock","shop","qn"]);
+function zKs(){window._ks={};for(const k in S)if(!SKIPK.has(k))window._ks[k]=JSON.stringify(S[k])}
+function stamp(){if(!window._ks)zKs();S._m=S._m||{};const t=Date.now();for(const k in S){if(SKIPK.has(k))continue;const j=JSON.stringify(S[k]);if(window._ks[k]!==j){if(k in window._ks)S._m[k]=t;window._ks[k]=j}}}
+const save=()=>{window.dirtyL=true;try{stamp()}catch(e){console.error(e)}window.svq=(window.svq||0)+1;try{localStorage.setItem(KEY+"_dirty","1");localStorage.setItem(KEY,JSON.stringify(S))}catch(e){console.error(e);if(!window._qw){window._qw=1;alert("PERINGATAN: penyimpanan perangkat penuh, data baru bisa gagal tersimpan. Tekan Update di bawah lalu hubungi admin.")}}window.cloudPush&&window.cloudPush()};
+S.promos=S.promos||[];S.users=S.users||[];fixS();zKs();
 let cur=null,authed=false,br=S.branches[0].id,view="kasir",cart=[],payM="CASH",q="",rf={from:jk().slice(0,8)+"01",to:jk(),all:1,m:"hari",sub:"arus"};
 let rq="";
 const prod=id=>S.products.find(p=>p.id==id),ing=id=>S.ings.find(i=>i.id==id),bn=id=>S.branches.find(b=>b.id==id)?.name||id;
@@ -1111,6 +1114,14 @@ Object.keys(g.kpaid||{}).forEach(k=>{if(!(k in sg.kpaid)){sg.kpaid[k]=g.kpaid[k]
 Object.keys(g.att||{}).forEach(k=>{const p=k.split("|");if(!(k in sg.att)&&ei.has(p[0])&&!sg.kpaid[p[0]+"|"+kWs(p[1])]){sg.att[k]=1;ng++}})}}
 {sv.log=sv.log||[];const ks=new Set(sv.log.map(l=>l.at+l.by+l.act+l.ref));(lc.log||[]).forEach(l=>{if(!ks.has(l.at+l.by+l.act+l.ref))sv.log.push(l)});sv.log.sort((a,b)=>a.at<b.at?-1:1);if(sv.log.length>500)sv.log=sv.log.slice(-500)}
 return`${ns} transaksi, ${ne} pengeluaran, ${ni} pemasukan lain, ${nb} pembelian, ${nv} pembatalan, ${ng} data gaji karyawan`}
+/* PERUBAHAN TERAKHIR MENANG: tiap bagian data (produk, harga, pengguna, pengaturan, dst.) memakai versi dari perangkat yang mengubahnya paling akhir.
+   Transaksi, pengeluaran, pemasukan, belanja stok & absensi tidak diganti, hanya digabung supaya tidak ada yang hilang. */
+function lww(sv,lc){let ch=false;sv._m=sv._m||{};const lm=lc._m||{},J=x=>JSON.stringify(x);
+for(const k of Object.keys(lc)){if(SKIPK.has(k)||k=="branches")continue;const a=lm[k]||0,b=sv._m[k]||0;if(a>b&&J(lc[k])!==J(sv[k])){sv[k]=JSON.parse(J(lc[k]));sv._m[k]=a;ch=true}}
+{const a=lm.branches||0,b=sv._m.branches||0;if(a>b){const L=new Map((lc.branches||[]).map(x=>[x.id,x]));const nb=sv.branches.map(x=>L.get(x.id)||x);if(J(nb)!==J(sv.branches)){sv.branches=nb;sv._m.branches=a;ch=true}}}
+{sv.shop=sv.shop||{};const ts=h=>h?Math.max(Date.parse(h.openAt)||0,Date.parse(h.closeAt)||0):0;Object.entries(lc.shop||{}).forEach(([id,h])=>{if(ts(h)>ts(sv.shop[id])){sv.shop[id]=h;ch=true}})}
+{sv.qn=sv.qn||{};Object.entries(lc.qn||{}).forEach(([k,v])=>{if(!(sv.qn[k]>=v)){sv.qn[k]=v;ch=true}})}
+return ch}
 /* hitung data yang ada di a tetapi belum ada di b (a = lebih baru, b = acuan) */
 function zDiff(a,b){a=a||{};b=b||{};const nw=k=>{const q=new Set((b[k]||[]).map(y=>y.id));return(a[k]||[]).filter(y=>!q.has(y.id)).length},d={};
 const bs=new Map((b.sales||[]).map(x=>[x.id,x.st])),be=new Map((b.exp||[]).map(x=>[x.id,x.st]));
@@ -1119,7 +1130,7 @@ d.exp=nw("exp");d.inc=nw("inc");{const bi=new Map((b.inc||[]).map(x=>[x.id,x.st]
 const bk=x=>[x.at,x.br,x.i,x.n,x.t].join("|"),bb=new Set((b.buys||[]).map(bk));d.buys=(a.buys||[]).filter(x=>!bb.has(bk(x))).length;
 const ga=a.gaji||{},gb=b.gaji||{};d.kar=(ga.emp||[]).filter(e=>!(gb.emp||[]).some(x=>x.id==e.id)).length;
 d.abs=Object.keys(ga.att||{}).filter(k=>!(k in(gb.att||{}))).length;d.bayar=Object.keys(ga.kpaid||{}).filter(k=>!(k in(gb.kpaid||{}))).length;
-const rest=x=>{const o={...x};["sales","exp","inc","buys","mv","stock","seq","tomb","log"].forEach(k=>delete o[k]);if(o.gaji){o.gaji={...o.gaji};["emp","att","kpaid"].forEach(k=>delete o.gaji[k])}return JSON.stringify(o)};
+const rest=x=>{const o={...x};["sales","exp","inc","buys","mv","stock","seq","tomb","log","_m"].forEach(k=>delete o[k]);if(o.gaji){o.gaji={...o.gaji};["emp","att","kpaid"].forEach(k=>delete o.gaji[k])}return JSON.stringify(o)};
 d.lain=rest(a)!=rest(b);return d}
 function zTxt(d){d=d||{};const L=[[d.sales,"transaksi"],[d.void,"pembatalan transaksi"],[d.exp,"pengeluaran"],[d.inc,"pemasukan lain"],[d.incv,"pembatalan pemasukan lain"],[d.expv,"pembatalan pengeluaran"],[d.buys,"pembelian stok"],[d.kar,"karyawan"],[d.abs,"absensi karyawan"],[d.bayar,"pembayaran gaji karyawan"]].filter(x=>x[0]>0).map(x=>x[0]+" "+x[1]);
 if(d.lain)L.push("perubahan produk/pengaturan");return L.length?L.join(", "):"tidak ada data baru"}
@@ -1709,15 +1720,15 @@ async function push(){
   finally{pushing=false;if(again){again=false;window.cloudPush()}}
 }
 window.cloudPush=()=>{if(!ready){st("☁ Belum tersambung · data disimpan di perangkat ini",1);return}clearTimeout(timer);timer=setTimeout(push,700)};
-function adopt(o,json,n,dirty){lastJson=json;nOld=Math.max(nOld,n);S=o;S.promos=S.promos||[];S.users=S.users||[];fixS();
+function adopt(o,json,n,dirty){lastJson=json;nOld=Math.max(nOld,n);S=o;S.promos=S.promos||[];S.users=S.users||[];fixS();zKs();
   try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}
   if(dirty){window.dirtyL=true;try{localStorage.setItem(KEY+"_dirty","1")}catch(e){}}else clearDirty();
   if(!S.branches.some(x=>x.id==br))br=S.branches[0].id;
   if(authed){cur=S.users.find(u=>u.id==cur.id)||null;if(!cur){lock();return}if(brLock(cur))br=cur.br}}
 /* terima data server TANPA menghapus data lokal yang belum terkirim: gabungkan dulu */
-function take(json,n){try{const sv=JSON.parse(json);
-  if(localOnly(S,sv)){bak();const msg=mergeInto(sv,S,true);adopt(sv,json,n,true);return{merged:true,msg}}
-  adopt(sv,json,n,false);return{merged:false}}catch(e){console.error(e);st("☁ Gagal menggabungkan · data lokal dipertahankan",1);return null}}
+function take(json,n){try{const sv=JSON.parse(json),lo=localOnly(S,sv);let msg="";
+  if(lo){bak();msg=mergeInto(sv,S,true)}
+  const ch=lww(sv,S);adopt(sv,json,n,lo||ch);return{merged:lo,msg}}catch(e){console.error(e);st("☁ Gagal menggabungkan · data lokal dipertahankan",1);return null}}
 window.cloudSync=async()=>{
   if(!ready)throw new Error("Belum tersambung ke server");
   const snap=await getDocsFromServer(col),{ds,ok}=latest(snap.docs);
@@ -1726,7 +1737,7 @@ window.cloudSync=async()=>{
   if(!sj||sj===lastJson){if(window.dirtyL){const sent=zDiff(S,base);await push();return{k:"sent",sent}}return{k:"same"}}
   const sv=JSON.parse(sj),recv=zDiff(sv,S),sent=zDiff(S,sv),lo=localOnly(S,sv),r=take(sj,ds.length);
   if(!r)throw new Error("Gagal menggabungkan data, data perangkat ini tidak diubah");
-  if(!lo){return{k:"pulled",recv}}
+  if(!lo&&!window.dirtyL){return{k:"pulled",recv}}
   await push();return{k:"merged",msg:r.msg,sent,recv}};
 window.livePush=(b,o)=>{if(!ready){st("☁ Display: belum tersambung ke server",1);return}setDoc(doc(col,"live_"+encodeURIComponent(b)),{...o,at:Date.now(),by:CID}).then(()=>st("☁ Display terkirim")).catch(e=>{console.error(e);st("☁ Display gagal: "+(e.code||e.message),1)})};
 window.custPush=(b,o)=>{if(!ready)return false;setDoc(doc(col,"cust_"+encodeURIComponent(b)),{...o,at:Date.now(),by:CID}).catch(e=>{console.error(e);window.cuStat&&window.cuStat("● Gagal kirim: "+(e.code||e.message),1)});return true};
