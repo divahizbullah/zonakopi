@@ -1638,14 +1638,6 @@ async function ensureCu(){S.cuSeed=1;if(S.users.some(u=>u.role=="customer"))retu
 init();
 </script>
 <script type="module">
-import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import{getAnalytics,isSupported}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js";
-import{getFirestore,collection,doc,onSnapshot,writeBatch,getDocsFromServer,setDoc}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-const firebaseConfig={apiKey:"AIzaSyBOjKUzM39tYdHfBVnZ8aNN6n5I4nAQ8P8",authDomain:"zona-c04ee.firebaseapp.com",projectId:"zona-c04ee",storageBucket:"zona-c04ee.firebasestorage.app",messagingSenderId:"862629272585",appId:"1:862629272585:web:1c82c88eadf732a3de2cd8",measurementId:"G-REQRPPQ03Q"};
-const app=initializeApp(firebaseConfig);
-isSupported().then(ok=>{if(ok)getAnalytics(app)}).catch(()=>{});
-const db=getFirestore(app),col=collection(db,"zona_mgmt"),CID=uid(),CH=300000;
-let ready=false,timer=null,lastJson="",nOld=0,retry=null,pushing=false,again=false;
 const bd=document.createElement("div");bd.className="np";
 bd.style.cssText="position:fixed;top:6px;right:8px;z-index:30;font:11px system-ui;padding:3px 9px;border-radius:99px;background:#fff;color:#0b3a75;box-shadow:0 1px 6px rgba(11,58,117,.25);pointer-events:none";
 document.body.appendChild(bd);
@@ -1653,6 +1645,17 @@ const st=(t,bad)=>{bd.textContent=t;bd.style.color=bad?"#b42318":"#0b3a75"};
 st("☁ Menyambung…");
 const busy=()=>$("#modal").classList.contains("on")||/INPUT|SELECT|TEXTAREA/.test(document.activeElement?.tagName||"");
 function safeRender(){clearTimeout(retry);if(busy())retry=setTimeout(safeRender,1500);else render()}
+const FB="https://www.gstatic.com/firebasejs/10.12.2/";
+if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
+let initializeApp,getFirestore,collection,doc,onSnapshot,writeBatch,getDocsFromServer,setDoc;
+/* muat Firebase; jika offline, coba lagi tiap 10 detik tanpa perlu refresh. Data kasir tetap tersimpan lokal. */
+for(;;){try{const[a,f]=await Promise.all([import(FB+"firebase-app.js"),import(FB+"firebase-firestore.js")]);({initializeApp}=a);({getFirestore,collection,doc,onSnapshot,writeBatch,getDocsFromServer,setDoc}=f);break}
+catch(e){console.error(e);st("☁ Offline · data tersimpan di perangkat, terkirim otomatis saat internet kembali",1);await new Promise(r=>setTimeout(r,10000))}}
+const firebaseConfig={apiKey:"AIzaSyBOjKUzM39tYdHfBVnZ8aNN6n5I4nAQ8P8",authDomain:"zona-c04ee.firebaseapp.com",projectId:"zona-c04ee",storageBucket:"zona-c04ee.firebasestorage.app",messagingSenderId:"862629272585",appId:"1:862629272585:web:1c82c88eadf732a3de2cd8",measurementId:"G-REQRPPQ03Q"};
+const app=initializeApp(firebaseConfig);
+import(FB+"firebase-analytics.js").then(m=>m.isSupported().then(ok=>{if(ok)m.getAnalytics(app)})).catch(()=>{});
+const db=getFirestore(app),col=collection(db,"zona_mgmt"),CID=uid(),CH=300000;
+let ready=false,timer=null,lastJson="",nOld=0,retry=null,pushing=false,again=false;
 const clearDirty=()=>{window.dirtyL=false;try{localStorage.removeItem(KEY+"_dirty")}catch(e){}};
 const errTxt=e=>e&&e.code=="permission-denied"?"☁ Izin ditolak (cek Rules) · data aman di perangkat":e&&e.code=="resource-exhausted"?"☁ Kuota Firebase habis · data aman di perangkat":"☁ Gagal simpan · data aman di perangkat, dicoba lagi otomatis";
 /* ambil versi terbaru yang lengkap; sisa potongan lama diabaikan (tidak memblokir sinkron) */
@@ -1714,10 +1717,11 @@ function onSnap(snap){
   ready=true;safeRender();
   if(window.dirtyL)window.cloudPush();else st("☁ Tersinkron");
   if(r.merged)toast("Data perangkat ini digabung dengan server: "+r.msg)}
-function listen(){onSnapshot(col,onSnap,e=>{console.error(e);st(e.code=="permission-denied"?"☁ Izin ditolak (cek Rules) · data aman di perangkat":"☁ Offline · data aman di perangkat",1);if(e.code!="permission-denied")setTimeout(listen,15000)})}
+let unsub=null;function listen(){if(unsub){try{unsub()}catch(e){}}unsub=onSnapshot(col,onSnap,e=>{console.error(e);st(e.code=="permission-denied"?"☁ Izin ditolak (cek Rules) · data aman di perangkat":"☁ Offline · data aman di perangkat",1);if(e.code!="permission-denied")setTimeout(listen,15000)})}
 listen();
 setInterval(()=>{if(ready&&window.dirtyL&&!pushing)push()},20000);
-addEventListener("online",()=>{st("☁ Menyambung…");if(ready&&window.dirtyL)push()});
+addEventListener("online",()=>{st("☁ Menyambung…");if(!ready)listen();else if(window.dirtyL)push()});
+document.addEventListener("visibilitychange",()=>{if(!document.hidden&&ready&&window.dirtyL&&!pushing)push()});
 addEventListener("offline",()=>st("☁ Offline · data tersimpan di perangkat ini",1));
 </script>
 </body></html>
