@@ -731,7 +731,7 @@ if(!confirm("Hapus bahan "+g.name+"?\nStok di semua cabang ikut terhapus. Riwaya
 S.ings=S.ings.filter(x=>x.id!=id);Object.keys(S.stock).forEach(k=>{if(k.slice(k.indexOf("|")+1)==id)delete S.stock[k]});
 logA("bahan-hapus","stok",g.name);save();render()}
 /* ===== PENGELUARAN ===== */
-let eTab="umum",eCart=[],eDt="",eMet="Tunai";
+let ecM="all",eTab="umum",eCart=[],eDt="",eMet="Tunai";
 function vKeluar(){const E=S.exp.filter(e=>e.br==br).slice().reverse(),B=S.buys.filter(b=>b.br==br).slice().reverse(),
 rows=[...E.map(e=>({d:e.date,e})),...B.map(b=>({d:bdOf(b.at,b.br),b}))].sort((x,y)=>x.d<y.d?1:x.d>y.d?-1:0),
 ym=tdy().slice(0,7),tot=eCart.reduce((a,x)=>a+x.t,0),
@@ -814,8 +814,14 @@ function chJual(){const s=chSer(),D=dayList().filter(x=>x.n>0),P={};D.forEach(x=
 const E=Object.entries(P),byq=E.slice().sort((a,b)=>b[1].q-a[1].q).slice(0,8).map(([k,t])=>({l:k,v:t.q,t:t.q+" item"})),byl=E.slice().sort((a,b)=>(b[1].o-b[1].h)-(a[1].o-a[1].h)).slice(0,8).map(([k,t])=>({l:k,v:t.o-t.h,t:rp(t.o-t.h)}));
 return`<div class="chg">${chCard("Penjualan bersih & laba kotor "+serLbl(s.m),chBar(s.L,[{n:"Penjualan bersih",v:s.om,c:CHC[0]},{n:"Laba kotor",v:s.om.map((x,i)=>x-s.h[i]),c:CHC[4],t:"line"}],{a:"Tren penjualan"}),1)}${chCard("Jumlah transaksi "+serLbl(s.m),chBar(s.L,[{n:"Transaksi",v:s.n,c:CHC[2]}],{int:1,f:n=>String(Math.round(n)),tf:n=>n+" transaksi"}))}${chCard("Kontribusi omzet per produk",chDonut(topN(E.map(([l,t])=>({l,v:t.o})),6)))}${chCard("Produk terlaris (jumlah item)",chH(byq,{f:n=>n+" item"}))}${chCard("Laba kotor per produk",chH(byl))}</div>`}
 /* --- Pengeluaran --- */
-function chKeluar(L0){const L=L0.filter(e=>e.st=="OK");if(!L.length)return"";const C={},M={};L.forEach(e=>{C[e.cat]=(C[e.cat]||0)+e.amt;const k=e.date.slice(0,7);M[k]=(M[k]||0)+e.amt});const K=Object.keys(M).sort().slice(-12);
-return`<div class="chg">${chCard("Pengeluaran per kategori <span class=\"mut\">("+esc(bn(br))+")</span>",chDonut(Object.entries(C).map(([l,v])=>({l,v}))))}${chCard("Pengeluaran per bulan",chBar(K.map(mlb),[{n:"Pengeluaran",v:K.map(k=>M[k]),c:CHC[3]}]))}</div>`}
+function chKeluar(L0){const A=L0.filter(e=>e.st=="OK");if(!A.length)return"";
+const MS=[...new Set(A.map(e=>e.date.slice(0,7)))].sort().reverse(),sel=MS.includes(ecM)?ecM:"all",L=sel=="all"?A:A.filter(e=>e.date.slice(0,7)==sel);
+const C={},M={};L.forEach(e=>{C[e.cat]=(C[e.cat]||0)+e.amt;const k=e.date.slice(0,7);M[k]=(M[k]||0)+e.amt});
+const flt=`<div class="fm np" style="margin-bottom:8px"><label class="fl">Tampilkan grafik<select onchange="ecM=this.value;render()"><option value="all" ${sel=="all"?"selected":""}>Semua bulan</option>${MS.map(k=>`<option value="${k}" ${sel==k?"selected":""}>${esc(fmo(k))}</option>`).join("")}</select></label></div>`;
+let c2;if(sel=="all"){const K=Object.keys(M).sort().slice(-12);c2=chCard("Pengeluaran per bulan",chBar(K.map(mlb),[{n:"Pengeluaran",v:K.map(k=>M[k]),c:CHC[3]}]))}
+else{const[y,m]=sel.split("-").map(Number),n=new Date(Date.UTC(y,m,0)).getUTCDate(),D=Array.from({length:n},(_,i)=>sel+"-"+String(i+1).padStart(2,"0")),P={};L.forEach(e=>P[e.date]=(P[e.date]||0)+e.amt);
+c2=chCard("Pengeluaran per hari · "+esc(fmo(sel)),chBar(D.map(dlb),[{n:"Pengeluaran",v:D.map(d=>P[d]||0),c:CHC[3]}]))}
+return flt+`<div class="chg">${chCard("Pengeluaran per kategori <span class=\"mut\">("+esc(bn(br))+(sel=="all"?"":" · "+esc(fmo(sel)))+")</span>",chDonut(Object.entries(C).map(([l,v])=>({l,v}))))}${c2}</div>`}
 /* --- Penggajian --- */
 function chGaji(D){const M=gjMap(),ks=[],[y,m]=D.mo.split("-").map(Number);for(let i=5;i>=0;i--)ks.push(new Date(Date.UTC(y,m-1-i,1)).toISOString().slice(0,7));
 const N=ks.map(k=>gjNetM(M,k)),sis=ks.map(k=>gjSisaM(M,k)),sh=D.rows.map(r=>({l:r.o.name,v:r.sh}));if(D.rest>0)sh.push({l:"Sisa kas usaha",v:D.rest,c:CHC[7]});
@@ -1076,16 +1082,16 @@ function toast(m){let t=$("#toast");if(!t){t=document.createElement("div");t.id=
 function mergeInto(sv,lc,silent){let ns=0,ne=0,nb=0,nv=0;sv.seq=sv.seq||{};sv.stock=sv.stock||{};sv.sales=sv.sales||[];sv.exp=sv.exp||[];sv.buys=sv.buys||[];sv.mv=sv.mv||[];
 if(!silent&&!confirm("Data di server sudah berubah, dan perangkat ini punya data baru yang belum terkirim.\n\nGabungkan? Transaksi, pengeluaran, dan pembelian perangkat ini akan ditambahkan ke data server. Absensi, karyawan, dan pembayaran gaji karyawan juga digabung. Perubahan lain di perangkat ini (mis. edit produk atau pengaturan) akan diganti data server."))throw new Error("Dibatalkan");
 const use=(x,g)=>x.items.forEach(i=>(i.u||((lc.products.find(p=>p.id==i.pid)||{}).recipe||[]).map(r=>({i:r.i,q:r.q}))).forEach(r=>{const k=x.br+"|"+r.i;sv.stock[k]=(sv.stock[k]||0)+g*r.q*i.qty}));
-const tb=new Set([...(sv.tomb||[]),...(lc.tomb||[])]);sv.tomb=[...tb];sv.sales=sv.sales.filter(x=>!tb.has(x.id));sv.exp=sv.exp.filter(x=>!tb.has(x.id));
+const tb=new Set([...(sv.tomb||[]),...(lc.tomb||[])]);sv.tomb=[...tb];sv.sales=sv.sales.filter(x=>!tb.has(x.id));sv.exp=sv.exp.filter(x=>!tb.has(x.id));{const bi=new Set(sv.branches.map(b=>b.id));(lc.branches||[]).forEach(b=>{if(!bi.has(b.id)&&!tb.has(b.id))sv.branches.push(b)});sv.branches=sv.branches.filter(b=>!tb.has(b.id));[["sales"],["exp"],["buys"],["mv"]].forEach(([k])=>{sv[k]=sv[k].filter(x=>!tb.has(x.br))})}const okb=x=>!tb.has(x.br);
 Object.keys(lc.seq||{}).forEach(k=>sv.seq[k]=Math.max(sv.seq[k]||0,lc.seq[k]));
 const sid=new Map(sv.sales.map(x=>[x.id,x])),nos=new Set(sv.sales.map(x=>x.no));
-(lc.sales||[]).forEach(x=>{const o=sid.get(x.id);
+(lc.sales||[]).filter(okb).forEach(x=>{const o=sid.get(x.id);
 if(!o){if(tb.has(x.id))return;if(nos.has(x.no)){const d=bd(x).replaceAll("-",""),k=x.br+d;sv.seq[k]=(sv.seq[k]||0)+1;x.no=`ZC-${x.br.toUpperCase()}-${d}-${String(sv.seq[k]).padStart(4,"0")}`}
 nos.add(x.no);if(x.st=="OK")use(x,-1);sv.sales.push(x);ns++}
 else if(x.st=="VOID"&&o.st=="OK"){o.st="VOID";o.voidAt=x.voidAt;use(o,1);nv++}});
-const eid=new Map(sv.exp.map(e=>[e.id,e]));(lc.exp||[]).forEach(e=>{const o=eid.get(e.id);if(!o){if(tb.has(e.id))return;sv.exp.push(e);ne++}else if(e.st=="VOID"&&o.st=="OK"){o.st="VOID";nv++}});
-const bk=b=>[b.at,b.br,b.i,b.n,b.t].join("|"),bs=new Set(sv.buys.map(bk));(lc.buys||[]).forEach(b=>{if(!bs.has(bk(b))){sv.buys.push(b);const k=b.br+"|"+b.i;sv.stock[k]=(sv.stock[k]||0)+b.n;nb++}});
-const mk=m=>[m.at,m.br,m.i,m.d,m.why].join("|"),ms=new Set(sv.mv.map(mk));(lc.mv||[]).forEach(m=>{if(!ms.has(mk(m))&&/^(Penjualan|Pembatalan|Penerimaan)/.test(m.why))sv.mv.push(m)});
+const eid=new Map(sv.exp.map(e=>[e.id,e]));(lc.exp||[]).filter(okb).forEach(e=>{const o=eid.get(e.id);if(!o){if(tb.has(e.id))return;sv.exp.push(e);ne++}else if(e.st=="VOID"&&o.st=="OK"){o.st="VOID";nv++}});
+const bk=b=>[b.at,b.br,b.i,b.n,b.t].join("|"),bs=new Set(sv.buys.map(bk));(lc.buys||[]).filter(okb).forEach(b=>{if(!bs.has(bk(b))){sv.buys.push(b);const k=b.br+"|"+b.i;sv.stock[k]=(sv.stock[k]||0)+b.n;nb++}});
+const mk=m=>[m.at,m.br,m.i,m.d,m.why].join("|"),ms=new Set(sv.mv.map(mk));(lc.mv||[]).filter(okb).forEach(m=>{if(!ms.has(mk(m))&&/^(Penjualan|Pembatalan|Penerimaan)/.test(m.why))sv.mv.push(m)});
 sv.mv.sort((a,b)=>a.at<b.at?-1:a.at>b.at?1:0);
 let ng=0;{const g=lc.gaji;if(g){const sg=sv.gaji=sv.gaji||{};sg.emp=sg.emp||[];sg.att=sg.att||{};sg.kpaid=sg.kpaid||{};
 const ei=new Set(sg.emp.map(e=>e.id));(g.emp||[]).forEach(e=>{if(!ei.has(e.id)){sg.emp.push(e);ei.add(e.id);ng++}});
@@ -1482,8 +1488,22 @@ else if(m=="serial"&&navigator.serial){const ps=await navigator.serial.getPorts(
 else if(m=="ble"&&navigator.bluetooth&&navigator.bluetooth.getDevices){const d=(await navigator.bluetooth.getDevices()).find(x=>PCFG.name&&x.name==PCFG.name);if(d){await bleOpen(d);prnRefresh()}}}catch(e){console.log("sambung ulang printer:",e)}})},800);
 
 
-function vSet(){return`${prnLink()}${ktCard()}<div class="card" style="margin-bottom:12px"><b>Ubah password saya</b><div class="fm" style="margin-top:8px">${pwf("pw0","Kata sandi lama","current-password")}${pwf("pw1","Kata sandi baru","new-password")}<button class="btn" onclick="chpw()">Ubah</button></div></div>${payCard()}${logCard()}<div class="card" style="margin-bottom:12px"><b>Cabang</b>${opt(S.branches,b=>`<div style="margin:6px 0">${esc(b.name)} — ${esc(b.addr||"")} <button class="btn s" onclick="bedit('${b.id}')">Edit</button> <span class="mut">Jam potong hari buka: ${String(cutH(b.id)).padStart(2,"0")}.00</span> <button class="btn s" onclick="bcut('${b.id}')">Atur jam potong</button> <button class="btn s" onclick="bshop('${b.id}')">Buka/tutup toko</button> <span class="mut">${{off:"Nonaktif",auto:"Buka otomatis",manual:"Buka manual"}[modeOf(b.id)]}${b.close?" · tutup "+esc(b.close):""}</span></div>`)}<div class="fm"><input id="b1" placeholder="Nama cabang baru"><input id="b2" placeholder="Alamat"><button class="btn" onclick="badd()">Tambah cabang</button></div></div>
+function vSet(){return`${prnLink()}${ktCard()}<div class="card" style="margin-bottom:12px"><b>Ubah password saya</b><div class="fm" style="margin-top:8px">${pwf("pw0","Kata sandi lama","current-password")}${pwf("pw1","Kata sandi baru","new-password")}<button class="btn" onclick="chpw()">Ubah</button></div></div>${payCard()}${logCard()}<div class="card" style="margin-bottom:12px"><b>Cabang</b>${opt(S.branches,b=>`<div style="margin:6px 0">${esc(b.name)} — ${esc(b.addr||"")} <button class="btn s" onclick="bedit('${b.id}')">Edit</button> <span class="mut">Jam potong hari buka: ${String(cutH(b.id)).padStart(2,"0")}.00</span> <button class="btn s" onclick="bcut('${b.id}')">Atur jam potong</button> <button class="btn s" onclick="bshop('${b.id}')">Buka/tutup toko</button>${b.id!="pusat"&&!brLock(cur)?` <button class="btn r" onclick="bdel('${b.id}')">Hapus</button>`:""} <span class="mut">${{off:"Nonaktif",auto:"Buka otomatis",manual:"Buka manual"}[modeOf(b.id)]}${b.close?" · tutup "+esc(b.close):""}</span></div>`)}<div class="fm"><input id="b1" placeholder="Nama cabang baru"><input id="b2" placeholder="Alamat"><button class="btn" onclick="badd()">Tambah cabang</button></div></div>
 <div class="card"><b>Data & backup</b><p class="mut">Data disinkronkan ke Firebase Firestore (proyek zona-c04ee) dan tersimpan juga di browser ini sebagai cadangan. Perangkat lain yang membuka halaman ini otomatis menerima perubahan. Jika dua perangkat mengubah data bersamaan, perubahan terakhir yang menang. Tetap ekspor backup secara berkala.</p><div class="fm" style="margin-top:8px"><button class="btn" onclick="bak()">Ekspor backup JSON</button><input type="file" id="imp" accept=".json" onchange="impF(this)"><button class="btn r" onclick="rst()">Reset semua data</button></div></div>`}
+function bdel(id){const b=S.branches.find(x=>x.id==id);if(!b||!cur||brLock(cur))return;
+if(id=="pusat")return alert("Cabang pusat tidak bisa dihapus.");
+if(S.branches.length<2)return alert("Minimal harus ada satu cabang.");
+const us=S.users.filter(u=>u.br==id);if(us.length)return alert("Masih ada akun yang terkait cabang ini: "+us.map(u=>u.username).join(", ")+".\nHapus atau pindahkan akun tersebut dulu di menu Pengguna.");
+const ns=S.sales.filter(x=>x.br==id),ne=S.exp.filter(x=>x.br==id),nb=S.buys.filter(x=>x.br==id);
+if(ns.length||ne.length||nb.length){if(!confirm("Cabang \""+b.name+"\" punya "+ns.length+" transaksi, "+ne.length+" pengeluaran, "+nb.length+" belanja stok.\nSemua data cabang ini akan ikut terhapus permanen.\n\nSebuah file backup akan diunduh dulu. Lanjutkan?"))return;
+bak();const t=prompt("Ketik nama cabang untuk konfirmasi hapus:\n"+b.name);if(t===null||t.trim().toLowerCase()!=b.name.trim().toLowerCase())return alert("Nama tidak cocok, penghapusan dibatalkan.")}
+else if(!confirm("Hapus cabang \""+b.name+"\"?"))return;
+S.tomb=[...new Set([...(S.tomb||[]),id,...ns.map(x=>x.id),...ne.map(x=>x.id)])];
+S.sales=S.sales.filter(x=>x.br!=id);S.exp=S.exp.filter(x=>x.br!=id);S.buys=S.buys.filter(x=>x.br!=id);S.mv=S.mv.filter(x=>x.br!=id);
+Object.keys(S.stock).forEach(k=>{if(k.startsWith(id+"|"))delete S.stock[k]});Object.keys(S.seq||{}).forEach(k=>{if(k.startsWith(id))delete S.seq[k]});Object.keys(S.qn||{}).forEach(k=>{if(k.startsWith(id))delete S.qn[k]});
+if(S.shop)delete S.shop[id];if(S.event&&S.event.modes)delete S.event.modes[id];S.promos=(S.promos||[]).filter(p=>p.br!=id);
+S.branches=S.branches.filter(x=>x.id!=id);if(br==id)br=S.branches[0].id;
+logA("hapus-cabang",b.name,ns.length+" trx, "+ne.length+" pengeluaran");save();render()}
 function badd(){const n=V("b1").trim();if(!n)return alert("Nama wajib");S.branches.push({id:"c"+uid(),name:n,addr:V("b2")});save();render()}
 function logCard(){if(!cur||brLock(cur))return"";const L=(S.log||[]).slice(-40).reverse();return`<div class="card" style="margin-bottom:12px"><b>Jejak aktivitas</b> <span class="mut">(40 terakhir)</span><div class="tw" style="max-height:260px;overflow:auto;margin-top:6px"><table><tr><th>Waktu</th><th>Pengguna</th><th>Aksi</th><th>Ref</th><th>Catatan</th></tr>${opt(L,x=>`<tr><td>${dt(x.at)}</td><td>${esc(x.by)}</td><td>${esc(x.act)}</td><td>${esc(x.ref)}</td><td>${esc(x.note)}</td></tr>`)||'<tr><td colspan="5" class="mut">Belum ada aktivitas.</td></tr>'}</table></div></div>`}
 function bcut(id){const b=S.branches.find(x=>x.id==id),v=prompt("Jam potong hari buka untuk "+b.name+" (0-12, WIB).\nTransaksi sebelum jam ini dihitung ke hari buka sebelumnya.\nContoh: 5 = transaksi 00.00-04.59 masuk laporan hari kemarin. 0 = ganti hari tepat tengah malam.\nBerlaku untuk transaksi baru; laporan lama tidak berubah.",cutH(id));if(v===null)return;const n=Math.round(+v);if(v.trim()===""||!(n>=0&&n<=12))return alert("Isi angka 0 sampai 12");logA("jam-potong",b.name,"jadi "+n+".00");b.cut=n;save();render()}
