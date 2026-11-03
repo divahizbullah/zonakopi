@@ -358,7 +358,7 @@ stock:st,sales:[],exp:[],buys:[],mv:[],seq:{}}}
 let S=JSON.parse(localStorage.getItem(KEY)||"null")||seed();window.dirtyL=localStorage.getItem(KEY+"_dirty")=="1";
 const SKIPK=new Set(["_m","sales","exp","inc","buys","mv","tomb","log","gaji","seq","stock","shop","qn"]);
 function zKs(){window._ks={};for(const k in S)if(!SKIPK.has(k))window._ks[k]=JSON.stringify(S[k])}
-function stamp(){if(!window._ks)zKs();S._m=S._m||{};const t=Date.now();for(const k in S){if(SKIPK.has(k))continue;const j=JSON.stringify(S[k]);if(window._ks[k]!==j){if(k in window._ks)S._m[k]=t;window._ks[k]=j}}}
+function stamp(){if(window._ni||!window._ks){zKs();if(window._ni)return}S._m=S._m||{};const t=Date.now();for(const k in S){if(SKIPK.has(k))continue;const j=JSON.stringify(S[k]);if(window._ks[k]!==j){if(k in window._ks)S._m[k]=t;window._ks[k]=j}}}
 const save=()=>{window.dirtyL=true;try{stamp()}catch(e){console.error(e)}window.svq=(window.svq||0)+1;try{localStorage.setItem(KEY+"_dirty","1");localStorage.setItem(KEY,JSON.stringify(S))}catch(e){console.error(e);if(!window._qw){window._qw=1;alert("PERINGATAN: penyimpanan perangkat penuh, data baru bisa gagal tersimpan. Tekan Update di bawah lalu hubungi admin.")}}window.cloudPush&&window.cloudPush()};
 S.promos=S.promos||[];S.users=S.users||[];fixS();zKs();
 let cur=null,authed=false,br=S.branches[0].id,view="kasir",cart=[],payM="CASH",q="",rf={from:jk().slice(0,8)+"01",to:jk(),all:1,m:"hari",sub:"arus"};
@@ -1119,8 +1119,9 @@ sv.exp.forEach(x=>{if(x.kar){const pd=!!sg.kpaid[x.kar];if(pd&&x.st=="VOID")x.st
 return`${ns} transaksi, ${ne} pengeluaran, ${ni} pemasukan lain, ${nb} pembelian, ${nv} pembatalan, ${ng} data gaji karyawan`}
 /* PERUBAHAN TERAKHIR MENANG: tiap bagian data (produk, harga, pengguna, pengaturan, dst.) memakai versi dari perangkat yang mengubahnya paling akhir.
    Transaksi, pengeluaran, pemasukan, belanja stok & absensi tidak diganti, hanya digabung supaya tidak ada yang hilang. */
-function lww(sv,lc){let ch=false;sv._m=sv._m||{};const lm=lc._m||{},J=x=>JSON.stringify(x);
-for(const k of Object.keys(lc)){if(SKIPK.has(k)||k=="branches")continue;const a=lm[k]||0,b=sv._m[k]||0;if(a>b&&J(lc[k])!==J(sv[k])){sv[k]=JSON.parse(J(lc[k]));sv._m[k]=a;ch=true}}
+function lww(sv,lc){let ch=false;if(localStorage.getItem(KEY+"_synced")!="1")return false;
+const seedLike=(k,v)=>(k=="users"&&Array.isArray(v)&&v.length<=1&&(!v[0]||v[0].id=="u-admin"))||(k=="products"&&Array.isArray(v)&&v.length<=3&&v.every(p=>["p1","p2","p3"].includes(p.id)));sv._m=sv._m||{};const lm=lc._m||{},J=x=>JSON.stringify(x);
+for(const k of Object.keys(lc)){if(SKIPK.has(k)||k=="branches")continue;if(seedLike(k,lc[k])&&!seedLike(k,sv[k]))continue;const a=lm[k]||0,b=sv._m[k]||0;if(a>b&&J(lc[k])!==J(sv[k])){sv[k]=JSON.parse(J(lc[k]));sv._m[k]=a;ch=true}}
 {const a=lm.branches||0,b=sv._m.branches||0;if(a>b){const L=new Map((lc.branches||[]).map(x=>[x.id,x]));const nb=sv.branches.map(x=>L.get(x.id)||x);if(J(nb)!==J(sv.branches)){sv.branches=nb;sv._m.branches=a;ch=true}}}
 {sv.shop=sv.shop||{};const ts=h=>h?Math.max(Date.parse(h.openAt)||0,Date.parse(h.closeAt)||0):0;Object.entries(lc.shop||{}).forEach(([id,h])=>{if(ts(h)>ts(sv.shop[id])){sv.shop[id]=h;ch=true}})}
 {sv.qn=sv.qn||{};Object.entries(lc.qn||{}).forEach(([k,v])=>{if(!(sv.qn[k]>=v)){sv.qn[k]=v;ch=true}})}
@@ -1515,7 +1516,7 @@ else if(m=="ble"&&navigator.bluetooth&&navigator.bluetooth.getDevices){const d=(
 
 
 function vSet(){return`${prnLink()}${ktCard()}<div class="card" style="margin-bottom:12px"><b>Ubah password saya</b><div class="fm" style="margin-top:8px">${pwf("pw0","Kata sandi lama","current-password")}${pwf("pw1","Kata sandi baru","new-password")}<button class="btn" onclick="chpw()">Ubah</button></div></div>${payCard()}${logCard()}<div class="card" style="margin-bottom:12px"><b>Cabang</b>${opt(S.branches,b=>`<div style="margin:6px 0">${esc(b.name)} — ${esc(b.addr||"")} <button class="btn s" onclick="bedit('${b.id}')">Edit</button> <span class="mut">Jam potong hari buka: ${String(cutH(b.id)).padStart(2,"0")}.00</span> <button class="btn s" onclick="bcut('${b.id}')">Atur jam potong</button> <button class="btn s" onclick="bshop('${b.id}')">Buka/tutup toko</button>${b.id!="pusat"&&!brLock(cur)?` <button class="btn r" onclick="bdel('${b.id}')">Hapus</button>`:""} <span class="mut">${{off:"Nonaktif",auto:"Buka otomatis",manual:"Buka manual"}[modeOf(b.id)]}${b.close?" · tutup "+esc(b.close):""}</span></div>`)}<div class="fm"><input id="b1" placeholder="Nama cabang baru"><input id="b2" placeholder="Alamat"><button class="btn" onclick="badd()">Tambah cabang</button></div></div>
-<div class="card"><b>Data & backup</b><p class="mut">Data disinkronkan ke Firebase Firestore (proyek zona-c04ee) dan tersimpan juga di browser ini sebagai cadangan. Perangkat lain yang membuka halaman ini otomatis menerima perubahan. Jika dua perangkat mengubah data bersamaan, perubahan terakhir yang menang. Tetap ekspor backup secara berkala.</p><div class="fm" style="margin-top:8px"><button class="btn" onclick="bak()">Ekspor backup JSON</button><input type="file" id="imp" accept=".json" onchange="impF(this)"><button class="btn r" onclick="rst()">Reset semua data</button></div></div>`}
+<div class="card"><b>Data & backup</b><p class="mut">Data disinkronkan ke Firebase Firestore (proyek zona-c04ee) dan tersimpan juga di browser ini sebagai cadangan. Perangkat lain yang membuka halaman ini otomatis menerima perubahan. Jika dua perangkat mengubah data bersamaan, perubahan terakhir yang menang. Tetap ekspor backup secara berkala.</p><div class="fm" style="margin-top:8px"><button class="btn" onclick="bak()">Ekspor backup JSON</button><button class="btn s" onclick="rcvM()">Pulihkan dari cadangan perangkat</button><input type="file" id="imp" accept=".json" onchange="impF(this)"><button class="btn r" onclick="rst()">Reset semua data</button></div></div>`}
 function bdel(id){const b=S.branches.find(x=>x.id==id);if(!b||!cur||brLock(cur))return;
 if(id=="pusat")return alert("Cabang pusat tidak bisa dihapus.");
 if(S.branches.length<2)return alert("Minimal harus ada satu cabang.");
@@ -1537,9 +1538,16 @@ function setDay(id){const s=S.sales.find(x=>x.id==id),v=prompt("Hari buka untuk 
 function bedit(id){const b=S.branches.find(x=>x.id==id),n=prompt("Nama cabang",b.name);if(n){b.name=n;b.addr=prompt("Alamat",b.addr||"")??b.addr;save();render()}}
 function bak(){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(S)],{type:"application/json"}));a.download="zona-backup-"+jk()+".json";a.click()}
 function impF(el){const f=el.files[0];if(!f)return;f.text().then(t=>{try{const d=JSON.parse(t);if(!d.products||!d.branches)throw 0;if(confirm("Timpa semua data saat ini dengan backup?")){d.users=S.users;S=d;S.promos=S.promos||[];fixS();save();br=S.branches[0].id;render()}}catch{alert("File backup tidak valid")}})}
+function rcvM(){const ks=[[KEY,"Data saat ini di perangkat"],[KEY+"_lb1","Cadangan otomatis terbaru"],[KEY+"_lb2","Cadangan otomatis sebelumnya"],[KEY+"_srvbak","Salinan data server sebelum diubah"],[KEY+"_localbackup","Cadangan lama perangkat"],[KEY+"_rcvbak","Data sebelum pemulihan terakhir"]];
+const rows=ks.map(([k,l])=>{const r=localStorage.getItem(k);if(!r)return"";try{const d=JSON.parse(r),ls=(d.sales||[]).map(x=>x.at).sort().pop();return`<tr><td>${l}</td><td>${(d.users||[]).length}</td><td>${(d.products||[]).length}</td><td>${(d.sales||[]).length}</td><td>${ls?dt(ls):"-"}</td><td><button class="btn s" onclick="rcvDo('${k}')">Pulihkan</button></td></tr>`}catch(e){return""}}).join("");
+modal(`<h3>Pulihkan dari cadangan perangkat</h3><p class="mut" style="margin:4px 0 8px">Pilih cadangan dengan jumlah pengguna, produk, dan transaksi yang paling lengkap. Seluruh data, termasuk pengguna, diganti dengan cadangan itu lalu disinkronkan ke server.</p><div class="tw"><table><tr><th>Sumber</th><th>Pengguna</th><th>Produk</th><th>Transaksi</th><th>Transaksi terakhir</th><th></th></tr>${rows||'<tr><td colspan="6" class="mut">Tidak ada cadangan di perangkat ini.</td></tr>'}</table></div><button class="btn s" style="margin-top:8px" onclick="closeM()">Tutup</button>`)}
+function rcvDo(k){try{const d=JSON.parse(localStorage.getItem(k));if(!d||!d.products||!d.branches)throw 0;if(!confirm("Ganti semua data saat ini (termasuk pengguna) dengan cadangan ini?"))return;
+try{localStorage.setItem(KEY+"_rcvbak",JSON.stringify(S));localStorage.setItem(KEY+"_synced","1")}catch(e){}
+S=d;S.promos=S.promos||[];S.users=S.users||[];fixS();S._m={};const t=Date.now();for(const x in S)if(!SKIPK.has(x))S._m[x]=t;zKs();br=S.branches.some(b=>b.id==br)?br:S.branches[0].id;
+if(authed){cur=S.users.find(u=>u.id==cur.id)||null;if(!cur){save();closeM();lock();return}}save();closeM();render();toast("Cadangan dipulihkan, menyinkronkan…");if(typeof doUpdate=="function")setTimeout(doUpdate,400)}catch(e){alert("Cadangan tidak valid")}}
 function rst(){if(confirm("Hapus SEMUA data?")&&confirm("Yakin? Tindakan ini tidak bisa dibatalkan.")){{const u=S.users,pp=S.pay,rcc=S.rc,ktt=S.kt;S=seed();S.users=u;S.pay=pp;if(rcc)S.rc=rcc;if(ktt)S.kt=ktt;S.promos=[];fixS()}save();br=S.branches[0].id;cart=[];render()}}
-async function init(){fixS();if(!S.users.length){const salt=uid()+uid();S.users.push({id:"u-admin",username:"admin",name:"Administrator",role:"owner",br:"",salt,h:await hash("admin123",salt)});save()}
-S.branches.forEach(b=>{b.name=b.name.replace(/ZONA Coffee/i,"ZONA")});save();if(document.head){const l=document.createElement("link");l.rel="icon";l.href=LOGO;document.head.appendChild(l)}
+async function init(){window._ni=1;fixS();if(!S.users.length){const salt=uid()+uid();S.users.push({id:"u-admin",username:"admin",name:"Administrator",role:"owner",br:"",salt,h:await hash("admin123",salt)});save()}
+S.branches.forEach(b=>{b.name=b.name.replace(/ZONA Coffee/i,"ZONA")});save();window._ni=0;zKs();if(document.head){const l=document.createElement("link");l.rel="icon";l.href=LOGO;document.head.appendChild(l)}
 const id=localStorage.getItem("zona_uid")||sessionStorage.getItem("zona_uid");cur=S.users.find(u=>u.id==id)||null;authed=!!cur;if(cur&&innerWidth>800)document.body.classList.add("navopen");if(brLock(cur))br=cur.br;
 render();idleReset();if(location.hash=="#admin"&&!authed)loginM("riwayat");else if((location.hash=="#display"||location.hash=="#customer")&&!authed)loginM("kasir")}
 /* ===== DISPLAY CUSTOMER + PESANAN LIVE ===== */
@@ -1729,9 +1737,11 @@ function adopt(o,json,n,dirty){lastJson=json;nOld=Math.max(nOld,n);S=o;S.promos=
   if(!S.branches.some(x=>x.id==br))br=S.branches[0].id;
   if(authed){cur=S.users.find(u=>u.id==cur.id)||null;if(!cur){lock();return}if(brLock(cur))br=cur.br}}
 /* terima data server TANPA menghapus data lokal yang belum terkirim: gabungkan dulu */
-function take(json,n){try{const sv=JSON.parse(json),lo=localOnly(S,sv);let msg="";
-  if(lo){bak();msg=mergeInto(sv,S,true)}
-  const ch=lww(sv,S);adopt(sv,json,n,lo||ch);return{merged:lo,msg}}catch(e){console.error(e);st("☁ Gagal menggabungkan · data lokal dipertahankan",1);return null}}
+function take(json,n){try{const sv=JSON.parse(json),lo=localOnly(S,sv),syn=localStorage.getItem(KEY+"_synced")=="1";let msg="";
+  if(lo||!syn)bak();
+  if(lo)msg=mergeInto(sv,S,true);
+  const ch=lww(sv,S);if(ch){try{localStorage.setItem(KEY+"_srvbak",json)}catch(e){}}
+  adopt(sv,json,n,lo||ch);try{localStorage.setItem(KEY+"_synced","1")}catch(e){}return{merged:lo,msg}}catch(e){console.error(e);st("☁ Gagal menggabungkan · data lokal dipertahankan",1);return null}}
 window.cloudSync=async()=>{
   if(!ready)throw new Error("Belum tersambung ke server");
   const snap=await getDocsFromServer(col),{ds,ok}=latest(snap.docs);
@@ -1753,12 +1763,12 @@ function onSnap(snap){
   if(chg.length&&chg.every(c=>/^(live|cust)_/.test(c.doc.id)))return;
   if(snap.metadata.hasPendingWrites)return;
   const{ds,ok}=latest(snap.docs);
-  if(!ds.length){if(snap.metadata.fromCache)return;if(!ready){ready=true;push()}return}
+  if(!ds.length){if(snap.metadata.fromCache)return;if(!ready){ready=true;try{localStorage.setItem(KEY+"_synced","1")}catch(e){}push()}return}
   if(!ok)return;
   if(ready&&ds[0].by===CID){st("☁ Tersinkron");return}
   if(snap.metadata.fromCache&&!ready)return;
   const json=ds.map(x=>x.d).join("");
-  if(json===lastJson){ready=true;if(window.dirtyL)window.cloudPush();else st("☁ Tersinkron");return}
+  if(json===lastJson){ready=true;try{localStorage.setItem(KEY+"_synced","1")}catch(e){}if(window.dirtyL)window.cloudPush();else st("☁ Tersinkron");return}
   const r=take(json,ds.length);if(!r)return;
   ready=true;safeRender();
   if(window.dirtyL)window.cloudPush();else st("☁ Tersinkron");
