@@ -23,6 +23,8 @@ table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;ove
 th,td{padding:9px 10px;text-align:left;border-bottom:1px solid var(--s)}
 .tw{overflow-x:auto}select.act{padding:5px 8px;font-size:.85rem;font-weight:600;border-radius:8px;background:var(--s);cursor:pointer;width:auto;min-width:84px}.item{cursor:pointer}.item:hover{outline:2px solid var(--a)}
 .big{font-size:1.4rem;font-weight:800}.warn{color:var(--m);font-weight:700}
+#aifab{position:fixed;right:16px;bottom:calc(var(--fh,0px) + 16px);z-index:30;width:54px;height:54px;border-radius:50%;border:0;background:var(--a);color:#fff;font-size:24px;line-height:1;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.3)}#aifab:hover{background:var(--m)}
+#aiw{position:fixed;right:16px;bottom:calc(var(--fh,0px) + 16px);z-index:31;width:380px;max-width:calc(100vw - 24px);height:min(580px,80vh);display:flex;flex-direction:column;background:var(--c);color:var(--d);border:1px solid var(--s);border-radius:14px;box-shadow:0 8px 28px rgba(0,0,0,.3);overflow:hidden}.aih{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:var(--d);color:#fff;flex:none}.aib{flex:1;min-height:0;overflow:auto;padding:8px 10px;display:flex;flex-direction:column}#aiw #aimsg{flex:1;max-height:none;min-height:80px}
 #aimsg{max-height:58vh;min-height:120px;overflow:auto;padding:4px}.aiu{background:var(--a);color:#fff;border-radius:12px 12px 2px 12px;padding:8px 12px;margin:6px 0 6px auto;max-width:85%;width:fit-content;white-space:pre-wrap}.aia{background:var(--c);border:1px solid var(--s);border-radius:12px 12px 12px 2px;padding:8px 12px;margin:6px 0;max-width:92%;line-height:1.5}.mut{opacity:.65;font-size:.85rem}
 .fm{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:center}
 #modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;place-items:center;z-index:40;padding:12px}
@@ -393,9 +395,9 @@ const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["\ufeff
 function modal(h){$("#mb").innerHTML=h;$("#modal").classList.add("on")}
 const closeM=()=>{$("#modal").classList.remove("on");if(olc()){payM="CASH";olT="";if(view=="kasir"&&$("#cl"))refC()}};
 $("#modal").onclick=e=>{if(e.target.id=="modal")closeM()};
-const NAVG=[["kasir","Kasir"],["riwayat","Riwayat"],["promo","Promo"],["event","Event"],["online","Harga Online"],
+const NAVG=[["kasir","Kasir"],["riwayat","Riwayat"],["promo","Promo"],["event","Event"],["online","Harga Online"],["asisten","Asisten AI"],
 {g:"Laporan Barang",c:[["produk","Produk & Resep"],["stok","Stok"]]},
-{g:"Laporan Keuangan",v:"ringkasan",c:[["ringkasan","Ringkasan"],["keluar","Pengeluaran"],["laporan","Laporan"],["gaji","Penggajian"],["kasusaha","Sisa Kas Usaha"],["asisten","Asisten AI"]]},
+{g:"Laporan Keuangan",v:"ringkasan",c:[["ringkasan","Ringkasan"],["keluar","Pengeluaran"],["laporan","Laporan"],["gaji","Penggajian"],["kasusaha","Sisa Kas Usaha"]]},
 {g:"Pengaturan",v:"set",c:[["tampilan","Pengaturan Aplikasi"],["printer","Printer & Struk"],["pesan","Pesan Kasir"],["pengguna","Pengguna"],["__out","Keluar"]]}];
 let gopen="";
 const okv=v=>!!cur&&ACC[cur.role].includes(v);
@@ -415,7 +417,7 @@ function gh(g){gopen=gopen==g?"":g;render()}
 const brHide=()=>!authed||!cur||brLock(cur);
 const brOpts=()=>opt(S.branches.filter(b=>!cur||!brLock(cur)||b.id==cur.br),b=>`<option value="${b.id}" ${b.id==br?"selected":""}>${esc(b.name)}</option>`);
 const brNav=()=>brHide()?"":`<div class="nbr"><label>Cabang<select aria-label="Pilih cabang" onchange="document.body.classList.remove('navopen');br=this.value;cart=[];render()">${brOpts()}</select></label></div>`;
-function render(){applyAcc();applyUi();const isCu=!!(authed&&cur&&cur.role=="customer");document.body.classList.toggle("cust",isCu);if(isCu)return custRender();if(authed&&cur&&cur.role=="owner"&&!S.cuSeed)ensureCu();if(shopGuard())return;
+function render(){applyAcc();applyUi();try{aiFab()}catch(e){}const isCu=!!(authed&&cur&&cur.role=="customer");document.body.classList.toggle("cust",isCu);if(isCu)return custRender();if(authed&&cur&&cur.role=="owner"&&!S.cuSeed)ensureCu();if(shopGuard())return;
 if(view!="kasir"&&(!cur||!ACC[cur.role].includes(view)))view="kasir";
 document.body.classList.toggle("pub",!authed);document.body.classList.toggle("simple",simple());if(simple())document.body.classList.remove("navopen");
 $("#nav").innerHTML='<span class="x" onclick="tnav()">✕</span><div style="margin-bottom:12px">'+brandH()+'</div>'+(authed?'<div style="margin-bottom:10px;font-size:.85rem">'+esc(cur.name)+'<br>'+ROLEN[cur.role]+'</div>'+navH():`<button class="${view=="kasir"?"on":""}" onclick="go('kasir')">Kasir</button><button onclick="document.body.classList.remove('navopen');loginM('riwayat')">Login</button>`)+brNav();
@@ -1119,13 +1121,24 @@ const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),100000);
 try{const r=await fetch(c.u,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({token:c.t,q,hist,ctx:aiCtx(),web:AI.web?1:0}),signal:ctl.signal}),j=await r.json();if(!j.ok)throw new Error(j.error||"Gagal");AI.m.push({r:"a",t:j.text,s:j.sources||[]})}
 catch(e){AI.m.push({r:"a",t:"⚠ "+(e.name=="AbortError"?"Waktu habis, coba lagi (pertanyaan pasar bisa lebih lama).":e.message),err:1})}
 clearTimeout(to);AI.busy=0;aiPaint()}
-function vAsisten(){const c=aiCfg(),own=cur.role=="owner",Q=["Ringkas performa bulan ini","Bandingkan bulan ini dengan bulan lalu","Produk mana paling untung dan mana yang margin-nya tipis?","Pengeluaran apa yang paling besar dan bisa dihemat?","Stok apa yang perlu dibeli?"];
-return`<div class="card" style="margin-bottom:12px"><b>Asisten AI</b><p class="mut" style="margin:6px 0">Membaca ringkasan data ${allB()?"semua cabang":esc(bn(br))} (6 bulan terakhir). Yang dikirim hanya angka ringkasan: penjualan, pengeluaran, produk, stok. Password dan data pengguna tidak dikirim. Jawaban AI bisa keliru, cek angka penting di laporan.</p>${c.u&&c.t?"":'<p class="warn">Belum tersambung. Isi Pengaturan asisten di bawah.</p>'}
-<div id="aimsg">${aiHTML()}</div>
+/* kotak chat dipakai bersama oleh halaman penuh (menu) dan widget melayang */
+function aiBox(c){const Q=c?["Ringkas performa bulan ini","Stok apa yang perlu dibeli?"]:["Ringkas performa bulan ini","Bandingkan bulan ini dengan bulan lalu","Produk mana paling untung dan mana yang margin-nya tipis?","Pengeluaran apa yang paling besar dan bisa dihemat?","Stok apa yang perlu dibeli?"];
+return`<div id="aimsg">${aiHTML()}</div>
 <div class="fm np" style="margin-top:8px">${Q.map(x=>`<button class="btn s" data-q="${esc(x)}" onclick="aiSend(this.dataset.q)">${esc(x)}</button>`).join("")}<button class="btn s" data-q="Bagaimana kondisi pasar saat ini: harga bahan baku kopi, susu, gula, dan tren minuman? Apa dampaknya ke HPP dan harga jual saya?" onclick="AI.web=1;aiSend(this.dataset.q)">🌐 Cek kondisi pasar</button></div>
-<div class="fm np" style="margin-top:8px"><input id="ai_q" placeholder="Tulis pertanyaan…" style="flex:1;min-width:200px" onkeydown="if(event.key=='Enter')aiSend()"><button id="aisend" class="btn" onclick="aiSend()">Kirim</button></div>
-<div class="fm np"><label class="mut"><input id="aiweb" type="checkbox" ${AI.web?"checked":""} onchange="AI.web=this.checked?1:0"> Cari info pasar di web (lebih lama)</label><button class="btn s" onclick="AI.m=[];aiPaint()">Hapus percakapan</button></div></div>
+<div class="fm np" style="margin-top:8px"><input id="ai_q" placeholder="Tulis pertanyaan…" style="flex:1;min-width:${c?"120":"200"}px" onkeydown="if(event.key=='Enter')aiSend()"><button id="aisend" class="btn" onclick="aiSend()">Kirim</button></div>
+<div class="fm np"><label class="mut"><input id="aiweb" type="checkbox" ${AI.web?"checked":""} onchange="AI.web=this.checked?1:0"> Cari info pasar di web (lebih lama)</label><button class="btn s" onclick="AI.m=[];aiPaint()">Hapus percakapan</button></div>`}
+function vAsisten(){const c=aiCfg(),own=cur.role=="owner";
+return`<div class="card" style="margin-bottom:12px"><b>Asisten AI</b><p class="mut" style="margin:6px 0">Membaca ringkasan data ${allB()?"semua cabang":esc(bn(br))} (6 bulan terakhir). Yang dikirim hanya angka ringkasan: penjualan, pengeluaran, produk, stok. Password dan data pengguna tidak dikirim. Jawaban AI bisa keliru, cek angka penting di laporan. Tombol ✨ di pojok kanan bawah membuka asisten ini dari halaman mana pun.</p>${c.u&&c.t?"":'<p class="warn">Belum tersambung. Isi Pengaturan asisten di bawah.</p>'}${aiBox()}</div>
 ${own?`<div class="card np"><b>Pengaturan asisten</b><p class="mut" style="margin:6px 0">URL dan token proxy Google Apps Script. Disimpan hanya di perangkat ini, tidak ikut tersinkron dan tidak ada di file aplikasi.</p><div class="fm"><input id="ai_u" placeholder="https://script.google.com/macros/s/…/exec" value="${esc(c.u||"")}" style="min-width:260px;flex:1"><input id="ai_t" type="password" autocomplete="off" placeholder="Token" value="${esc(c.t||"")}" style="width:180px"><button class="btn" onclick="aiSaveCfg()">Simpan</button></div></div>`:""}`}
+/* widget melayang: tombol ✨ di pojok kanan bawah, panel chat kecil; disembunyikan di layar Kasir dan halaman Asisten penuh */
+function aiWHTML(){const c=aiCfg();return`<div class="aih"><b>✨ Asisten AI</b><span><button class="btn s" title="Buka halaman penuh" aria-label="Buka halaman penuh" onclick="AI.open=0;aiFab();go('asisten')">⤢</button> <button class="btn s" aria-label="Tutup" onclick="aiTog()">✕</button></span></div><div class="aib">${c.u&&c.t?"":'<p class="warn">Belum tersambung. Isi Pengaturan di menu Asisten AI.</p>'}${aiBox(1)}</div>`}
+function aiFab(){const ok=!!(authed&&cur&&cur.role!="customer"&&okv("asisten")&&view!="asisten"&&view!="kasir");let f=$("#aifab"),w=$("#aiw");
+if(!ok){if(f)f.remove();if(w)w.remove();return}
+if(!f){f=document.createElement("button");f.id="aifab";f.type="button";f.className="np";f.setAttribute("aria-label","Buka asisten AI");f.title="Asisten AI";f.textContent="✨";f.onclick=aiTog;document.body.appendChild(f)}
+f.style.display=AI.open?"none":"";
+if(AI.open&&!w){w=document.createElement("div");w.id="aiw";w.className="np";w.innerHTML=aiWHTML();document.body.appendChild(w);aiPaint()}
+if(!AI.open&&w)w.remove()}
+function aiTog(){AI.open=!AI.open;aiFab();if(AI.open){const q=$("#ai_q");if(q)q.focus()}}
 /* ===== SISA KAS USAHA (akumulasi semua uang masuk) ===== */
 function gkData(){const G=gj(),M=gjMap(),ms=new Set(Object.keys(M)),
 rows=[...ms].sort().reverse().map(k=>{const n=gjNetM(M,k),sisa=gjSisaM(M,k);return{k,net:n.net,own:n.b-sisa,sisa}}).filter(r=>r.net||r.sisa),
